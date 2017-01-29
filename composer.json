@@ -1,0 +1,13 @@
+{
+  "name": "spark/spark",
+  "description": "Web MVC Framework",
+
+  "require": {
+    "php": ">=5.2"
+  },
+  "autoload": {
+    "psr-0": {
+      "spark\\": "src/"
+    }
+  }
+}
