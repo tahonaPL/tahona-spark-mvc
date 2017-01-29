@@ -1,9 +1,22 @@
 {
-  "name": "spark/spark",
+  "name": "tahona/spark-mvc",
   "description": "Web MVC Framework",
+  "type": "library",
+
+  "keywords": ["mvc"],
+  "homepage": "https://github.com/primosz67/spark-spark",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Primosz",
+      "email": "tahona@gmail.com",
+      "homepage": "http://tahona.pl",
+      "role": "Developer"
+    }
+  ],
 
   "require": {
-    "php": ">=5.2"
+    "php": ">=5.3"
   },
   "autoload": {
     "psr-0": {
