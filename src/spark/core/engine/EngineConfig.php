@@ -38,10 +38,8 @@ class EngineConfig {
         $this->rootAppPath = $params["root"];
         $this->namespace = $params["name"];
         $this->configName = $params["configName"];
-        $this->beanCache = Collections::getValue($params, "beanCache", false);
 
         $this->hasMultipleNamespaces = Objects::isArray($this->namespace);
-        $this->beanCache = Collections::getValue($params, "beanCache", false);
         $this->vendor = Collections::getValue($params, "vendor", array());
     }
 

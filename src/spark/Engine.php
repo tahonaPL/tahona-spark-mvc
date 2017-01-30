@@ -74,13 +74,12 @@ class Engine {
      */
     private $beanCache;
 
-    public function __construct($name, $rootAppPath ) {
-
+    public function __construct($name, $rootAppPath) {
 
         $params = array(
-            "root"=>$rootAppPath,
-            "name"=>"house",
-            "configName"=>$name,
+            "root" => $rootAppPath,
+            "name" => "house",
+            "configName" => $name,
         );
 
         $this->engineConfig = new EngineConfig($params);
@@ -88,52 +87,57 @@ class Engine {
 
         ClassLoaderRegister::register($this->engineConfig);
 
+        $this->beanCache = new ApcuBeanCache();
+        $this->beanCache->init();
 
-        $src = $rootAppPath."/src";
-
-        $filesInPath = FileUtils::getAllClassesInPath($src);
-        $annotationReader = ReflectionUtils::getReaderInstance();
-
-        $routing = new Routing(array());
-        $service = new Services();
-        $config = new Config(array());
-
-        $this->services = $service;
-        $this->route = $routing;
-        $this->config = $config;
-
-        $this->addBaseServices();
-
-
-        $initAnnotationProcessors = new InitAnnotationProcessors($routing, $config, $service);
-
-        foreach ($filesInPath as $class) {
-            $reflectionObject = new ReflectionClass($class);
-            $classAnnotations = $annotationReader->getClassAnnotations($reflectionObject);
-            $initAnnotationProcessors->handleClassAnnotations($classAnnotations, null, $reflectionObject);
-
-            $reflectionMethods = $reflectionObject->getMethods();
-            foreach($reflectionMethods as $method) {
-                $methodAnnotations = $annotationReader->getMethodAnnotations($method);
-                $initAnnotationProcessors->handleMethodAnnotations($methodAnnotations, null, $method);
-            }
-
-            $reflectionProperties = $reflectionObject->getProperties();
-            foreach($reflectionProperties as $property) {
-                $methodAnnotations = $annotationReader->getPropertyAnnotations($property);
-                $initAnnotationProcessors->handleFieldAnnotations($methodAnnotations, null, $property);
-            }
-
+        if ($this->hasAllreadyCachedData()) {
+            $this->services = $this->beanCache->get($this->getCacheKey("services"));
+            $this->route = $this->beanCache->get($this->getCacheKey("route"));
+            $this->config = $this->beanCache->get($this->getCacheKey("config"));
         }
 
+        if (!$this->hasAllreadyCachedData() || isset($_GET["reset"])) {
+            var_dump("init all".$this->hasAllreadyCachedData()." ");
 
+            $src = $rootAppPath . "/src";
+            $filesInPath = FileUtils::getAllClassesInPath($src);
+            $annotationReader = ReflectionUtils::getReaderInstance();
 
+            $this->services = new Services();
+            $this->route = new Routing(array());
+            $this->config = new Config(array());
 
+            $this->addBaseServices();
 
+            $initAnnotationProcessors = new InitAnnotationProcessors($this->routing, $this->config, $this->services);
 
-        if ($this->engineConfig->isBeanCacheEnabled()) {
-            $this->beanCache = new ApcuBeanCache();
-            $this->beanCache->init();
+            foreach ($filesInPath as $class) {
+                $reflectionObject = new ReflectionClass($class);
+                $classAnnotations = $annotationReader->getClassAnnotations($reflectionObject);
+                $initAnnotationProcessors->handleClassAnnotations($classAnnotations, null, $reflectionObject);
+
+                $reflectionMethods = $reflectionObject->getMethods();
+                foreach ($reflectionMethods as $method) {
+                    $methodAnnotations = $annotationReader->getMethodAnnotations($method);
+                    $initAnnotationProcessors->handleMethodAnnotations($methodAnnotations, null, $method);
+                }
+
+                $reflectionProperties = $reflectionObject->getProperties();
+                foreach ($reflectionProperties as $property) {
+                    $methodAnnotations = $annotationReader->getPropertyAnnotations($property);
+                    $initAnnotationProcessors->handleFieldAnnotations($methodAnnotations, null, $property);
+                }
+            }
+
+            $this->config->setMode($this->engineConfig->getConfigName());
+            $this->services->setConfig($this->config);
+            $this->services->initServices();
+
+            if ($this->isBeanCacheEnabled()) {
+                $this->beanCache->put($this->getCacheKey("config"), $this->config);
+                $this->beanCache->put($this->getCacheKey("services"), $this->services);
+                $this->beanCache->put($this->getCacheKey("route"), $this->route);
+            }
         }
 
         $errorHandler = new GlobalErrorHandler();
@@ -154,30 +158,13 @@ class Engine {
     private function runController() {
         $rootNamespace = $this->engineConfig->getRootNamespace();
 
-        if ($this->hasServicesCached()) {
-            $this->services = $this->beanCache->get($this->getCacheKey("services"));
-            $this->route = $this->beanCache->get($this->getCacheKey("route"));
-            $this->config = $this->beanCache->get($this->getCacheKey("config"));
-
-        } else {
-            $this->config->setMode($this->engineConfig->getConfigName());
-            $this->services->setConfig($this->config);
-            $this->services->initServices();
-
-            if ($this->isBeanCacheEnabled()) {
-                $this->beanCache->put($this->getCacheKey("config"), $this->config);
-                $this->beanCache->put($this->getCacheKey("services"), $this->services);
-                $this->beanCache->put($this->getCacheKey("route"), $this->route);
-            }
-        }
-
         UrlUtils::setWebPage($this->config->getProperty("web.page"));
 
         $registeredHostPath = $this->getRegisteredHostPath();
         $urlName = UrlUtils::getPathInfo($registeredHostPath);
 
 //        try {
-            $this->handleRequest($urlName);
+        $this->handleRequest($urlName);
 //        } catch (\Exception $exception) {
 //            $this->handleRequestException($exception);
 //        }
@@ -343,7 +330,7 @@ class Engine {
         }
     }
 
-    private function hasServicesCached() {
+    private function hasAllreadyCachedData() {
         return $this->isBeanCacheEnabled() && $this->beanCache->has($this->getCacheKey("services"));
     }
 
@@ -352,6 +339,13 @@ class Engine {
      */
     private function getCacheKey($key) {
         return "spark_" . $key;
+    }
+
+    /**
+     * @return null
+     */
+    private function isApcuCacheEnabled() {
+        return $this->config->getProperty(Config::APCU_CACHE_ENABLED, false);
     }
 
 }
