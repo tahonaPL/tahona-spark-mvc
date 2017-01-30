@@ -60,5 +60,12 @@ class Objects {
         return get_class($obj);
     }
 
+    public static function getClassNames($bean) {
+        $parents = class_parents($bean);
+        $className = self::getClassName($bean);
+        Collections::addAll($parents, array($className=>$className));
+        return $parents;
+    }
+
 
 } 

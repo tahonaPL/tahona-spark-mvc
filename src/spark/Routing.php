@@ -6,6 +6,7 @@ use spark\common\Optional;
 use spark\core\routing\RoutingException;
 use spark\routing\RoutingUtils;
 use spark\utils\Collections;
+use spark\utils\Objects;
 use spark\utils\StringUtils;
 
 class Routing {
@@ -74,7 +75,6 @@ class Routing {
         $names = $this->getModuleName($nameSpace, $controllerName);
         $request->setNamespace($names["namespace"]);
         $request->setModuleName($names["moduleName"]);
-        $request->setControllerPrefix($names["controllerModule"]);
         $request->setControllerName($names["controllerSimpleName"]);
 
         return $request;
@@ -180,39 +180,24 @@ class Routing {
     }
 
     private function getModuleName($namespace, $controllerName) {
-
         $controllerName = str_replace("\\", "/", $controllerName);
         $splitedControllerName = StringUtils::split($controllerName, "/");
 
-        if (is_array($namespace)) {
-            foreach ($namespace as $space) {
-                if (StringUtils::equals($splitedControllerName[0], $space)) {
-                    $controllerName = str_replace($space, "", $controllerName);
-                    $namespace = $space;
-                    break;
-                }
-            }
-        } else {
-            $controllerName = str_replace($namespace, "", $controllerName);
+        if (Objects::isArray($namespace)) {
+            $namespace = join("/",$namespace);
         }
+        $module = Optional::of($controllerName)
+            ->map(StringUtils::mapReplace("/" . end($splitedControllerName), ""))
+            ->map(StringUtils::mapReplace($namespace, ""))
+            ->get();
 
-        $splited = explode("controller", $controllerName);
+        $splited = explode("/", $controllerName);
 
-
-        $controllerSimpleName = $splited[1];
-        $controllerParts = explode("/", $splited[1]);
-
-        $controllerModule = "";
-
-        if (count($controllerParts) > 1) {
-            $controllerSimpleName = $controllerParts[count($controllerParts) - 1];
-            $controllerModule = str_replace("/".$controllerSimpleName, "", $splited[1]);
-        }
+        $controllerSimpleName = end($splited);
 
         return array(
-            "moduleName" => StringUtils::join("/", explode("/", $splited[0]), true),
-            "controllerModule" => $controllerModule,
             "namespace" => $namespace,
+            "moduleName" => $module,
             "controllerSimpleName" => str_replace("Controller", "", str_replace("/", "", $controllerSimpleName))
         );
     }
@@ -230,6 +215,15 @@ class Routing {
      */
     public function getDefinitions() {
         return $this->definitions;
+    }
+
+    public function addPath($path , $controller, $methodName) {
+        $this->definitions[] = $path;
+
+        $this->routing[$path] =  array(
+            Routing::CONTROLLER_NAME=>$controller,
+            Routing::METHOD_NAME=>$methodName,
+        );
     }
 
 

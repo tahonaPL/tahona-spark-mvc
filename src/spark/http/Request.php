@@ -110,13 +110,6 @@ class Request {
         return RequestUtils::isFile();
     }
 
-    public function setControllerPrefix($controllerPrefix) {
-        $this->controllerPrefix = $controllerPrefix;
-    }
-
-    public function getControllerPrefix() {
-        return $this->controllerPrefix;
-    }
 
     /**
      * instant Redirect

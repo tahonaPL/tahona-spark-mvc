@@ -190,4 +190,10 @@ class StringUtils {
 
     }
 
+    public static function predEquals($string) {
+        return function($x) use ($string) {
+            return StringUtils::equals($x, $string);
+        };
+    }
+
 }

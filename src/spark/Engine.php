@@ -5,6 +5,8 @@ namespace spark;
 header('Content-Type: text/html; charset=utf-8');
 
 use ErrorException;
+use house\HouseConfig;
+use ReflectionClass;
 use spark\cache\ApcuBeanCache;
 use spark\cache\BeanCache;
 use spark\core\Bootstrap;
@@ -12,6 +14,8 @@ use spark\core\engine\EngineConfig;
 use spark\core\engine\EngineFactory;
 use spark\core\error\EngineExceptionWrapper;
 use spark\core\error\GlobalErrorHandler;
+use spark\core\processor\InitAnnotationProcessors;
+use spark\core\provider\BeanProvider;
 use spark\filter\FilterChain;
 use spark\http\Request;
 use spark\http\RequestProvider;
@@ -19,6 +23,10 @@ use spark\loader\ClassLoaderRegister;
 use spark\routing\RoutingInfo;
 use spark\lang\LangMessageResource;
 use spark\http\utils\RequestUtils;
+use spark\utils\ConfigHelper;
+use spark\utils\FileUtils;
+use spark\utils\Predicates;
+use spark\utils\ReflectionUtils;
 use spark\utils\UrlUtils;
 use spark\utils\Asserts;
 use spark\utils\Collections;
@@ -30,7 +38,6 @@ use spark\view\smarty\SmartyPlugins;
 use spark\view\smarty\SmartyViewHandler;
 use spark\view\ViewHandlerProvider;
 use spark\view\ViewModel;
-use tahona\Config;
 
 
 /**
@@ -67,11 +74,62 @@ class Engine {
      */
     private $beanCache;
 
-    public function __construct($params) {
+    public function __construct($name, $rootAppPath ) {
+
+
+        $params = array(
+            "root"=>$rootAppPath,
+            "name"=>"house",
+            "configName"=>$name,
+        );
+
         $this->engineConfig = new EngineConfig($params);
         self::$ROOT_APP_PATH = $this->engineConfig->getRootAppPath();
 
         ClassLoaderRegister::register($this->engineConfig);
+
+
+        $src = $rootAppPath."/src";
+
+        $filesInPath = FileUtils::getAllClassesInPath($src);
+        $annotationReader = ReflectionUtils::getReaderInstance();
+
+        $routing = new Routing(array());
+        $service = new Services();
+        $config = new Config(array());
+
+        $this->services = $service;
+        $this->route = $routing;
+        $this->config = $config;
+
+        $this->addBaseServices();
+
+
+        $initAnnotationProcessors = new InitAnnotationProcessors($routing, $config, $service);
+
+        foreach ($filesInPath as $class) {
+            $reflectionObject = new ReflectionClass($class);
+            $classAnnotations = $annotationReader->getClassAnnotations($reflectionObject);
+            $initAnnotationProcessors->handleClassAnnotations($classAnnotations, null, $reflectionObject);
+
+            $reflectionMethods = $reflectionObject->getMethods();
+            foreach($reflectionMethods as $method) {
+                $methodAnnotations = $annotationReader->getMethodAnnotations($method);
+                $initAnnotationProcessors->handleMethodAnnotations($methodAnnotations, null, $method);
+            }
+
+            $reflectionProperties = $reflectionObject->getProperties();
+            foreach($reflectionProperties as $property) {
+                $methodAnnotations = $annotationReader->getPropertyAnnotations($property);
+                $initAnnotationProcessors->handleFieldAnnotations($methodAnnotations, null, $property);
+            }
+
+        }
+
+
+
+
+
 
         if ($this->engineConfig->isBeanCacheEnabled()) {
             $this->beanCache = new ApcuBeanCache();
@@ -102,19 +160,9 @@ class Engine {
             $this->config = $this->beanCache->get($this->getCacheKey("config"));
 
         } else {
-
-            $configClass = $rootNamespace . "\\Config";
-            $this->config = new $configClass;
             $this->config->setMode($this->engineConfig->getConfigName());
-
-            $routeClass = $rootNamespace . "\\Routing";
-            $this->route = new $routeClass;
-
-            $servicesClass = $rootNamespace . "\\Services";
-            $this->services = new $servicesClass;
-
             $this->services->setConfig($this->config);
-            $this->initServices();
+            $this->services->initServices();
 
             if ($this->isBeanCacheEnabled()) {
                 $this->beanCache->put($this->getCacheKey("config"), $this->config);
@@ -128,11 +176,11 @@ class Engine {
         $registeredHostPath = $this->getRegisteredHostPath();
         $urlName = UrlUtils::getPathInfo($registeredHostPath);
 
-        try {
+//        try {
             $this->handleRequest($urlName);
-        } catch (\Exception $exception) {
-            $this->handleRequestException($exception);
-        }
+//        } catch (\Exception $exception) {
+//            $this->handleRequestException($exception);
+//        }
     }
 
     /**
@@ -187,21 +235,21 @@ class Engine {
         }
     }
 
-    private function initServices() {
+    private function addBaseServices() {
         if ($this->config->hasProperty("messages")) {
             $messagesLocalizationFilePaths = $this->config->getProperty("messages");
         } else {
             $messagesLocalizationFilePaths = array();
         }
 
-        $this->services->clear();
+//        $this->services->clear();
         $this->services->register(LangMessageResource::NAME, new LangMessageResource($messagesLocalizationFilePaths));
         $this->services->register(SmartyPlugins::NAME, new SmartyPlugins());
         $this->services->register(RequestProvider::NAME, new RequestProvider());
         $this->services->register(RoutingInfo::NAME, new RoutingInfo($this->route));
+        $this->services->registerObj(new BeanProvider($this->services));
+        $this->services->registerObj($this->config);
         $this->addViewHandlersToService();
-
-        $this->services->initServices();
 
     }
 
@@ -211,11 +259,9 @@ class Engine {
         $jsonViewHandler = new JsonViewHandler();
 
         $provider = new ViewHandlerProvider();
-        $provider->setConfig($this->config);
-        $provider->setDefaultHandler($smartyViewHandler);
-        $provider->setHandlers(array($jsonViewHandler, $plainViewHandler));
 
         $this->services->register(ViewHandlerProvider::NAME, $provider);
+        $this->services->register("defaultViewHandler", $smartyViewHandler);
         $this->services->register(SmartyViewHandler::NAME, $smartyViewHandler);
         $this->services->register(PlainViewHandler::NAME, $plainViewHandler);
         $this->services->register(JsonViewHandler::NAME, $jsonViewHandler);
@@ -269,7 +315,9 @@ class Engine {
     }
 
     private function handleRequestException(\Exception $exception) {
-        $errorHandling = $this->config->getProperty(Config::ERROR_HANDLING_ENABLED);
+        $errorHandling = $this->config->getProperty(Config::ERROR_HANDLING_ENABLED, true);
+
+
         if ($errorHandling) {
             $basePath = $this->route->getBaseErrorPath();
             if (isset($basePath)) {
@@ -305,4 +353,5 @@ class Engine {
     private function getCacheKey($key) {
         return "spark_" . $key;
     }
+
 }

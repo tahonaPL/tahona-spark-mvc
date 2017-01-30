@@ -3,15 +3,17 @@
 namespace spark;
 
 use Exception;
+use spark\core\definition\BeanDefinition;
 use spark\core\module\LoadModule;
 use spark\core\service\ServiceHelper;
 use spark\utils\Asserts;
 use spark\utils\Collections;
+use spark\utils\Functions;
 use spark\utils\Objects;
 use spark\utils\ReflectionUtils;
 use spark\utils\StringUtils;
 
-abstract class Services {
+class Services {
 
     private $config;
     private $beanContainer = array();
@@ -26,9 +28,12 @@ abstract class Services {
     public function register($name, $object) {
         Asserts::checkState(false === isset($this->beanContainer[$name]), "Bean already added: " . $name);
 
-        $this->beanContainer[$name] = $object;
+        $this->beanContainer[$name] = new BeanDefinition($name, $object);
+
         if ($this->initialized) {
-            $this->injectTo($this->beanContainer[$name]);
+            /** @var BeanDefinition $definition */
+            $definition = $this->beanContainer[$name];
+            $this->injectTo($definition->getBean());
         }
     }
 
@@ -44,7 +49,7 @@ abstract class Services {
 
                 if (Collections::hasKey($this->beanContainer, $name)) {
                     $property->setAccessible(true);
-                    $property->setValue($bean, $this->beanContainer[$name]);
+                    $property->setValue($bean, $this->beanContainer[$name]->getBean());
                 }
             }
         );
@@ -73,20 +78,29 @@ abstract class Services {
         if (false == isset($this->beanContainer[$name])) {
             throw new Exception("No bean with name: " . $name);
         }
-        return $this->beanContainer[$name];
+        return $this->beanContainer[$name]->getBean();
+    }
+
+
+    public function getByType($type) {
+        return Collections::builder($this->beanContainer)
+            ->filter(function ($definition) use ($type) {
+                /** @var BeanDefinition $definition */
+                return $definition->hasType($type);
+            })
+            ->map(Functions::invokeGetMethod(BeanDefinition::D_BEAN))
+            ->get();
     }
 
     public final function initServices() {
         $this->beforeInit();
-        $this->init();
 
-        $this->buildBeanAnnotation($this);
         foreach ($this->beanContainer as $serviceName => $service) {
-            $this->buildBeanAnnotation($service);
+            $this->buildBeanAnnotation($service->getBean());
         }
 
         foreach ($this->beanContainer as $serviceName => $service) {
-            $this->injectTo($service);
+            $this->injectTo($service->getBean());
         }
 
         $this->filters = $this->initFilters();
@@ -97,16 +111,6 @@ abstract class Services {
         $this->initialized = true;
 
         $this->afterInit();
-    }
-
-    public function init() {
-        $modules = $this->getModules();
-        Asserts::checkState(Collections::isNotEmpty($modules), "Modules should not be empty");
-
-        foreach ($modules as $module) {
-            /** @var LoadModule $module */
-            $module->load($this);
-        }
     }
 
     /**
@@ -136,7 +140,7 @@ abstract class Services {
 
                 $method->setAccessible(true);
                 $newBean = $method->invoke($bean);
-                $this->beanContainer[$name] = $newBean;
+                $this->beanContainer[$name] = new BeanDefinition($name, $newBean);
 
                 $this->buildBeanAnnotation($newBean);
             }
@@ -151,6 +155,8 @@ abstract class Services {
         //hook
     }
 
-    protected abstract function getModules();
+    protected function getModules(){
+        return array();
+    }
 
 }

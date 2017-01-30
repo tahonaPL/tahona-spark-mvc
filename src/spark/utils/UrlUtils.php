@@ -32,6 +32,7 @@ class UrlUtils {
         $host = self::removeHttpTags($host);
         $actualLink = self::removeHttpTags($actualLink);
 
+
         if (isset($host)) {
             $urlParts = StringUtils::split($actualLink, $host);
             Asserts::checkArgument(Collections::size($urlParts) == 2, "Wrong url setup? Check config. Looking for host: " . $host);
@@ -128,19 +129,20 @@ class UrlUtils {
      * @return string
      */
     public static function getHost() {
-        $fullUrl = self::getUrl();
-        if (StringUtils::contains($fullUrl, self::$webPage)) {
-            $parts = StringUtils::split($fullUrl, self::$webPage);
-            $prefix = self::removeHttpTags($parts[0]);
-            $host = StringUtils::join("", array(
-                $prefix, self::$webPage
-            ));
-
-        } else {
-            $host = self::$webPage;
-        }
-
-        return UrlUtils::wrapRequestSchemeIfNeeded($host, RequestUtils::getRequestScheme());
+//        $fullUrl = self::getUrl();
+//        if (StringUtils::contains($fullUrl, self::$webPage)) {
+//            $parts = StringUtils::split($fullUrl, self::$webPage);
+//            $prefix = self::removeHttpTags($parts[0]);
+//            $host = StringUtils::join("", array(
+//                $prefix, self::$webPage
+//            ));
+//
+//        } else {
+//            $host = self::$webPage;
+//        }
+//
+//        return UrlUtils::wrapRequestSchemeIfNeeded($host, RequestUtils::getRequestScheme());
+        return $_SERVER['SERVER_NAME'];
     }
 
     public static function setWebPage($webPage) {

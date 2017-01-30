@@ -46,7 +46,6 @@ class EngineConfig {
     }
 
     public function hasMultipleNamespaces() {
-        ;
         return $this->hasMultipleNamespaces;
     }
 

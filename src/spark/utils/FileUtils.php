@@ -9,6 +9,7 @@
 namespace spark\utils;
 
 
+use spark\common\Optional;
 use spark\utils\Asserts;
 use spark\upload\FileObject;
 
@@ -96,19 +97,23 @@ class FileUtils {
         }
     }
 
-    public static function getFileList($path) {
+    public static function getFilesInPath($path) {
         Asserts::checkArgument(is_dir($path));
         $scandir = scandir($path);
         $scandir = array_diff($scandir, array('.', '..'));
         $result = array();
 
         foreach ($scandir as $file) {
-            if (is_file($path."/".$file)) {
-                $result[] = $file;
-            }
+            $result[] = $file;
         }
+       return $result;
+    }
 
-        return $result;
+    public static function getFileList($path) {
+        return Collections::builder(self::getFilesInPath($path))
+            ->filter(function($file) use ($path) {
+                return is_file($path."/".$file);
+            })->get();
     }
 
     /**
@@ -116,5 +121,38 @@ class FileUtils {
      */
     public static function getFileContent($path) {
         return file_get_contents($path);
+    }
+
+    public static function getAllClassesInPath($dir) {
+//        $scandir = scandir($dir, 1);
+
+        $result = array();
+
+        $fileNames = FileUtils::getFilesInPath($dir);
+
+        foreach($fileNames as $fileName){
+            $filePath = $dir . "/" . $fileName;
+            if (is_dir($filePath)) {
+                $subFiles = Collections::builder(self::getAllClassesInPath($filePath))
+                    ->map(function ($x) use ($fileName) {
+                        return self::toClassName($fileName . "/" . $x);
+                    })->get();
+
+                Collections::addAll($result, $subFiles);
+
+            } else {
+                $result[] = self::toClassName($fileName);
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param $fileName
+     * @return mixed
+     */
+    private static function toClassName($fileName) {
+        return StringUtils::replace(StringUtils::replace($fileName, '/', '\\'), ".php", "");
     }
 }

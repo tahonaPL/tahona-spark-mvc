@@ -19,8 +19,13 @@ use spark\view\ViewModel;
 class SmartyViewHandler extends ViewHandler {
 
     const NAME = "smartyViewHandler";
-
-    const CACHE_ID = "TAHONA_ROCKS";
+    const CACHE_ID = "spark.smarty.view.cache.id";
+    const COMPILE_CHECK = "view.cache.compile_check";
+    const CACHE_ENABLED = "view.cache.enable";
+    const CACHE_LIFE_TIME = "view.cache.life_time";
+    const DEBUGGING = "view.cache.debugging";
+    const ERROR_REPORTING = "view.cache.error.reporting";
+    const FORCE_COMPILE = "view.cache.force.compile";
 
     private $rootAppPath;
     private $smarty;
@@ -30,6 +35,11 @@ class SmartyViewHandler extends ViewHandler {
      * @var SmartyPlugins
      */
     private $smartyPlugins;
+    /**
+     * @Inject()
+     * @var Config
+     */
+    private $config;
 
     function __construct($rootAppPath) {
         $this->rootAppPath = $rootAppPath;
@@ -44,7 +54,7 @@ class SmartyViewHandler extends ViewHandler {
     public function handleView(ViewModel $viewModel, Request $request) {
         $smarty = $this->init();
 
-        $smarty->setCacheId(self::CACHE_ID . "" . $request->getLang());
+        $smarty->setCacheId($this->config->getProperty(self::CACHE_ID, "TAHONA_ROCKS") . "" . $request->getLang());
 
         foreach ($viewModel->getParams() as $key => $value) {
             $smarty->assign($key, $value, true);
@@ -61,19 +71,12 @@ class SmartyViewHandler extends ViewHandler {
     }
 
     /**
-     * @return \spark\Config
-     */
-    private function getConfig() {
-        return $this->getViewHandlerProvider()->getConfig();
-    }
-
-    /**
      * @return \Smarty
      */
     private function init() {
 
         if (Objects::isNull($this->smarty)) {
-            $config = $this->getConfig();
+            $config = $this->config;
             $smarty = new \Smarty();
             $smarty->setCacheDir($this->rootAppPath . "/view/cache");
             $smarty->setCompileDir($this->rootAppPath . "/view/compile");
@@ -83,13 +86,13 @@ class SmartyViewHandler extends ViewHandler {
             $smarty->registerPlugin("function", "path", array($this->smartyPlugins, "path"));
             $smarty->registerPlugin("function", "message", array($this->smartyPlugins, "getMessage"));
 
-            $smarty->force_compile = $config->getProperty(Config::DEV_SMARTY_FORCE_COMPILE);
-            $smarty->compile_check = $config->getProperty("view.cache.compile_check");
-            $smarty->caching = $config->getProperty("view.cache.enable");
-            $smarty->cache_lifetime = $config->getProperty("view.cache.life_time");
+            $smarty->force_compile = $config->getProperty(self::FORCE_COMPILE, false);
+            $smarty->compile_check = $config->getProperty(self::COMPILE_CHECK, true);
+            $smarty->caching = $config->getProperty(self::CACHE_ENABLED, true);
+            $smarty->cache_lifetime = $config->getProperty(self::CACHE_LIFE_TIME, 1800);
 
-            $smarty->debugging = false;
-            $smarty->error_reporting = E_ALL & ~E_NOTICE;
+            $smarty->debugging = $config->getProperty(self::DEBUGGING, false);
+            $smarty->error_reporting = $config->getProperty(self::ERROR_REPORTING, E_ALL & ~E_NOTICE);
 
             $this->smarty = $smarty;
         }

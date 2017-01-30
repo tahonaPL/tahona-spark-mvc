@@ -64,7 +64,7 @@ class ReflectionUtils {
 //        return property_exists($bean, $serviceName)
     }
 
-    private static function getReaderInstance() {
+    public static function getReaderInstance() {
         if (false == isset(self::$reader)) {
             self::$reader = new AnnotationReader();
         }

@@ -58,4 +58,11 @@ class Functions {
         };
     }
 
+    public static function getClassName() {
+        return function ($x) {
+            return Objects::getClassName($x);
+        };
+    }
+
+
 }

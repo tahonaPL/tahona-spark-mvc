@@ -27,7 +27,7 @@ class ViewUrlUtils {
 
         return StringUtils::join("/", array(
             $request->getNamespace(),
-            ($request->getModuleName().$request->getControllerPrefix()),
+            ($request->getModuleName()),
             strtolower($request->getControllerName()),
             str_replace("Action", "", $viewName)
         ));

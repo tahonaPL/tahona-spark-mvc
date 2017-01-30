@@ -13,22 +13,11 @@ use spark\http\Request;
 use spark\view\ViewModel;
 
 abstract class ViewHandler {
-    private $viewHandlerProvider;
+
+    const CLASS_NAME = "spark\\view\\ViewHandler";
 
     abstract public function isView(ViewModel $viewModel);
 
     abstract public function handleView(ViewModel $viewModel, Request $request);
-
-    public function setViewHandlerProvider(ViewHandlerProvider $viewHandlerProvider) {
-        $this->viewHandlerProvider = $viewHandlerProvider;
-    }
-
-    /**
-     * @return ViewHandlerProvider
-     */
-    protected function getViewHandlerProvider() {
-        return $this->viewHandlerProvider;
-    }
-
 
 }

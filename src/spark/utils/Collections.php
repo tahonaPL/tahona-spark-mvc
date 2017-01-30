@@ -223,7 +223,7 @@ final class Collections {
     }
 
     public static function getValue($array = array(), $key) {
-       return self::getValueOrDefault($array, $key, array());
+        return self::getValueOrDefault($array, $key, array());
     }
 
     public static function getValueOrDefault($array = array(), $key, $default = null) {
@@ -299,11 +299,17 @@ final class Collections {
 
     public static function setValues(&$collection, $values) {
         $index = 0;
-        foreach($collection as $key=>$value) {
+        foreach ($collection as $key => $value) {
             $collection[$key] = $values[$index];
             $index++;
         }
         return $collection;
+    }
+
+    public static function containsAny($array1 = array(), $array2 = array()) {
+        return Collections::anyMatch($array1, function ($ann) use ($array2) {
+            return Collections::contains($ann, $array2);
+        });
     }
 
 }
