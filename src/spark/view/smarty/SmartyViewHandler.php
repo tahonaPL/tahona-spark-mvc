@@ -46,9 +46,7 @@ class SmartyViewHandler extends ViewHandler {
     }
 
     public function isView(ViewModel $viewModel) {
-        if ($viewModel instanceof ViewModel) {
-            return true;
-        }
+        return Objects::getClassName($viewModel) === ViewModel::CLASS_NAME;
     }
 
     public function handleView(ViewModel $viewModel, Request $request) {
@@ -64,6 +62,8 @@ class SmartyViewHandler extends ViewHandler {
         if (Objects::isNull($viewPath)) {
             $viewPath = ViewUrlUtils::createFullViewPath($request);
         }
+
+
 //        $s = new SpeedTester();
 //        $s->start();
         $smarty->display($viewPath . '.tpl');
@@ -88,7 +88,7 @@ class SmartyViewHandler extends ViewHandler {
 
             $smarty->force_compile = $config->getProperty(self::FORCE_COMPILE, false);
             $smarty->compile_check = $config->getProperty(self::COMPILE_CHECK, true);
-            $smarty->caching = $config->getProperty(self::CACHE_ENABLED, true);
+            $smarty->caching = $config->getProperty(self::CACHE_ENABLED, false);
             $smarty->cache_lifetime = $config->getProperty(self::CACHE_LIFE_TIME, 1800);
 
             $smarty->debugging = $config->getProperty(self::DEBUGGING, false);

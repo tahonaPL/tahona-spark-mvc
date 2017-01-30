@@ -12,6 +12,7 @@ use spark\utils\UrlUtils;
  */
 class ViewModel extends PropertyHelper {
 
+    const CLASS_NAME = "spark\\view\\ViewModel";
     private $redirect;
     private $viewName;
 

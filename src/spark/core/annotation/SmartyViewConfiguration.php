@@ -26,7 +26,7 @@ final class SmartyViewConfiguration implements Mapping\Annotation {
     /** @var boolean */
     public $compileCheck = true;
     /** @var boolean */
-    public $caching = true;
+    public $caching = false;
     /** @var int */
     public $cacheLifetime = 1800;
     /** @var boolean */

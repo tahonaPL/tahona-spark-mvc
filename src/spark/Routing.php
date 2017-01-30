@@ -6,7 +6,9 @@ use spark\common\Optional;
 use spark\core\routing\RoutingException;
 use spark\routing\RoutingUtils;
 use spark\utils\Collections;
+use spark\utils\Functions;
 use spark\utils\Objects;
+use spark\utils\Predicates;
 use spark\utils\StringUtils;
 
 class Routing {
@@ -181,17 +183,22 @@ class Routing {
 
     private function getModuleName($namespace, $controllerName) {
         $controllerName = str_replace("\\", "/", $controllerName);
+        $controllerName = StringUtils::replace($controllerName, "/controller", "");
+
         $splitedControllerName = StringUtils::split($controllerName, "/");
 
         if (Objects::isArray($namespace)) {
             $namespace = join("/",$namespace);
         }
-        $module = Optional::of($controllerName)
-            ->map(StringUtils::mapReplace("/" . end($splitedControllerName), ""))
-            ->map(StringUtils::mapReplace($namespace, ""))
-            ->get();
 
         $splited = explode("/", $controllerName);
+
+        $moduleSplitted = Collections::builder($splited)
+            ->filter(Predicates::not(StringUtils::predEquals(end($splitedControllerName))))
+            ->filter(Predicates::not(StringUtils::predEquals($namespace)))
+            ->get();
+
+        $module= StringUtils::join("/",$moduleSplitted);
 
         $controllerSimpleName = end($splited);
 

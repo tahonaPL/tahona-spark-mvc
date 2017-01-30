@@ -39,7 +39,7 @@ class MyAppConfig {
 
 ### Controller ###
 app/src/MyAppController.php
-```
+```php
 class MyAppController extends Controller {
 
     /**

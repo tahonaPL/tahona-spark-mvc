@@ -38,15 +38,17 @@ class ViewHandlerProvider {
 
     public function handleView($viewModel, $request) {
         /** @var $viewHandler ViewHandler */
-        if ($viewModel instanceof ViewModel) {
+        if (Objects::getClassName($viewModel) === ViewModel::CLASS_NAME) {
             $viewHandler = $this->beanProvider->getBean("defaultViewHandler");
+            $viewHandler->handleView($viewModel, $request);
+        } else {
+
+            $viewHandler = $this->getProvider($viewModel, $request);
+            Asserts::checkNotNull($viewHandler, "ViewHandler not found for viewModelType: ".Objects::getClassName($viewModel));
+
             $viewHandler->handleView($viewModel, $request);
         }
 
-        $viewHandler = $this->getProvider($viewModel, $request);
-        Asserts::checkNotNull($viewHandler, "ViewHandler not found for viewModelType: ".Objects::getClassName($viewModel));
-
-        $viewHandler->handleView($viewModel, $request);
     }
 
     private function getProvider(ViewModel $viewModel, $request) {
