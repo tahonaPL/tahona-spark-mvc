@@ -88,6 +88,27 @@ Keywords action and controller are deleted by default.
 if @EnableApcuBeanCache annotation is added with @Configuration the only way to reset beans and init them
 once more is by requestin localhost:80?reset (GET parameter "reset").
 
+
+### Mailer ###
+@EnableMailer -TODO
+spark.mailer.enabled (true/false)- property
+
+
+### @Annotations @@@
+The heart of Spark Framework.
+
+@Component
+@Service,@Repository,@Configuration
+@PostConstruct -
+@Inject
+
+
+### FluentData ###
+FluentData
+
+
+
+
 ### Parametry ###
 $this->config
 
