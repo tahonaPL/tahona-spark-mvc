@@ -17,5 +17,6 @@ interface BeanCache {
 
     public function get($key);
     public function has($key);
+    public function clearAll();
 
 }

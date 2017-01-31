@@ -99,6 +99,7 @@ class Engine {
         }
 
         if (!$this->hasAllreadyCachedData() || isset($_GET["reset"])) {
+            $this->beanCache->clearAll();
 
             $src = $rootAppPath . "/src";
 
@@ -120,7 +121,6 @@ class Engine {
             $beanLoader->addPersistanceLib();
             $beanLoader->process();
 
-
             $this->config->setMode($this->engineConfig->getConfigName());
             $this->services->setConfig($this->config);
             $this->services->initServices();
@@ -139,6 +139,12 @@ class Engine {
         $errorHandler->setup();
     }
 
+    /**
+     * use $this->config->getProperty("app.path")
+     *
+     * @deprecated
+     * @return mixed
+     */
     public static function getRootPath() {
         return self::$ROOT_APP_PATH;
     }

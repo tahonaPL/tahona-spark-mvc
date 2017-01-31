@@ -76,7 +76,6 @@ Go to localhost/get or localhost/index;
 
 apc/view/{controller package}/{controllerName (without "Controller")}/{action}.tpl
 
-
 1. For app/src/MyAppController@showNewViewAction we get:
    apc/view/myapp/showNewView.tpl
 2. For app/src/some/serious/package/*controller*/MyAppController@showNewView*Action* we get:
@@ -89,6 +88,11 @@ Keywords action and controller are deleted by default.
 if @EnableApcuBeanCache annotation is added with @Configuration the only way to reset beans and init them
 once more is by requestin localhost:80?reset (GET parameter "reset").
 
+### Parametry ###
+$this->config
+
+Paramerty:
+app.path - ścieżka do katalogu /app
 
 
 * Dependencies
