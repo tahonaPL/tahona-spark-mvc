@@ -35,7 +35,7 @@ class ReflectionUtils {
 
     private static $reader;
 
-    public static function handlePropertyAnnotation($bean, $annotationName, \Closure $handler) {
+    public static function handlePropertyAnnotation(&$bean, $annotationName, \Closure $handler) {
         $annotationReader = self::getReaderInstance();
 
         $reflectionObject = new \ReflectionObject($bean);
@@ -53,17 +53,22 @@ class ReflectionUtils {
 
         $properties = $fluentIterables->get();
 
+
+        $observersWaitingToInject =  array();
+
         /** @var $properties \ReflectionProperty */
         foreach ($properties as $reflectionProperty) {
             $annotation = $annotationReader->getPropertyAnnotation($reflectionProperty, $annotationName);
 
             if (false == is_null($annotation)) {
-                if (!$handler($bean, $reflectionProperty, $annotation)) {
-                    return false;
+                $observer = $handler($bean, $reflectionProperty, $annotation);
+                if (Objects::isNotNull($observer)) {
+                    $observersWaitingToInject[$observer->getId()] = $observer;
                 }
             }
         }
-        return true;
+
+        return $observersWaitingToInject;
 //        return property_exists($bean, $serviceName)
     }
 

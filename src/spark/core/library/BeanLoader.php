@@ -79,7 +79,7 @@ class BeanLoader {
 
         if (class_exists($configClass)) {
             $this->addPostLoadLib(new PostLoadDefinition($configClass, function () {
-                $this->config->getProperty("spark.data.repository.enabled", false);
+                return $this->config->getProperty("spark.data.repository.enabled", false);
             }));
 
             $this->annotationProcessor->addHandler(new \spark\persistence\annotation\handler\EnableDataRepositoryAnnotationHandler());

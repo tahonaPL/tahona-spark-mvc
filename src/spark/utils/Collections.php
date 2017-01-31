@@ -116,7 +116,10 @@ final class Collections {
     }
 
     public static function hasKey($collection = array(), $key) {
-        return array_key_exists($key, $collection);
+        if (Objects::isNotNull($collection)) {
+            return array_key_exists($key, $collection);
+        }
+        return false;
     }
 
     public static function removeByIndex(&$collection, $index) {
@@ -311,5 +314,19 @@ final class Collections {
             return Collections::contains($ann, $array2);
         });
     }
+
+    public static function removeByKey(&$array, $key) {
+        if (Collections::hasKey($array, $key)) {
+            unset($array[$key]);
+        }
+    }
+
+    public static function removeValue(&$array, $value) {
+        $k = array_search($value, $array, true);
+        var_dump($array);
+        Collections::removeByKey($observerList, $k);
+        return $observerList;
+    }
+
 
 }
