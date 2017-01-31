@@ -47,7 +47,6 @@ class PassUtils {
     }
 
     public static function verify($password, $salt, $hash) {
-
         return StringUtils::equals(self::generatePassword($password, $salt), $hash);
 //        return password_verify($password.$salt, $hash);
     }

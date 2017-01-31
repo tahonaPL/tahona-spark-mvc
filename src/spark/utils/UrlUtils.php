@@ -110,7 +110,7 @@ class UrlUtils {
         if (strpos($path, "http:") === 0 || StringUtils::startsWith($path, "https")) {
             return $path;
         } else {
-            $url = self::getHost();
+            $url = self::getSite();
             return self::appendParams($url . $path, $params);
         }
     }
@@ -169,6 +169,17 @@ class UrlUtils {
 
     public static function getCurrentUrl() {
         return self::getUrl();
+    }
+
+    public static function getSite() {
+        return StringUtils::join("", array(
+            self::getScheme(),
+            "://",
+            self::getHost()));
+    }
+
+    public static function getScheme() {
+        return $_SERVER['REQUEST_SCHEME'];
     }
 
     /**

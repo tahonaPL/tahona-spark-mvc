@@ -4,7 +4,9 @@ namespace spark;
 
 use spark\common\Optional;
 use spark\core\routing\RoutingException;
+use spark\http\Request;
 use spark\routing\RoutingUtils;
+use spark\utils\Asserts;
 use spark\utils\Collections;
 use spark\utils\Functions;
 use spark\utils\Objects;
@@ -25,7 +27,7 @@ class Routing {
         $this->definitions = $routing;
 
         //Check is key->definiton map or definitions array
-        if ( isset($routing[0])) {
+        if (isset($routing[0])) {
             $tmpRouting = array();
 
             Collections::builder($routing)
@@ -38,16 +40,7 @@ class Routing {
             $this->routing = $tmpRouting;
         }
 
-        foreach ($tmpRouting as $key => $value) {
-//            Asserts::checkArgument(false === Collections::hasKey($this->routing, $key), "Can't use same weg");
-//            Asserts::checkArgument(false === Collections::hasKey($this->parametrizedRouting, $key), "Can't");
-
-            if (isset($value["params"])) {
-                $this->parametrizedRouting[$key] = $value;
-            } else {
-                $this->routing[$key] = $value;
-            }
-        }
+        $this->addAll($tmpRouting);
     }
 
     /**
@@ -57,7 +50,7 @@ class Routing {
      * @param type $registeredHostPath
      * @return \spark\http\Request
      */
-    public function createRequest($urlPath, $nameSpace = "", $registeredHostPath = "") {
+    public function createRequest($urlPath, $registeredHostPath = "") {
         $urlPath = explode("?", $urlPath); //for params
         $urlPath = $urlPath[0];
 
@@ -74,10 +67,8 @@ class Routing {
         $request->setSecurityRoles($this->getRoles($route));
         $request->setUrlParams($this->extractUrlParameters($urlPath, $route));
 
-        $names = $this->getModuleName($nameSpace, $controllerName);
-        $request->setNamespace($names["namespace"]);
-        $request->setModuleName($names["moduleName"]);
-        $request->setControllerName($names["controllerSimpleName"]);
+
+        $this->fillModuleData($request, $controllerName);
 
         return $request;
     }
@@ -110,7 +101,7 @@ class Routing {
             }
         }
 
-        throw new RoutingException("Cannot find routing for ".$urlPath);
+        throw new RoutingException("Cannot find routing for " . $urlPath);
     }
 
     private function checkAllPathElements($route, $urlPath) {
@@ -181,32 +172,20 @@ class Routing {
         }
     }
 
-    private function getModuleName($namespace, $controllerName) {
-        $controllerName = str_replace("\\", "/", $controllerName);
-        $controllerName = StringUtils::replace($controllerName, "/controller", "");
+    private function fillModuleData(Request $request, $controllerName) {
+        $controllerName = StringUtils::replace($controllerName, "\\controller", "");
 
-        $splitedControllerName = StringUtils::split($controllerName, "/");
+        $splittedPath = StringUtils::split($controllerName, "\\");
 
-        if (Objects::isArray($namespace)) {
-            $namespace = join("/",$namespace);
-        }
+        $module = $splittedPath;
+        Collections::removeByIndex($module, 0);
+        Collections::removeByIndex($module, count($module) - 1);
+        $module = StringUtils::join("\\", $module);
 
-        $splited = explode("/", $controllerName);
 
-        $moduleSplitted = Collections::builder($splited)
-            ->filter(Predicates::not(StringUtils::predEquals(end($splitedControllerName))))
-            ->filter(Predicates::not(StringUtils::predEquals($namespace)))
-            ->get();
-
-        $module= StringUtils::join("/",$moduleSplitted);
-
-        $controllerSimpleName = end($splited);
-
-        return array(
-            "namespace" => $namespace,
-            "moduleName" => $module,
-            "controllerSimpleName" => str_replace("Controller", "", str_replace("/", "", $controllerSimpleName))
-        );
+        $request->setNamespace($splittedPath[0]);
+        $request->setModuleName($module);
+        $request->setControllerName(str_replace("Controller", "", end($splittedPath)));
     }
 
     /**
@@ -224,13 +203,30 @@ class Routing {
         return $this->definitions;
     }
 
-    public function addPath($path , $controller, $methodName) {
+    public function addPath($path, $controller, $methodName) {
         $this->definitions[] = $path;
 
-        $this->routing[$path] =  array(
-            Routing::CONTROLLER_NAME=>$controller,
-            Routing::METHOD_NAME=>$methodName,
+        $this->routing[$path] = array(
+            Routing::CONTROLLER_NAME => $controller,
+            Routing::METHOD_NAME => $methodName,
         );
+    }
+
+
+    /**
+     * @param $routing
+     */
+    public function addAll($routing) {
+        foreach ($routing as $key => $value) {
+            Asserts::checkArgument(false === Collections::hasKey($this->routing, $key), "Can't use same weg");
+            Asserts::checkArgument(false === Collections::hasKey($this->parametrizedRouting, $key), "Can't");
+
+            if (isset($value["params"])) {
+                $this->parametrizedRouting[$key] = $value;
+            } else {
+                $this->routing[$key] = $value;
+            }
+        }
     }
 
 

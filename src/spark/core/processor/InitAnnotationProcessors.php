@@ -15,6 +15,7 @@ use ReflectionProperty;
 use spark\core\annotation\handler\AnnotationHandler;
 use spark\core\annotation\handler\ComponentAnnotationHandler;
 use spark\core\annotation\handler\EnableApcuAnnotationHandler;
+use spark\core\annotation\handler\EnableMailerAnnotationHandler;
 use spark\core\annotation\handler\RequestPathAnnotationHandler;
 use spark\core\annotation\handler\SmartyViewConfigurationAnnotationHandler;
 use spark\core\annotation\SmartyViewConfiguration;

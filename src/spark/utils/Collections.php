@@ -122,8 +122,26 @@ final class Collections {
         return false;
     }
 
-    public static function removeByIndex(&$collection, $index) {
-        return array_slice($collection, 1, $index);
+    public static function removeByIndex(&$collection= array(), $index) {
+        Asserts::checkState(Objects::isArray($collection));
+
+        $i = 0;
+        $toRemoveKey=null;
+
+        foreach ($collection as $k=>$v) {
+            $toRemoveKey = $k;
+            if ($i >= $index) {
+                break;
+            }
+            $i++;
+        }
+
+        if (isset($collection[$toRemoveKey])) {
+            $var = $collection[$toRemoveKey];
+            unset($collection[$toRemoveKey]);
+            return $var;
+        }
+        return null;
     }
 
     /**

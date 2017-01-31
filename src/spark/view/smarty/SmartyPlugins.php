@@ -30,7 +30,10 @@ class SmartyPlugins {
     public function path($params, $smarty) {
         $path = $params["path"];
         $path .= $this->handleSeo($params, $path);
-        return UrlUtils::getPath($path);
+        $path1 = UrlUtils::getPath($path);
+
+
+        return $path1;
     }
 
     public function invoke($params, $smarty) {

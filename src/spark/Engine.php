@@ -78,13 +78,14 @@ class Engine {
 
     public function __construct($name, $rootAppPath) {
 
-        $params = array(
-            "root" => $rootAppPath,
-            "name" => "house",
-            "configName" => $name,
-        );
+        $fileList = FileUtils::getDirList($rootAppPath . "/src");
 
-        $this->engineConfig = new EngineConfig($params);
+        $namespaces = Collections::builder($fileList)
+            ->map(StringUtils::mapReplace("/","\\"))
+            ->get();
+
+        $this->engineConfig = new EngineConfig($rootAppPath, $namespaces);
+
         self::$ROOT_APP_PATH = $this->engineConfig->getRootAppPath();
 
         ClassLoaderRegister::register($this->engineConfig);
@@ -105,23 +106,19 @@ class Engine {
 
             $this->services = new Services();
             $this->route = new Routing(array());
-            $this->config = new Config(array(
-                $name =>array(
-                    "app.path" =>$rootAppPath
-                )
-            ));
+            $this->config = new Config();
+
+            $this->config->set("app.path", $rootAppPath);
 
             $this->addBaseServices();
-
             $initAnnotationProcessors = new InitAnnotationProcessors($this->route, $this->config, $this->services);
-            $beanLoader = new BeanLoader($initAnnotationProcessors, $this->config);
 
+            $beanLoader = new BeanLoader($initAnnotationProcessors, $this->config);
             $beanLoader->addFromPath($src);
             $beanLoader->addLib("spark\\core\\CoreConfig");
             $beanLoader->addPersistanceLib();
             $beanLoader->process();
 
-            $this->config->setMode($this->engineConfig->getConfigName());
             $this->services->setConfig($this->config);
             $this->services->initServices();
 
@@ -175,35 +172,24 @@ class Engine {
         $this->devToolsInit();
 
         $registeredHostPath = $this->getRegisteredHostPath();
-        $request = $this->route->createRequest($urlName, $this->engineConfig->getNamespaces(), $registeredHostPath);
+        $request = $this->route->createRequest($urlName, $registeredHostPath);
 
         //Controller
         $controllerName = $request->getControllerClassName();
         /** @var $controller Controller */
         $controller = new $controllerName();
 
-        //BootStrap
-        $bootstrap = EngineFactory::getBootstrap($request, $this->engineConfig);
-
-        $bootstrap->setServices($this->services);
-        $bootstrap->setConfig($this->config);
-        $bootstrap->setRouting($this->route);
-
-        $bootstrap->setRequest($request);
-        $bootstrap->setController($controller);
-
         /** @var RequestProvider $requestProvider */
         $requestProvider = $this->services->get(RequestProvider::NAME);
         $requestProvider->setRequest($request);
 
         $this->filter($this->services->getFilters(), $request);
-        $bootstrap->init();
 
         $controller->setServices($this->services);
         $controller->init($request, $responseParams);
 
         //ACTION->VIEW
-        $this->handleAction($responseParams, $request, $controller, $bootstrap);
+        $this->handleAction($responseParams, $request, $controller);
     }
 
     private function devToolsInit() {
@@ -230,6 +216,8 @@ class Engine {
         $this->services->register(RoutingInfo::NAME, new RoutingInfo($this->route));
         $this->services->registerObj(new BeanProvider($this->services));
         $this->services->registerObj($this->config);
+        $this->services->registerObj($this->route);
+
         $this->addViewHandlersToService();
 
     }
@@ -255,7 +243,7 @@ class Engine {
      * @param $bootstrap Bootstrap
      * @throws \ErrorException
      */
-    private function handleAction($errorArray, $request, $controller, $bootstrap) {
+    private function handleAction($errorArray, $request, $controller) {
         /** @var $viewModel ViewModel */
         $methodName = $request->getMethodName();
         $viewModel = $controller->$methodName();
@@ -263,15 +251,12 @@ class Engine {
         Asserts::checkState($viewModel instanceof ViewModel, "Wrong viewModel type. Returned type from controller needs to be instance of ViewModel.");
 
         if (isset($viewModel)) {
-            $bootstrap->setViewModel($viewModel);
-            $bootstrap->after();
-
             $redirect = $viewModel->getRedirect();
             if (StringUtils::isNotBlank($redirect)) {
                 $request->instantRedirect($redirect);
             }
 
-            $page = $this->getRegisteredHostPath();
+            $page = UrlUtils::getSite();
 
             //Deprecated use e.g.: {path path="/next/page"}
             $viewModel->add("web", array(

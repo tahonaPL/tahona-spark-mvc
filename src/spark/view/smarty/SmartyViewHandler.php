@@ -86,6 +86,8 @@ class SmartyViewHandler extends ViewHandler {
             $smarty->registerPlugin("function", "path", array($this->smartyPlugins, "path"));
             $smarty->registerPlugin("function", "message", array($this->smartyPlugins, "getMessage"));
 
+//            var_dump($this->smartyPlugins->path(array("path"=>"/admin"), null));
+
             $smarty->force_compile = $config->getProperty(self::FORCE_COMPILE, true);
             $smarty->compile_check = $config->getProperty(self::COMPILE_CHECK, true);
             $smarty->caching = $config->getProperty(self::CACHE_ENABLED, false);

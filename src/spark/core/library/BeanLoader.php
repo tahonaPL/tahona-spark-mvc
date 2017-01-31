@@ -11,6 +11,7 @@ namespace spark\core\library;
 
 use ReflectionClass;
 use spark\Config;
+use spark\core\annotation\Configuration;
 use spark\core\processor\InitAnnotationProcessors;
 use spark\utils\Collections;
 use spark\utils\FileUtils;
@@ -62,6 +63,12 @@ class BeanLoader {
         }
     }
 
+    /**
+     * When AnnotationHandler must load first and when "Enable" annotation will be loaded,
+     * then Framework will load corespondent @Configuration file.
+     * s
+     * @param PostLoadDefinition $definition
+     */
     public function addPostLoadLib(PostLoadDefinition $definition) {
         $class_exists = class_exists($definition->getClass());
 
@@ -83,7 +90,14 @@ class BeanLoader {
             }));
 
             $this->annotationProcessor->addHandler(new \spark\persistence\annotation\handler\EnableDataRepositoryAnnotationHandler());
+
+            $this->addPostLoadLib(new PostLoadDefinition($configClass, function () {
+                return $this->config->getProperty("spark.mailer.enabled", false);
+            }));
+
+            $this->annotationProcessor->addHandler(new \spark\tools\mail\annotation\handler\EnableMailerAnnotationHandler());
         }
+
     }
 
     public function process() {

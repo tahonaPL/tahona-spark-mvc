@@ -3,6 +3,7 @@
 namespace spark;
 
 use spark\common\IllegalArgumentException;
+use spark\utils\Asserts;
 use spark\utils\Collections;
 use spark\utils\Objects;
 use spark\utils\StringUtils;
@@ -29,12 +30,6 @@ class Config {
     const WEB_PAGE = "web.page";
     const APCU_CACHE_ENABLED = "spark.apcu.cache.enabled";
 
-    private $mode;
-    private $config = array();
-
-    public function __construct($config) {
-        $this->config = $config;
-    }
 
     private $cache = array();
 
@@ -51,21 +46,21 @@ class Config {
         return Collections::hasKey($this->cache, $property);
     }
 
-    public function setMode($mode) {
-        $this->mode = $mode;
-
-        $this->rebuildConfig();
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getMode() {
-        return $this->mode;
-    }
-
     public function set($code, $value) {
         $this->cache[$code] = $value;
+    }
+
+    public function add($code, $value = array()) {
+        Asserts::checkArray($value, "Value must be array");
+
+        if (isset($this->cache[$code])) {
+            $this->cache[$code] = Collections::builder($this->cache[$code])
+                ->addAll($value)
+                ->get();
+        } else {
+            $this->cache[$code]= $value;
+        }
+
     }
 
     /**
@@ -76,11 +71,6 @@ class Config {
         return Collections::hasKey($this->cache, $property);
     }
 
-    private function rebuildConfig() {
-        $properties = Collections::getValueOrDefault($this->config, $this->mode, array());
-        $prefix = "";
-        $this->cacheProperty($prefix, $properties);
-    }
 
     /**
      * @param $prefix

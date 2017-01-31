@@ -57,10 +57,21 @@ class Request {
         $this->controllerClassName = $controllerClassName;
     }
 
+    /**
+     * For /spark/core/test/controller/xxx/EngineController the module name is
+     * core/test/xxx  (controller is removed)
+     *
+     * @param $moduleName
+     */
     public function setModuleName($moduleName) {
         $this->moduleName = $moduleName;
     }
 
+    /**
+     *  Only prefix of Controller class e.g: for IndexController will be "Index".
+     *
+     * @param $controllerName
+     */
     public function setControllerName($controllerName) {
         $this->controllerName = $controllerName;
     }

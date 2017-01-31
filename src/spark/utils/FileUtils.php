@@ -116,6 +116,14 @@ class FileUtils {
             })->get();
     }
 
+    public static function getDirList($path) {
+        return Collections::builder(self::getFilesInPath($path))
+            ->filter(function($file) use ($path) {
+                return is_dir($path."/".$file);
+            })->get();
+    }
+
+
     /**
      * @param $path
      */
@@ -124,7 +132,6 @@ class FileUtils {
     }
 
     public static function getAllClassesInPath($dir) {
-//        $scandir = scandir($dir, 1);
 
         $result = array();
 
@@ -140,7 +147,7 @@ class FileUtils {
 
                 Collections::addAll($result, $subFiles);
 
-            } else {
+            } else if (StringUtils::contains($fileName,".php")){
                 $result[] = self::toClassName($fileName);
             }
         }
@@ -159,4 +166,5 @@ class FileUtils {
     public static function isDirExist($dir) {
         return is_dir($dir);
     }
+
 }

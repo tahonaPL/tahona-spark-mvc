@@ -23,7 +23,8 @@ class ComponentAnnotationHandler extends AnnotationHandler {
         $this->annotationNames = array(
             "spark\\core\\annotation\\Component",
             "spark\\core\\annotation\\Configuration",
-            "spark\\core\\annotation\\Service"
+            "spark\\core\\annotation\\Service",
+            "spark\\core\\annotation\\Repository"
         );
     }
 

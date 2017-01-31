@@ -95,6 +95,8 @@ Paramerty:
 app.path - ścieżka do katalogu /app
 
 
+
+
 * Dependencies
 * Database configuration
 * How to run tests

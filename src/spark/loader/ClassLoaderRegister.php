@@ -31,42 +31,19 @@ class ClassLoaderRegister {
         $this->config = $config;
     }
 
+    private function init() {
+        $classLoader = new TestClassLoader();
 
-    /**
-     * @return ClassLoader
-     */
-    private function createClassLoader() {
-        $beanCache = $this->config->isBeanCacheEnabled();
-
-        if ($beanCache && extension_loaded('apc')) {
-            $namespace = $this->config->getRootNamespace();
-            $configName = $this->config->getConfigName();
-            $rootAppPath = $this->config->getRootAppPath();
-
-            $prefix = "apc.spark_" . $configName . "_" . $namespace . "_" . $rootAppPath;
-
-            return new ApcUniversalClassLoader($prefix);
-        } else {
-            return new TestClassLoader();
-        }
-    }
-
-    private function registerLocalNamespaces($classLoader) {
         $rootAppPath = $this->config->getRootAppPath();
         $namespaceRootPath = array(
-            $rootAppPath . "/src",
-            $rootAppPath . "/config"
+            $rootAppPath . "/src"
         );
+
 
         foreach ($this->config->getNamespaces() as $space) {
             $classLoader->registerNamespace($space, $namespaceRootPath);
         }
-    }
 
-    private function init() {
-        $classLoader = $this->createClassLoader();
-        $this->registerLocalNamespaces($classLoader);
-        $classLoader->registerNamespaces($this->config->getVendors());
         $classLoader->register();
     }
 

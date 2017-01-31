@@ -7,7 +7,6 @@ use spark\common\IllegalArgumentException;
 use spark\common\IllegalStateException;
 use spark\core\definition\BeanDefinition;
 use spark\core\definition\ToInjectObserver;
-use spark\core\module\LoadModule;
 use spark\core\service\ServiceHelper;
 use spark\filter\HttpFilter;
 use spark\utils\Asserts;
@@ -51,6 +50,13 @@ class Services {
     public function injectTo($bean) {
         $annotationName = self::INJECT_ANNOTATION;
 
+        if ($bean instanceof ServiceHelper) {
+            $bean->setServices($this);
+        }
+        if ($bean instanceof core\ConfigAware) {
+            $bean->setConfig($this->getConfig());
+        }
+
         return ReflectionUtils::handlePropertyAnnotation($bean, $annotationName,
             function ($bean, \ReflectionProperty $property, $annotation) {
                 $beanNameToInject = $this->getBeanName($property, $annotation);
@@ -65,13 +71,6 @@ class Services {
             }
         );
 
-        //TODO - do usunięcia
-        if ($bean instanceof ServiceHelper) {
-            $bean->setServices($this);
-        }
-        if ($bean instanceof core\ConfigAware) {
-            $bean->setConfig($this->getConfig());
-        }
     }
 
     /**
@@ -82,7 +81,7 @@ class Services {
         return $this->config;
     }
 
-    public function setConfig($config) {
+    public function setConfig(&$config) {
         $this->config = $config;
     }
 
@@ -122,6 +121,10 @@ class Services {
         $this->afterInit();
     }
 
+    public function getBeanNames() {
+        return Collections::getKeys($this->beanContainer);
+    }
+
     /**
      * Filter array of filters
      * @return array
@@ -156,6 +159,13 @@ class Services {
 
                 $this->injectTo($newBean);
                 $this->buildBeanAnnotation($newBean);
+            }
+        );
+
+        ReflectionUtils::handleMethodAnnotation($bean, "spark\\core\\annotation\\PostConstruct",
+            function ($bean, \ReflectionMethod $method, $annotation) {
+                $method->setAccessible(true);
+                $method->invoke($bean);
             }
         );
     }
