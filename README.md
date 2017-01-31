@@ -83,7 +83,6 @@ apc/view/some/serious/package/myapp/showNewView.tpl
 
 Keywords action and controller are deleted by default.
 
-
 ### Apcu Bean Cache ###
 if @EnableApcuBeanCache annotation is added with @Configuration the only way to reset beans and init them
 once more is by requestin localhost:80?reset (GET parameter "reset").
@@ -102,12 +101,8 @@ The heart of Spark Framework.
 * @PostConstruct -
 * @Inject
 
-
 ### FluentData ###
 FluentData
-
-
-
 
 ### Parametry ###
 $this->config
@@ -116,20 +111,13 @@ Paramerty:
 app.path - ścieżka do katalogu /app
 
 
+### Composer ###
 
-
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
-
-### Contribution guidelines ###
-
-* Writing tests
-* Code review
-* Other guidelines
-
-### Who do I talk to? ###
-
-* Repo owner or admin
-* Other community or team contact
+```
+{
+    "require": {
+		"smarty/smarty": "3.1.27",
+		"tahona/spark-mvc": "*",
+	}
+}
+```
