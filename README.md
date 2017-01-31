@@ -90,17 +90,17 @@ once more is by requestin localhost:80?reset (GET parameter "reset").
 
 
 ### Mailer ###
-*@EnableMailer -TODO
-*spark.mailer.enabled (true/false)- property
+* @EnableMailer -TODO
+* spark.mailer.enabled (true/false)- property
 
 
 ### @Annotations @@@
 The heart of Spark Framework.
 
-*@Component
-*@Service,@Repository,@Configuration
-*@PostConstruct -
-*@Inject
+* @Component
+* @Service,@Repository,@Configuration
+* @PostConstruct -
+* @Inject
 
 
 ### FluentData ###
