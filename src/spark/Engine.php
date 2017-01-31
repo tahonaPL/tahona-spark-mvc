@@ -15,6 +15,7 @@ use spark\core\engine\EngineConfig;
 use spark\core\engine\EngineFactory;
 use spark\core\error\EngineExceptionWrapper;
 use spark\core\error\GlobalErrorHandler;
+use spark\core\library\BeanLoader;
 use spark\core\processor\InitAnnotationProcessors;
 use spark\core\provider\BeanProvider;
 use spark\filter\FilterChain;
@@ -100,10 +101,6 @@ class Engine {
         if (!$this->hasAllreadyCachedData() || isset($_GET["reset"])) {
 
             $src = $rootAppPath . "/src";
-            $classesInPath = FileUtils::getAllClassesInPath($src);
-
-
-            $annotationReader = ReflectionUtils::getReaderInstance();
 
             $this->services = new Services();
             $this->route = new Routing(array());
@@ -116,27 +113,13 @@ class Engine {
             $this->addBaseServices();
 
             $initAnnotationProcessors = new InitAnnotationProcessors($this->route, $this->config, $this->services);
+            $beanLoader = new BeanLoader($initAnnotationProcessors, $this->config);
 
-            $this->addLib("spark\\core\\CoreConfig", $classesInPath);
-            $this->addPersistanceLib($initAnnotationProcessors, $classesInPath);
+            $beanLoader->addFromPath($src);
+            $beanLoader->addLib("spark\\core\\CoreConfig");
+            $beanLoader->addPersistanceLib();
+            $beanLoader->process();
 
-            foreach ($classesInPath as $class) {
-                $reflectionObject = new ReflectionClass($class);
-                $classAnnotations = $annotationReader->getClassAnnotations($reflectionObject);
-                $initAnnotationProcessors->handleClassAnnotations($classAnnotations, null, $reflectionObject);
-
-                $reflectionMethods = $reflectionObject->getMethods();
-                foreach ($reflectionMethods as $method) {
-                    $methodAnnotations = $annotationReader->getMethodAnnotations($method);
-                    $initAnnotationProcessors->handleMethodAnnotations($methodAnnotations, null, $method);
-                }
-
-                $reflectionProperties = $reflectionObject->getProperties();
-                foreach ($reflectionProperties as $property) {
-                    $methodAnnotations = $annotationReader->getPropertyAnnotations($property);
-                    $initAnnotationProcessors->handleFieldAnnotations($methodAnnotations, null, $property);
-                }
-            }
 
             $this->config->setMode($this->engineConfig->getConfigName());
             $this->services->setConfig($this->config);
@@ -165,10 +148,6 @@ class Engine {
     }
 
     private function runController() {
-        $rootNamespace = $this->engineConfig->getRootNamespace();
-
-        UrlUtils::setWebPage($this->config->getProperty("web.page"));
-
         $registeredHostPath = $this->getRegisteredHostPath();
         $urlName = UrlUtils::getPathInfo($registeredHostPath);
 
@@ -356,30 +335,6 @@ class Engine {
         return $this->config->getProperty(Config::APCU_CACHE_ENABLED, false);
     }
 
-    /**
-     * @param $classPath
-     * @param $classesInPath
-     * @return mixed
-     */
-    private function addLib($classPath, &$classesInPath) {
-        $class_exists = class_exists($classPath);
 
-        if ($class_exists) {
-            $classesInPath[$classPath] = $classPath;
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * @param $initAnnotationProcessors InitAnnotationProcessors
-     * @param $classesInPath
-     */
-    private function addPersistanceLib($initAnnotationProcessors, &$classesInPath) {
-        if ($this->addLib("spark\\persistence\\PersistenceConfig", $classesInPath)) {
-            $str = "spark\\persistence\\annotation\\handler\\EnableDbRepositoriesAnnotationHandler";
-            $initAnnotationProcessors->add(new $str());
-        }
-    }
 
 }

@@ -145,9 +145,6 @@ class UrlUtils {
         return $_SERVER['SERVER_NAME'];
     }
 
-    public static function setWebPage($webPage) {
-        self::$webPage = $webPage;
-    }
 
     /**
      * @param $link

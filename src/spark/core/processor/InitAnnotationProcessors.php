@@ -67,7 +67,7 @@ class InitAnnotationProcessors extends AnnotationHandler {
         }
     }
 
-    public function add($handler) {
+    public function addHandler($handler) {
         Collections::addAll($this->handlers, array($handler));
         $this->updateHanlder($handler);
     }
