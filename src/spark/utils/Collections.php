@@ -323,7 +323,6 @@ final class Collections {
 
     public static function removeValue(&$array, $value) {
         $k = array_search($value, $array, true);
-        var_dump($array);
         Collections::removeByKey($observerList, $k);
         return $observerList;
     }
