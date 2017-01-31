@@ -3,9 +3,11 @@
 namespace spark;
 
 use Exception;
+use spark\common\IllegalStateException;
 use spark\core\definition\BeanDefinition;
 use spark\core\module\LoadModule;
 use spark\core\service\ServiceHelper;
+use spark\filter\HttpFilter;
 use spark\utils\Asserts;
 use spark\utils\Collections;
 use spark\utils\Functions;
@@ -37,9 +39,14 @@ class Services {
         }
     }
 
+    /**
+     * Jeżeli się powiedzie zwróci true
+     * @param $bean
+     * @return bool true=success
+     */
     public function injectTo($bean) {
         $annotationName = "spark\core\di\Inject";
-        ReflectionUtils::handlePropertyAnnotation($bean, $annotationName,
+        return ReflectionUtils::handlePropertyAnnotation($bean, $annotationName,
             function ($bean, \ReflectionProperty $property, $annotation) {
                 if (StringUtils::isNotBlank($annotation->name)) {
                     $name = $annotation->name;
@@ -47,10 +54,13 @@ class Services {
                     $name = $property->getName();
                 }
 
-                if (Collections::hasKey($this->beanContainer, $name)) {
+                $hasKey = Collections::hasKey($this->beanContainer, $name);
+                if ($hasKey) {
                     $property->setAccessible(true);
                     $property->setValue($bean, $this->beanContainer[$name]->getBean());
+                    return true;
                 }
+                return false;
             }
         );
 
@@ -95,15 +105,11 @@ class Services {
     public final function initServices() {
         $this->beforeInit();
 
-        foreach ($this->beanContainer as $serviceName => $service) {
-            $this->buildBeanAnnotation($service->getBean());
-        }
+        $beansToInject = $this->beanContainer;
 
-        foreach ($this->beanContainer as $serviceName => $service) {
-            $this->injectTo($service->getBean());
-        }
+        $this->injectAndCreate($beansToInject, 0);
 
-        $this->filters = $this->initFilters();
+        $this->filters = $this->getByType(HttpFilter::CLASS_NAME);
         foreach ($this->filters as $filter) {
             $this->injectTo($filter);
         }
@@ -130,6 +136,7 @@ class Services {
     }
 
     private function buildBeanAnnotation($bean) {
+
         ReflectionUtils::handleMethodAnnotation($bean, "spark\core\\di\\Bean",
             function ($bean, \ReflectionMethod $method, $annotation) {
                 if (StringUtils::isNotBlank($annotation->name)) {
@@ -140,8 +147,10 @@ class Services {
 
                 $method->setAccessible(true);
                 $newBean = $method->invoke($bean);
+
                 $this->beanContainer[$name] = new BeanDefinition($name, $newBean);
 
+                $this->injectTo($newBean);
                 $this->buildBeanAnnotation($newBean);
             }
         );
@@ -157,6 +166,47 @@ class Services {
 
     protected function getModules(){
         return array();
+    }
+
+    /**
+     * @param $beansToInject
+     */
+    private function injectAndCreate(&$beansToInject, $iteration) {
+        $waitingBeans = array();
+
+        //Inject all beans already created
+        foreach ($beansToInject as $serviceName => $service) {
+            $success = $this->injectTo($service->getBean());
+            if (!$success) {
+                $waitingBeans[$serviceName] = $service;
+            }else {
+                $this->beanContainer[$serviceName] = $service;
+            }
+        }
+
+        foreach ($this->beanContainer as $serviceName => $service) {
+            if (!Collections::hasKey($waitingBeans, $serviceName)) {
+                $this->buildBeanAnnotation($service->getBean());
+            }
+        }
+
+        if ($iteration >3) {
+            throw  new IllegalStateException("Can't match injection fields in: ". $this->getName($waitingBeans));
+        }
+
+        if (Collections::isNotEmpty($waitingBeans)) {
+            $this->injectAndCreate($waitingBeans, ++$iteration);
+        }
+    }
+
+    /**
+     * @param $waitingBeans
+     * @return int
+     */
+    private function getName($waitingBeans = array()) {
+        return Collections::builder($waitingBeans)
+            ->map(Functions::invokeGetMethod("name"))
+            ->findFirst()->orElse("");
     }
 
 }

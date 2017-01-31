@@ -10,6 +10,7 @@ use ReflectionClass;
 use spark\cache\ApcuBeanCache;
 use spark\cache\BeanCache;
 use spark\core\Bootstrap;
+use spark\core\CoreConfig;
 use spark\core\engine\EngineConfig;
 use spark\core\engine\EngineFactory;
 use spark\core\error\EngineExceptionWrapper;
@@ -97,21 +98,29 @@ class Engine {
         }
 
         if (!$this->hasAllreadyCachedData() || isset($_GET["reset"])) {
-            var_dump("init all".$this->hasAllreadyCachedData()." ");
 
             $src = $rootAppPath . "/src";
-            $filesInPath = FileUtils::getAllClassesInPath($src);
+            $classesInPath = FileUtils::getAllClassesInPath($src);
+
+
             $annotationReader = ReflectionUtils::getReaderInstance();
 
             $this->services = new Services();
             $this->route = new Routing(array());
-            $this->config = new Config(array());
+            $this->config = new Config(array(
+                $name =>array(
+                    "app.path" =>$rootAppPath
+                )
+            ));
 
             $this->addBaseServices();
 
-            $initAnnotationProcessors = new InitAnnotationProcessors($this->routing, $this->config, $this->services);
+            $initAnnotationProcessors = new InitAnnotationProcessors($this->route, $this->config, $this->services);
 
-            foreach ($filesInPath as $class) {
+            $this->addLib("spark\\core\\CoreConfig", $classesInPath);
+            $this->addPersistanceLib($initAnnotationProcessors, $classesInPath);
+
+            foreach ($classesInPath as $class) {
                 $reflectionObject = new ReflectionClass($class);
                 $classAnnotations = $annotationReader->getClassAnnotations($reflectionObject);
                 $initAnnotationProcessors->handleClassAnnotations($classAnnotations, null, $reflectionObject);
@@ -254,7 +263,6 @@ class Engine {
         $this->services->register(JsonViewHandler::NAME, $jsonViewHandler);
     }
 
-
     /**
      * @param $errorArray
      * @param $request Request
@@ -346,6 +354,32 @@ class Engine {
      */
     private function isApcuCacheEnabled() {
         return $this->config->getProperty(Config::APCU_CACHE_ENABLED, false);
+    }
+
+    /**
+     * @param $classPath
+     * @param $classesInPath
+     * @return mixed
+     */
+    private function addLib($classPath, &$classesInPath) {
+        $class_exists = class_exists($classPath);
+
+        if ($class_exists) {
+            $classesInPath[$classPath] = $classPath;
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @param $initAnnotationProcessors InitAnnotationProcessors
+     * @param $classesInPath
+     */
+    private function addPersistanceLib($initAnnotationProcessors, &$classesInPath) {
+        if ($this->addLib("spark\\persistence\\PersistenceConfig", $classesInPath)) {
+            $str = "spark\\persistence\\annotation\\handler\\EnableDbRepositoriesAnnotationHandler";
+            $initAnnotationProcessors->add(new $str());
+        }
     }
 
 }

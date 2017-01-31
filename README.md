@@ -58,12 +58,38 @@ class MyAppController extends Controller {
         ));
     }
 
+    /**
+     * @RequestPath("/newView")
+     */
+     public function showNewViewAction() {
+        return new ViewModel(array(
+            "user"=>"TODO"
+        ));
+     }
+
 }
 ```
 
 Go to localhost/get or localhost/index;
 
 ### View ###
+
+apc/view/{controller package}/{controllerName (without "Controller")}/{action}.tpl
+
+
+1. For app/src/MyAppController@showNewViewAction we get:
+   apc/view/myapp/showNewView.tpl
+2. For app/src/some/serious/package/*controller*/MyAppController@showNewView*Action* we get:
+apc/view/some/serious/package/myapp/showNewView.tpl
+
+Keywords action and controller are deleted by default.
+
+
+### Apcu Bean Cache ###
+if @EnableApcuBeanCache annotation is added with @Configuration the only way to reset beans and init them
+once more is by requestin localhost:80?reset (GET parameter "reset").
+
+
 
 * Dependencies
 * Database configuration

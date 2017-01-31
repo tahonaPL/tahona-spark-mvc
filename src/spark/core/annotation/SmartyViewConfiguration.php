@@ -22,7 +22,7 @@ final class SmartyViewConfiguration implements Mapping\Annotation {
     public $cacheId = "TAHONA_ROCKS";
 
     /** @var boolean */
-    public $forceCompile = false;
+    public $forceCompile = true;
     /** @var boolean */
     public $compileCheck = true;
     /** @var boolean */

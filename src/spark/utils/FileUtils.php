@@ -155,4 +155,8 @@ class FileUtils {
     private static function toClassName($fileName) {
         return StringUtils::replace(StringUtils::replace($fileName, '/', '\\'), ".php", "");
     }
+
+    public static function isDirExist($dir) {
+        return is_dir($dir);
+    }
 }

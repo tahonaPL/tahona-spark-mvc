@@ -18,10 +18,14 @@ use spark\core\annotation\handler\EnableApcuAnnotationHandler;
 use spark\core\annotation\handler\RequestPathAnnotationHandler;
 use spark\core\annotation\handler\SmartyViewConfigurationAnnotationHandler;
 use spark\core\annotation\SmartyViewConfiguration;
+use spark\utils\Collections;
 
-class InitAnnotationProcessors extends AnnotationHandler{
+class InitAnnotationProcessors extends AnnotationHandler {
 
-    private  $handlers;
+    private $handlers;
+    private $routing;
+    private $config;
+    private $services;
 
     public function __construct(&$routing, &$config, &$services) {
         $this->handlers = array(
@@ -31,12 +35,15 @@ class InitAnnotationProcessors extends AnnotationHandler{
             new SmartyViewConfigurationAnnotationHandler()
         );
 
+        $this->routing = $routing;
+        $this->config = $config;
+        $this->services = $services;
+
         /** @var AnnotationHandler $handler */
         foreach ($this->handlers as $handler) {
-            $handler->setConfig($config);
-            $handler->setRouting($routing);
-            $handler->setServices($services);
+            $this->updateHanlder($handler);
         }
+
     }
 
     public function handleClassAnnotations($annotations = array(), $bean, ReflectionClass $classReflection) {
@@ -58,6 +65,20 @@ class InitAnnotationProcessors extends AnnotationHandler{
         foreach ($this->handlers as $handler) {
             $handler->handleFieldAnnotations($annotations, $bean, $fieldReflection);
         }
+    }
+
+    public function add($handler) {
+        Collections::addAll($this->handlers, array($handler));
+        $this->updateHanlder($handler);
+    }
+
+    /**
+     * @param $handler
+     */
+    private function updateHanlder($handler) {
+        $handler->setConfig($this->config);
+        $handler->setRouting($this->routing);
+        $handler->setServices($this->services);
     }
 
 

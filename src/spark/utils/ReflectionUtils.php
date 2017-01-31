@@ -58,9 +58,12 @@ class ReflectionUtils {
             $annotation = $annotationReader->getPropertyAnnotation($reflectionProperty, $annotationName);
 
             if (false == is_null($annotation)) {
-                $handler($bean, $reflectionProperty, $annotation);
+                if (!$handler($bean, $reflectionProperty, $annotation)) {
+                    return false;
+                }
             }
         }
+        return true;
 //        return property_exists($bean, $serviceName)
     }
 
