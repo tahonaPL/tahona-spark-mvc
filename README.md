@@ -94,7 +94,7 @@ once more is by requestin localhost:80?reset (GET parameter "reset").
 * spark.mailer.enabled (true/false)- property
 
 
-### @Annotations @@@
+### @Annotations ###
 The heart of Spark Framework.
 
 * @Component
