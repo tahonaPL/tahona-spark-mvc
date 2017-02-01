@@ -14,6 +14,7 @@ use spark\Config;
 use spark\core\annotation\Configuration;
 use spark\core\processor\InitAnnotationProcessors;
 use spark\utils\Collections;
+use spark\utils\Dev;
 use spark\utils\FileUtils;
 use spark\utils\ReflectionUtils;
 
@@ -91,7 +92,7 @@ class BeanLoader {
 
             $this->annotationProcessor->addHandler(new \spark\persistence\annotation\handler\EnableDataRepositoryAnnotationHandler());
 
-            $this->addPostLoadLib(new PostLoadDefinition($configClass, function () {
+            $this->addPostLoadLib(new PostLoadDefinition("spark\\tools\\mail\\MailerConfig", function () {
                 return $this->config->getProperty("spark.mailer.enabled", false);
             }));
 

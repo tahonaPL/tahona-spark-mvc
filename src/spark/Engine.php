@@ -119,6 +119,7 @@ class Engine {
             $beanLoader->addPersistanceLib();
             $beanLoader->process();
 
+            $this->services->registerObj($this->services);
             $this->services->setConfig($this->config);
             $this->services->initServices();
 

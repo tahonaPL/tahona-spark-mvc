@@ -39,7 +39,12 @@ class Services {
         if ($this->initialized) {
             /** @var BeanDefinition $definition */
             $definition = $this->beanContainer[$name];
-            $this->injectTo($definition->getBean());
+
+            $this->updateRelations($name);
+
+            $bean = $definition->getBean();
+            $this->injectTo($bean);
+            $this->buildBeanAnnotation($bean);
         }
     }
 
@@ -106,6 +111,8 @@ class Services {
     public final function initServices() {
         $this->beforeInit();
 
+        $this->initialized = true;
+
         $beansToInject = $this->beanContainer;
 
         $this->injectAndCreate($beansToInject);
@@ -115,8 +122,6 @@ class Services {
         foreach ($this->filters as $filter) {
             $this->injectTo($filter);
         }
-
-        $this->initialized = true;
 
         $this->afterInit();
     }
@@ -239,18 +244,13 @@ class Services {
             $this->updateBeansRelation($beansToUpdate, $beanDefinition);
 
             /** @var ToInjectObserver $obs */
-
-            $servicesToRemove = array();
-
             foreach ($this->waitingList as $serviceName => $observerList) {
                 if (Collections::isEmpty($observerList)) {
-                    $this->buildBeanAnnotation($this->get($serviceName));
                     Collections::removeByKey($this->waitingList, $serviceName);
+                    $this->buildBeanAnnotation($this->get($serviceName));
                 }
             }
         }
-
-
 //        var_dump($this->waitingList);exit();
     }
 

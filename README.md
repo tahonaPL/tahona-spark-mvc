@@ -110,6 +110,43 @@ $this->config
 Paramerty:
 app.path - ścieżka do katalogu /app
 
+### Multiple DataBase connection ###
+
+Handle multiple connections.
+```
+ @EnableDataRepository(managerName="dataSource", managerName="entityManager") //default
+ @EnableDataRepository(managerName="dataSourceSuper", managerName="exodusManager")
+
+```
+
+
+
+```
+    /**
+     * @Bean
+     */
+    public function dataSource() {
+        $dbConfig = new DbConfig();
+        $dbConfig->setDbname("tahona");
+        $dbConfig->setHost("127.0.0.1");
+        $dbConfig->setUsername("root");
+        $dbConfig->setPassword("test");
+        return $dbConfig;
+    }
+    /**
+     * @Bean
+     */
+    public function dataSourceSuper() {
+        $dbConfig = new DbConfig();
+        $dbConfig->setDbname("house");
+        $dbConfig->setHost("127.0.0.1");
+        $dbConfig->setUsername("root");
+        $dbConfig->setPassword("test");
+        return $dbConfig;
+    }
+```
+
+Note: for override injection use @OverrideInject annotation
 
 ### Composer ###
 

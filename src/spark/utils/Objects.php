@@ -60,11 +60,15 @@ class Objects {
         return get_class($obj);
     }
 
-    public static function getClassNames($bean) {
-        $parents = class_parents($bean);
-        $className = self::getClassName($bean);
+    public static function getClassNames($obj) {
+        $parents = class_parents($obj);
+        $className = self::getClassName($obj);
         Collections::addAll($parents, array($className=>$className));
         return $parents;
+    }
+
+    public static function isPrimitive($obj) {
+        return is_scalar($obj);
     }
 
 
