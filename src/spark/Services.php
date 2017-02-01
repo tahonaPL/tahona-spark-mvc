@@ -243,6 +243,7 @@ class Services {
 
             $this->updateBeansRelation($beansToUpdate, $beanDefinition);
 
+            //Remove beans from waiting list if there is nothing to injdect
             /** @var ToInjectObserver $obs */
             foreach ($this->waitingList as $serviceName => $observerList) {
                 if (Collections::isEmpty($observerList)) {
