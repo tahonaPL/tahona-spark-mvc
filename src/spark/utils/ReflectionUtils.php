@@ -115,9 +115,13 @@ class ReflectionUtils {
     public static function getPropertyAnnotation($fullClassName, $field, $annotationName) {
         $annotationReader = self::getReaderInstance();
         $reflectionObject = new \ReflectionClass($fullClassName);
-        $reflectionProperty = $reflectionObject->getProperty($field);
 
-        return $annotationReader->getPropertyAnnotation($reflectionProperty, $annotationName);
+        if ($reflectionObject->hasProperty($field)) {
+            $reflectionProperty = $reflectionObject->getProperty($field);
+            return $annotationReader->getPropertyAnnotation($reflectionProperty, $annotationName);
+        }
+        return null;
+
     }
 
 }
