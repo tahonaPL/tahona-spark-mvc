@@ -148,8 +148,10 @@ class Services {
 
     private function buildBeanAnnotation($bean) {
 
-        ReflectionUtils::handleMethodAnnotation($bean, "spark\core\\annotation\\Bean",
-            function ($bean, \ReflectionMethod $method, $annotation) {
+        $buildedBeans = array();
+        //First - Build  all subBeans...
+        ReflectionUtils::handleMethodAnnotation($bean, "spark\\core\\annotation\\Bean",
+            function ($bean, \ReflectionMethod $method, $annotation) use (&$buildedBeans) {
                 if (StringUtils::isNotBlank($annotation->name)) {
                     $name = $annotation->name;
                 } else {
@@ -159,13 +161,23 @@ class Services {
                 $method->setAccessible(true);
                 $newBean = $method->invoke($bean);
 
-                $this->beanContainer[$name] = new BeanDefinition($name, $newBean);
-                $this->updateRelations($name);
+                $beanDef = new BeanDefinition($name, $newBean);
+                $buildedBeans[$name] = $beanDef;
+                $this->beanContainer[$name] = $beanDef;
 
-                $this->injectTo($newBean);
-                $this->buildBeanAnnotation($newBean);
             }
         );
+
+        //Then - Update their relations
+        /** @var BeanDefinition $beanDef */
+        foreach ($buildedBeans as $beanDef) {
+            $this->updateRelations($beanDef->getName());
+
+            $newBean = $beanDef->getBean();
+            $this->injectTo($newBean);
+            $this->buildBeanAnnotation($newBean);
+        }
+
 
         ReflectionUtils::handleMethodAnnotation($bean, "spark\\core\\annotation\\PostConstruct",
             function ($bean, \ReflectionMethod $method, $annotation) {
