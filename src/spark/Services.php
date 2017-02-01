@@ -25,7 +25,7 @@ class Services {
     private $initialized = false;
     private $waitingList = array();
 
-    const INJECT_ANNOTATION = "spark\core\di\Inject";
+    const INJECT_ANNOTATION = "spark\core\annotation\Inject";
 
     public function registerObj($obj) {
         $this->register(lcfirst(Objects::getSimpleClassName($obj)), $obj);
@@ -148,7 +148,7 @@ class Services {
 
     private function buildBeanAnnotation($bean) {
 
-        ReflectionUtils::handleMethodAnnotation($bean, "spark\core\\di\\Bean",
+        ReflectionUtils::handleMethodAnnotation($bean, "spark\core\\annotation\\Bean",
             function ($bean, \ReflectionMethod $method, $annotation) {
                 if (StringUtils::isNotBlank($annotation->name)) {
                     $name = $annotation->name;

@@ -11,7 +11,7 @@ namespace spark\view;
 
 use spark\common\IllegalArgumentException;
 use spark\Config;
-use spark\core\di\Inject;
+use spark\core\annotation\Inject;
 use spark\core\provider\BeanProvider;
 use spark\Services;
 use spark\utils\Asserts;

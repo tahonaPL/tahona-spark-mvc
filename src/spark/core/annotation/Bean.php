@@ -6,7 +6,7 @@
  * Time: 20:18
  */
 
-namespace spark\core\di;
+namespace spark\core\annotation;
 use Doctrine\Common\Annotations\Annotation\Target;
 use Doctrine\ORM\Mapping\Annotation;
 

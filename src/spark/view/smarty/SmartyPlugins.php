@@ -9,7 +9,7 @@
 namespace spark\view\smarty;
 
 
-use spark\core\di\Inject;
+use spark\core\annotation\Inject;
 use spark\seo\SeoUrlFactory;
 use spark\seo\WithSeoUrl;
 use spark\lang\LangMessageResource;

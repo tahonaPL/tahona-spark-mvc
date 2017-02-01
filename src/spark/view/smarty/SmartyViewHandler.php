@@ -9,7 +9,7 @@
 namespace spark\view\smarty;
 
 use spark\Config;
-use spark\core\di\Inject;
+use spark\core\annotation\Inject;
 use spark\http\Request;
 use spark\utils\Objects;
 use spark\view\utils\ViewUrlUtils;

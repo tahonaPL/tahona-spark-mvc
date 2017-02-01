@@ -9,7 +9,7 @@
 namespace spark\lang;
 
 
-use spark\core\di\Inject;
+use spark\core\annotation\Inject;
 use spark\http\RequestProvider;
 use spark\utils\UrlUtils;
 use spark\upload\FileObject;

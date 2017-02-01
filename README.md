@@ -13,7 +13,7 @@ Amaizing
 ### Quick Start###
 
 app/public/index.php
-```
+```php
 error_reporting(E_ALL);
 
 define("__ROOT__", __DIR__ . "/../../");
@@ -28,7 +28,7 @@ $engine->run();
 ### Configuration ###
 app/src/MyAppConfig.php
 
-```
+```php
 /**
  * @Configuration()
  * @EnableApcuBeanCache("code1")
@@ -121,7 +121,7 @@ Handle multiple connections.
 
 
 
-```
+```php
     /**
      * @Bean
      */
