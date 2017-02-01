@@ -126,7 +126,7 @@ Handle multiple connections.
      * @Bean
      */
     public function dataSource() {
-        $dbConfig = new DbConfig();
+        $dbConfig = new DataSource();
         $dbConfig->setDbname("tahona");
         $dbConfig->setHost("127.0.0.1");
         $dbConfig->setUsername("root");
@@ -137,7 +137,7 @@ Handle multiple connections.
      * @Bean
      */
     public function dataSourceSuper() {
-        $dbConfig = new DbConfig();
+        $dbConfig = new DataSource();
         $dbConfig->setDbname("house");
         $dbConfig->setHost("127.0.0.1");
         $dbConfig->setUsername("root");
