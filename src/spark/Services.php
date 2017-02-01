@@ -26,6 +26,7 @@ class Services {
     private $waitingList = array();
 
     const INJECT_ANNOTATION = "spark\core\annotation\Inject";
+    const OVERRIDE_INJECT_ANNOTATION = "spark\core\annotation\OverrideInject";
 
     public function registerObj($obj) {
         $this->register(lcfirst(Objects::getSimpleClassName($obj)), $obj);
@@ -53,7 +54,6 @@ class Services {
      * @return array  lista Observerów czekających na wstrzyknięcie.
      */
     public function injectTo($bean) {
-        $annotationName = self::INJECT_ANNOTATION;
 
         if ($bean instanceof ServiceHelper) {
             $bean->setServices($this);
@@ -62,16 +62,28 @@ class Services {
             $bean->setConfig($this->getConfig());
         }
 
-        return ReflectionUtils::handlePropertyAnnotation($bean, $annotationName,
-            function ($bean, \ReflectionProperty $property, $annotation) {
+        $overrideInjections = Collections::builder(ReflectionUtils::getClassAnnotations(Objects::getClassName($bean), self::OVERRIDE_INJECT_ANNOTATION))
+            ->convertToMap(Functions::field("oldName"))
+            ->get();
+
+
+        return ReflectionUtils::handlePropertyAnnotation($bean, self::INJECT_ANNOTATION,
+            function ($bean, \ReflectionProperty $property, $annotation) use ($overrideInjections) {
                 $beanNameToInject = $this->getBeanName($property, $annotation);
 
+                $swap = Collections::hasKey($overrideInjections, $beanNameToInject);
+                if ($swap) {
+                    $beanNameToInject = $overrideInjections[$beanNameToInject]->newName;
+                }
+
                 $hasKey = Collections::hasKey($this->beanContainer, $beanNameToInject);
+
                 if ($hasKey) {
                     $property->setAccessible(true);
                     $property->setValue($bean, $this->beanContainer[$beanNameToInject]->getBean());
                     return null;
                 }
+
                 return new ToInjectObserver($bean, $beanNameToInject);
             }
         );
@@ -216,6 +228,7 @@ class Services {
             }
         }
 
+
         //Build Normal
         $excludeBuildNamesList = Collections::getKeys($this->waitingList);
 
@@ -248,8 +261,8 @@ class Services {
 
     private function updateRelations($newBeanName) {
         $beanDefinition = &$this->beanContainer[$newBeanName];
-
         $beansToUpdate = $this->getBeansToUpdate($newBeanName);
+
 
         if (Collections::isNotEmpty($beansToUpdate)) {
 
@@ -292,7 +305,7 @@ class Services {
             ->flatMap(Functions::getSameObject())
             ->filter(function ($observer) use ($name) {
                 /** @var ToInjectObserver $observer */
-                return $observer->getBeanNameToInject() == $name;
+                return  StringUtils::equals($observer->getBeanNameToInject(), $name);
             })->get();
         return $beansToUpdate;
     }
@@ -308,9 +321,17 @@ class Services {
             foreach ($beansToUpdate as $observer) {
                 $targetBean = $observer->getBean();
 
+                $overrideInjections = Collections::builder(ReflectionUtils::getClassAnnotations(Objects::getClassName($targetBean), self::OVERRIDE_INJECT_ANNOTATION))
+                    ->convertToMap(Functions::field("oldName"))
+                    ->get();
+
                 ReflectionUtils::handlePropertyAnnotation($targetBean, self::INJECT_ANNOTATION,
-                    function (&$bean, \ReflectionProperty $property, $annotation) use ($observer, $beanDefinition) {
+                    function (&$bean, \ReflectionProperty $property, $annotation) use ($observer, $beanDefinition, $overrideInjections) {
                         $beanNameToInject = $this->getBeanName($property, $annotation);
+
+                        if (Collections::hasKey($overrideInjections, $beanNameToInject)) {
+                            $beanNameToInject = $overrideInjections[$beanNameToInject]->newName;
+                        }
 
                         if (StringUtils::equals($beanNameToInject, $observer->getBeanNameToInject())) {
                             $property->setAccessible(true);

@@ -64,5 +64,11 @@ class Functions {
         };
     }
 
+    public static function hasClassName($fullClassName) {
+        return function ($x) use ($fullClassName) {
+            return StringUtils::equals(Objects::getClassName($x), $fullClassName);
+        };
+    }
+
 
 }

@@ -54,7 +54,7 @@ class ReflectionUtils {
         $properties = $fluentIterables->get();
 
 
-        $observersWaitingToInject =  array();
+        $observersWaitingToInject = array();
 
         /** @var $properties \ReflectionProperty */
         foreach ($properties as $reflectionProperty) {
@@ -72,6 +72,9 @@ class ReflectionUtils {
 //        return property_exists($bean, $serviceName)
     }
 
+    /**
+     * @return AnnotationReader
+     */
     public static function getReaderInstance() {
         if (false == isset(self::$reader)) {
             self::$reader = new AnnotationReader();
@@ -122,6 +125,21 @@ class ReflectionUtils {
         }
         return null;
 
+    }
+
+    /**
+     *
+     * @Bean
+     * @param $fullClassName
+     * @param $annotationName
+     * @return array Annotations
+     */
+    public static function getClassAnnotations($fullClassName, $annotationName) {
+        $annotationReader = self::getReaderInstance();
+        $reflectionObject = new \ReflectionClass($fullClassName);
+        return Collections::builder($annotationReader->getClassAnnotations($reflectionObject))
+            ->filter(Functions::hasClassName($annotationName))
+            ->get();
     }
 
 }

@@ -117,7 +117,7 @@ final class Collections {
 
     public static function hasKey($collection = array(), $key) {
         if (Objects::isNotNull($collection)) {
-            return array_key_exists($key, $collection);
+            return true === array_key_exists($key, $collection);
         }
         return false;
     }

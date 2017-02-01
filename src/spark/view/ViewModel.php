@@ -45,7 +45,12 @@ class ViewModel extends PropertyHelper {
         return $redirect;
     }
 
-
+    /**
+     * @deprecated
+     * @param $url
+     * @param array $arr
+     * @return ViewModel
+     */
     public static function createRedirectView($url, $arr = array()) {
         $viewModel = new ViewModel();
         $viewModel->addAll($arr);
