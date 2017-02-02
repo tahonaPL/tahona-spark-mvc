@@ -6,6 +6,7 @@ use spark\Config;
 use spark\core\annotation\handler\AnnotationHandler;
 use spark\core\annotation\RequestPath;
 use spark\core\routing\RoutingDefinition;
+use spark\routing\RoutingUtils;
 use spark\utils\Collections;
 use spark\utils\Functions;
 use spark\utils\Objects;
@@ -41,6 +42,10 @@ class RequestPathAnnotationHandler extends AnnotationHandler {
             $routingDefinition->setActionMethod($methodReflection->getName());
             $routingDefinition->setRequestHeaders($ann->header);
             $routingDefinition->setRequestMethods($ann->method);
+
+            if (RoutingUtils::hasExpression($ann->path)) {
+                $routingDefinition->setParams(RoutingUtils::getParametrizedUrlKeys($ann->path));
+            }
 
             $this->getRouting()->addDefinition($routingDefinition);
         }

@@ -28,4 +28,10 @@ class StringFunctions {
             return StringUtils::replace($x, $search, $replacement);
         };
     }
+
+    public static function split($splitter) {
+        return function($x) use ($splitter) {
+            return StringUtils::split($x, $splitter);
+        };
+    }
 }

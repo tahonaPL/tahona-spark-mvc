@@ -14,6 +14,7 @@ use spark\core\routing\RoutingDefinition;
 use spark\http\HttpRequestMethod;
 use spark\http\utils\RequestUtils;
 use spark\utils\Collections;
+use spark\utils\Predicates;
 use spark\utils\StringFunctions;
 use spark\utils\StringUtils;
 use tahona\Routing;
@@ -108,7 +109,7 @@ class RoutingUtils {
      * @param array $routes
      * @return Optional
      */
-    public static function findRoute($routes = array()) {
+    public static function findRouteDefinition($routes = array()) {
         $requestMethod = RequestUtils::getMethod();
         $headers = RequestUtils::getHeaders();
 
@@ -116,7 +117,6 @@ class RoutingUtils {
         $routeWithNoMethod = null;
 
         foreach ($routes as $item) {
-
             $requestMethods = $item->getRequestMethods();
 
             if (Collections::contains($requestMethod, $requestMethods)) {
@@ -132,6 +132,22 @@ class RoutingUtils {
         }
 
         return Optional::ofNullable($routeWithNoMethod);
+    }
+
+    public static function getParametrizedUrlKeys($parametrizedPath) {
+        return Optional::of($parametrizedPath)
+            ->map(StringFunctions::replace("\\", "/"))
+            ->map(StringFunctions::split("/"))
+            ->toFluentIterable()
+            ->filter(Predicates::notEmpty())
+            ->filter(function ($x) {
+                return RoutingUtils::hasExpression($x);
+            })
+            ->map(function ($x) {
+                return RoutingUtils::clearRouteParamExpression($x);
+            })
+            ->get();
+
     }
 
 } 

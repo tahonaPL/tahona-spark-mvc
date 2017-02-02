@@ -10,6 +10,7 @@ namespace spark\common;
 
 
 use spark\utils\Asserts;
+use spark\utils\Collections;
 use spark\utils\Functions;
 use spark\utils\Objects;
 use spark\utils\StringUtils;
@@ -109,7 +110,7 @@ class Optional {
      * @param callable $pred
      * @return $this|Optional
      */
-    public function  filter(\Closure $pred) {
+    public function filter(\Closure $pred) {
         if ($this->isPresent() && $pred($this->obj)) {
             return $this;
         }
@@ -127,6 +128,13 @@ class Optional {
         if ($this->isPresent()) {
             $voidFunc($this->obj);
         }
+    }
+
+    /**
+     * @return collection\FluentIterables
+     */
+    public function toFluentIterable() {
+        return Collections::builder(Collections::asArray($this->orElse(array())));
     }
 
 }

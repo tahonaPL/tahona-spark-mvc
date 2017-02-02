@@ -154,8 +154,8 @@ class FluentIterables {
      * @return FluentIterables
      */
     public function add($element) {
-        $this->collection[] = $element;
-        return Collections::builder($this->collection);
+        return Collections::builder($this->collection)
+            ->add($element);
     }
 
 

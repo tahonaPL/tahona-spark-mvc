@@ -24,6 +24,7 @@ class RoutingDefinition {
     private $actionMethod;
     private $requestMethods;
     private $requestHeaders;
+    private $params;
 
     /**
      * @return mixed
@@ -90,22 +91,29 @@ class RoutingDefinition {
      * @return array of headers
      */
     public function getRequestHeaders() {
-        if (Objects::isArray($this->requestHeaders)) {
-            return $this->requestHeaders;
-        }
-
-        return array($this->requestHeaders);
+        return $this->requestHeaders;
     }
 
     /**
      * @param mixed $requestHeaders
      */
     public function setRequestHeaders($requestHeaders) {
-        $this->requestHeaders = $requestHeaders;
+        $this->requestHeaders = Collections::asArray($requestHeaders);
     }
 
     public function getKey() {
         return RoutingUtils::generateKey($this);
+    }
+
+    public function setParams($params = array()) {
+        $this->params = Collections::asArray($params);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getParams() {
+        return $this->params;
     }
 
 
