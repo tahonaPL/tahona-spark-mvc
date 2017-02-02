@@ -173,14 +173,14 @@ Bean definition
 
 Where "pl","cz","en" are cookie value with key "lang";
 
-*Property file
+* Property file
 /house/house_pl.properties
 
 ```
 core.thank.you.message=Thank You %s
 ```
 
-*Use in smarty
+* Use in smarty
 
 ```
 {lang code="core.thank.you.message" value=["John"]}
