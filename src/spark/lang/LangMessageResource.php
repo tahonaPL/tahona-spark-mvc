@@ -9,7 +9,9 @@
 namespace spark\lang;
 
 
+use spark\Config;
 use spark\core\annotation\Inject;
+use spark\core\annotation\PostConstruct;
 use spark\http\RequestProvider;
 use spark\utils\UrlUtils;
 use spark\upload\FileObject;
@@ -27,13 +29,29 @@ class LangMessageResource {
      * @var RequestProvider
      */
     private $requestProvider;
+    /**
+     * @Inject
+     * @var Config
+     */
+    private $config;
 
     private $messages = array();
 
+    private $filePath;
+
     function __construct($filePath = array()) {
-        foreach ($filePath as $key => $pathArr) {
+        $this->filePath = $filePath;
+    }
+
+    /**
+     * @PostConstruct()
+     */
+    public function init() {
+        $this->config->getProperty("app.path");
+
+        foreach ($this->filePath as $key => $pathArr) {
             foreach ($pathArr as $path) {
-                $elements = parse_ini_file(FileUtils::getAbsolutePath($path));
+                $elements = parse_ini_file($this->config->getProperty("src.path") . "" . $path);
                 Collections::addAllOrReplace($this->messages[$key], $elements);
             }
         }

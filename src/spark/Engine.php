@@ -109,6 +109,7 @@ class Engine {
             $this->config = new Config();
 
             $this->config->set("app.path", $rootAppPath);
+            $this->config->set("src.path", $rootAppPath."/src");
 
             $this->addBaseServices();
             $initAnnotationProcessors = new InitAnnotationProcessors($this->route, $this->config, $this->services);

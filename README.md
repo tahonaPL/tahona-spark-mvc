@@ -109,6 +109,7 @@ $this->config
 
 Paramerty:
 app.path - ścieżka do katalogu /app
+src.path - ścieżka do katalogu /app/src
 
 ### Multiple DataBase connection ###
 
@@ -147,6 +148,46 @@ Handle multiple connections.
 ```
 
 Note: for override injection use @OverrideInject annotation
+
+```
+@OverrideInject(oldName="entityManager", newName="houseManager")
+```
+### Internalization ###
+
+Bean definition
+```php
+
+    /**
+    * @Bean
+    */
+    public function langMessageResource() {
+        return new LangMessageResource(array(
+            "pl"=>array(
+                "/house/house_pl.properties"
+            ),
+            "cz"=> array(...),
+            "en"=>array(...),
+        ));
+    }
+```
+
+Where "pl","cz","en" are cookie value with key "lang";
+
+*Property file
+/house/house_pl.properties
+
+```
+core.thank.you.message=Thank You %s
+```
+
+*Use in smarty
+
+```
+{lang code="core.thank.you.message" value=["John"]}
+```
+Results: Thank You John
+
+
 
 ### Composer ###
 

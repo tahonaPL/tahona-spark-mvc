@@ -196,4 +196,8 @@ class StringUtils {
         };
     }
 
+    public static function length($value) {
+        return strlen($value);
+    }
+
 }
