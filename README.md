@@ -1,11 +1,9 @@
 # README #
 
-This README would normally document whatever steps are necessary to get your application up and running.
-
 ### What is this repository for? ###
 
-* Quick summary
-Amaizing
+PHP framework with autoloading and annotations. All configuration is handled by annotations and beans.
+Framework is designed to work with APCu cache.
 
 * Version
 * [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
