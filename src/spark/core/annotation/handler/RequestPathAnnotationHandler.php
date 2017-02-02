@@ -4,6 +4,8 @@ namespace spark\core\annotation\handler;
 
 use spark\Config;
 use spark\core\annotation\handler\AnnotationHandler;
+use spark\core\annotation\RequestPath;
+use spark\core\routing\RoutingDefinition;
 use spark\utils\Collections;
 use spark\utils\Functions;
 use spark\utils\Objects;
@@ -29,9 +31,18 @@ class RequestPathAnnotationHandler extends AnnotationHandler {
             ->findFirst(Predicates::compute($this->getClassName(), StringUtils::predEquals($this->annotationName)));
 
         if ($annotation->isPresent()) {
-            $requestPath = $annotation->get();
+            /** @var RequestPath $ann */
+            $ann = $annotation->get();
             $reflectionClass = $methodReflection->getDeclaringClass();
-            $this->getRouting()->addPath($requestPath->path, $reflectionClass->getName(), $methodReflection->getName());
+
+            $routingDefinition = new RoutingDefinition();
+            $routingDefinition->setPath($ann->path);
+            $routingDefinition->setControllerClassName($reflectionClass->getName());
+            $routingDefinition->setActionMethod($methodReflection->getName());
+            $routingDefinition->setRequestHeaders($ann->header);
+            $routingDefinition->setRequestMethods($ann->method);
+
+            $this->getRouting()->addDefinition($routingDefinition);
         }
     }
 

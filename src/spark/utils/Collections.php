@@ -107,7 +107,6 @@ final class Collections {
      * @return array
      */
     public static function map($array = array(), \Closure $func = null) {
-
         $resultArray = array();
         foreach ($array as $k => $el) {
             $resultArray[$k] = $func($el);
@@ -305,10 +304,10 @@ final class Collections {
 
     /**
      * @param $getCode
-     * @param $ticketCodes boolean
+     * @param $array boolean
      */
-    public static function contains($code, $ticketCodes = array()) {
-        return in_array($code, $ticketCodes);
+    public static function contains($code, $array = array()) {
+        return in_array($code, $array);
     }
 
     public static function setKeys(&$collection = array(), $keys = array(), $value) {
@@ -343,6 +342,14 @@ final class Collections {
         $k = array_search($value, $array, true);
         Collections::removeByKey($observerList, $k);
         return $observerList;
+    }
+
+    public static function asArray($array=array()) {
+        if (Objects::isArray($array)) {
+            return $array;
+        }
+        return array($array);
+
     }
 
 

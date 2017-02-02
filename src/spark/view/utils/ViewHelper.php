@@ -24,4 +24,11 @@ class ViewHelper {
         $viewModel->setRedirect($url);
         return $viewModel;
     }
+
+    public static function view($viewPath, $arr = array()) {
+        $viewModel = new ViewModel();
+        $viewModel->setViewName($viewPath);
+        $viewModel->addAll($arr);
+        return $viewModel;
+    }
 }

@@ -19,6 +19,10 @@ use Doctrine\ORM\Mapping;
 final class RequestPath implements Mapping\Annotation {
 
     /** @var string */
-    public $path = "" ;
+    public $path = "";
+    /** @var string */
+    public $method = array("GET");
+    /** @var string */
+    public $header = array();
 
 }

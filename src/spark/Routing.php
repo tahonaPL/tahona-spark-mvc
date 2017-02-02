@@ -2,7 +2,9 @@
 
 namespace spark;
 
+use spark\common\IllegalStateException;
 use spark\common\Optional;
+use spark\core\routing\RoutingDefinition;
 use spark\core\routing\RoutingException;
 use spark\http\Request;
 use spark\routing\RoutingUtils;
@@ -11,12 +13,16 @@ use spark\utils\Collections;
 use spark\utils\Functions;
 use spark\utils\Objects;
 use spark\utils\Predicates;
+use spark\utils\StringFunctions;
 use spark\utils\StringUtils;
 
 class Routing {
 
     const CONTROLLER_NAME = "controller";
     const METHOD_NAME = "method";
+    const REQUEST_METHODS_NAME = "requestMethods";
+    const REQUEST_HEADERS_NAME = "requestHeaders";
+
     const ROLES = "roles";
     const PARAMS = "params";
     private $routing = array();
@@ -80,23 +86,32 @@ class Routing {
      * @return array
      */
     private function buildControllerDefinitionArray($urlPath) {
+
         if (isset($this->routing[$urlPath])) {
-            $controllerName = StringUtils::replace($this->routing[$urlPath][Routing::CONTROLLER_NAME], ".", "\\");
-            return array(
-                $urlPath,
-                $controllerName,
-                $this->routing[$urlPath][Routing::METHOD_NAME]
-            );
+            $routesDefinitions = $this->routing[$urlPath];
+
+            $route =  RoutingUtils::findRoute($routesDefinitions);
+            $route->orElseThrow(new IllegalStateException("Route not found for: $urlPath"));
+
+            //backward compatibility: "com.some.AccController " change into com\some\AccController
+            $controllerName = $route->map(Functions::invokeGetMethod(RoutingDefinition::D_CONTROLLER_CLASS_NAME))
+                ->map(StringFunctions::replace(".", "\\"))
+                ->orElseThrow(new IllegalStateException("Nod defined controller class in rout"));
+
+            $actionMethod = $route->mapProperty(RoutingDefinition::D_ACTION_METHOD)
+                ->orElseThrow(new IllegalStateException("Not defined action method in routing."));
+
+            return array( $urlPath, $controllerName, $actionMethod);
         } else {
-            foreach ($this->parametrizedRouting as $route => $definition) {
-                if ($this->checkAllPathElements($route, $urlPath)) {
+            foreach ($this->parametrizedRouting as $routesDefinitions => $definition) {
+                if ($this->checkAllPathElements($routesDefinitions, $urlPath)) {
                     $controllerName =
-                        Optional::of($this->parametrizedRouting[$route][Routing::CONTROLLER_NAME])
+                        Optional::of($this->parametrizedRouting[$routesDefinitions][Routing::CONTROLLER_NAME])
                             ->map(StringUtils::mapReplace("/", ""))
                             ->map(StringUtils::mapReplace(".", "\\"))
                             ->get();
 
-                    return array($route, $controllerName, $this->parametrizedRouting[$route][Routing::METHOD_NAME]);
+                    return array($routesDefinitions, $controllerName, $this->parametrizedRouting[$routesDefinitions][Routing::METHOD_NAME]);
                 }
             }
         }
@@ -182,7 +197,6 @@ class Routing {
         Collections::removeByIndex($module, count($module) - 1);
         $module = StringUtils::join("\\", $module);
 
-
         $request->setNamespace($splittedPath[0]);
         $request->setModuleName($module);
         $request->setControllerName(str_replace("Controller", "", end($splittedPath)));
@@ -201,6 +215,14 @@ class Routing {
      */
     public function getDefinitions() {
         return $this->definitions;
+    }
+
+    public function addDefinition(RoutingDefinition $routingDefinition) {
+        $this->definitions[] = $routingDefinition->getPath();
+        if (!Collections::hasKey($this->routing, $routingDefinition->getPath())) {
+            $this->routing[$routingDefinition->getPath()] = array();
+        }
+        $this->routing[$routingDefinition->getPath()][] = $routingDefinition;
     }
 
     public function addPath($path, $controller, $methodName) {
