@@ -145,15 +145,15 @@ class FluentIterables {
         return $this;
     }
 
-    public function add($index, $element) {
-        return Collections::builder(Collections::add($this->collection, $index, $element));
+    public function insert($index, $element) {
+        return Collections::builder(Collections::insert($this->collection, $index, $element));
     }
 
     /**
      * @param $element
      * @return FluentIterables
      */
-    public function addElement($element) {
+    public function add($element) {
         $this->collection[] = $element;
         return Collections::builder($this->collection);
     }

@@ -20,9 +20,9 @@ final class RequestPath implements Mapping\Annotation {
 
     /** @var string */
     public $path = "";
-    /** @var string */
-    public $method = array("GET");
-    /** @var string */
+    /** @var array */
+    public $method = array();
+    /** @var array */
     public $header = array();
 
 }

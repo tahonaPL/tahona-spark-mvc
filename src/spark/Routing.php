@@ -10,6 +10,7 @@ use spark\http\Request;
 use spark\routing\RoutingUtils;
 use spark\utils\Asserts;
 use spark\utils\Collections;
+use spark\utils\Dev;
 use spark\utils\Functions;
 use spark\utils\Objects;
 use spark\utils\Predicates;
@@ -103,6 +104,7 @@ class Routing {
 
             return array( $urlPath, $controllerName, $actionMethod);
         } else {
+
             foreach ($this->parametrizedRouting as $routesDefinitions => $definition) {
                 if ($this->checkAllPathElements($routesDefinitions, $urlPath)) {
                     $controllerName =
@@ -225,16 +227,6 @@ class Routing {
         $this->routing[$routingDefinition->getPath()][] = $routingDefinition;
     }
 
-    public function addPath($path, $controller, $methodName) {
-        $this->definitions[] = $path;
-
-        $this->routing[$path] = array(
-            Routing::CONTROLLER_NAME => $controller,
-            Routing::METHOD_NAME => $methodName,
-        );
-    }
-
-
     /**
      * @param $routing
      */
@@ -246,7 +238,14 @@ class Routing {
             if (isset($value["params"])) {
                 $this->parametrizedRouting[$key] = $value;
             } else {
-                $this->routing[$key] = $value;
+                $definition = new RoutingDefinition();
+                $definition->setPath($key);
+                $definition->setControllerClassName($value[Routing::CONTROLLER_NAME]);
+                $definition->setActionMethod($value[Routing::METHOD_NAME]);
+                $definition->setRequestHeaders(Collections::getValue($value, Routing::REQUEST_HEADERS_NAME));
+                $definition->setRequestMethods(Collections::getValue($value, Routing::REQUEST_METHODS_NAME));
+
+                $this->addDefinition($definition);
             }
         }
     }

@@ -113,25 +113,25 @@ class RoutingUtils {
         $headers = RequestUtils::getHeaders();
 
         /** @var RoutingDefinition $item */
+        $routeWithNoMethod = null;
+
         foreach ($routes as $item) {
 
-            if (Collections::contains($requestMethod, $item->getRequestMethods())) {
+            $requestMethods = $item->getRequestMethods();
+
+            if (Collections::contains($requestMethod, $requestMethods)) {
                 $hasHeaders = Collections::isEmpty($item->getRequestHeaders());
                 if ($hasHeaders || Collections::containsAny($item->getRequestHeaders(), Collections::getKeys($headers))) {
                     return Optional::of($item);
-
                 }
             }
+
+            if (Collections::isEmpty($requestMethods)) {
+                $routeWithNoMethod = $item;
+            }
         }
-        return Optional::absent();
+
+        return Optional::ofNullable($routeWithNoMethod);
     }
 
-    //TODO
-    private static function getMethodCode($getRequestMethods = array()) {
-        $value = 0;
-        foreach ($getRequestMethods as $method) {
-            $value += HttpRequestMethod::getCode($method);
-        }
-        return $value;
-    }
 } 

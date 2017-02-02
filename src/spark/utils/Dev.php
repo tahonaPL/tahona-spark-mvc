@@ -25,31 +25,39 @@ class Dev {
      * @throws \spark\common\IllegalStateException
      */
     private static function parse($data, $maxLevel) {
-        $r = HtmlUtils::builder();
-        $element = $r->tag("table");
+        $collection = Collections::builder();
+        $collection = $collection->add("<style>table td {border:1px solid black}</style><table>");
 
         if ($maxLevel >= 0) {
             if (Objects::isArray($data)) {
+
+                $collection = $collection->add("<tr><td>");
+                $collection = $collection->add("<table>");
+
                 foreach ($data as $k => $v) {
-                    $element->tag("tr")->tag("td", $k . "(key)")->end();
-                    $element->tag("tr")->tag("td", Dev::parse($v, $maxLevel - 1))->end();
+                    $parse = Dev::parse($v, $maxLevel - 1);
+                    $collection = $collection->add("<tr> <td>$k (key)</td> <td>". $parse."</td></tr>");
                 }
+
+                $collection = $collection->add("</table>");
+                $collection = $collection->add("</td></tr>");
+
             } else if (Objects::isNull($data)) {
-                $element->tag("tr")
-                    ->tag("td", "null")
-                    ->end();
+                $collection = $collection->add("<tr><td>null</td>");
+
             } else if (!Objects::isPrimitive($data)) {
                 $simpleClassName = Objects::getSimpleClassName($data);
-                $element->tag("tr")->tag("td", $simpleClassName . "(object)")->end();
-                $element->tag("tr")->tag("td", Dev::parse((array)$data, $maxLevel - 1))->end();
+                $collection = $collection->add("<tr><td>$simpleClassName</td>");
+
+                $c = Dev::parse($data, $maxLevel - 1);
+                $collection = $collection->add("<tr><td>". $c ."</td>");
             }
+
         } else if (Objects::isPrimitive($data)) {
-            $element->tag("tr")
-                ->tag("td", $data)
-                ->end();
+            $collection = $collection->add("<tr><td>$data</td>");
         }
 
-        return $element->end()
-            ->get();
+        $collection = $collection->add("</table>");
+        return StringUtils::join("",$collection->get());
     }
 }

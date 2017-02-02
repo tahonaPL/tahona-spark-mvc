@@ -68,7 +68,7 @@ final class Collections {
         return in_array($key, $collection);
     }
 
-    public static function add($collection, $index, $element) {
+    public static function insert($collection, $index, $element) {
         $result = array();
         foreach ($collection as $v) {
             if (Collections::size($result) === $index) {
