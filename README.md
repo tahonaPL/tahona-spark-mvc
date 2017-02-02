@@ -187,6 +187,13 @@ core.thank.you.message=Thank You %s
 ```
 Results: Thank You John
 
+### @RequestPath ###
+
+@RequestPath(path="/login/{test}", method="get")
+
+$this->getParam("test");
+
+
 
 
 ### Composer ###
