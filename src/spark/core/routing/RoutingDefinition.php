@@ -19,12 +19,33 @@ class RoutingDefinition {
 
     const D_CONTROLLER_CLASS_NAME = "controllerClassName";
     const D_ACTION_METHOD = "actionMethod";
+    const D_PATH = "path";
+
+    private $id;
+
     private $path;
     private $controllerClassName;
     private $actionMethod;
     private $requestMethods;
     private $requestHeaders;
     private $params;
+
+    /**
+     * RoutingDefinition constructor.
+     * @param $id
+     */
+    public function __construct() {
+        $this->id = uniqid("routing");
+    }
+
+    /**
+     * @return string
+     */
+    public function getId() {
+        return $this->id;
+    }
+
+
 
     /**
      * @return mixed
@@ -109,11 +130,12 @@ class RoutingDefinition {
         $this->params = Collections::asArray($params);
     }
 
-    /**
-     * @return mixed
-     */
     public function getParams() {
         return $this->params;
+    }
+
+    public function getRoles() {
+        return array();
     }
 
 

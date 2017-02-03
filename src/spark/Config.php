@@ -28,7 +28,7 @@ class Config {
     const MAIL_FROM_EMAIL_KEY = "mail.from.email";
 
     const WEB_PAGE = "web.page";
-    const APCU_CACHE_ENABLED = "spark.apcu.cache.enabled";
+    const APCU_CACHE_ENABLED = "";
 
 
     private $cache = array();

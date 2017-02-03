@@ -29,7 +29,7 @@ class ToInjectObserver {
         $this->bean = $bean;
         $this->beanNameToInject = $beanNameToInject;
 
-        $this->id = spl_object_hash($this);
+        $this->id = uniqid("toInject");
     }
 
     /**

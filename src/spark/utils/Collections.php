@@ -352,5 +352,11 @@ final class Collections {
 
     }
 
+    public static function containsAll($valuesToSearch, $all) {
+        $array_intersect = array_intersect($valuesToSearch, $all);
+        return count($array_intersect)===count($valuesToSearch);
+
+    }
+
 
 }

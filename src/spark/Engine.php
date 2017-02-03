@@ -9,6 +9,7 @@ use house\HouseConfig;
 use ReflectionClass;
 use spark\cache\ApcuBeanCache;
 use spark\cache\BeanCache;
+use spark\core\annotation\handler\EnableApcuAnnotationHandler;
 use spark\core\Bootstrap;
 use spark\core\CoreConfig;
 use spark\core\engine\EngineConfig;
@@ -49,6 +50,7 @@ use spark\view\ViewModel;
  */
 class Engine {
     private static $ROOT_APP_PATH;
+    private $apcuExtensionLoaded;
 
     /**
      * @var EngineConfig
@@ -77,6 +79,7 @@ class Engine {
     private $beanCache;
 
     public function __construct($name, $rootAppPath) {
+        $this->apcuExtensionLoaded = extension_loaded("apcu");
 
         $fileList = FileUtils::getDirList($rootAppPath . "/src");
 
@@ -100,7 +103,9 @@ class Engine {
         }
 
         if (!$this->hasAllreadyCachedData() || isset($_GET["reset"])) {
-            $this->beanCache->clearAll();
+            if ($this->apcuExtensionLoaded) {
+                $this->beanCache->clearAll();
+            }
 
             $src = $rootAppPath . "/src";
 
@@ -124,7 +129,7 @@ class Engine {
             $this->services->setConfig($this->config);
             $this->services->initServices();
 
-            if ($this->isBeanCacheEnabled()) {
+            if ($this->isApcuCacheEnabled()) {
                 $this->beanCache->put($this->getCacheKey("config"), $this->config);
                 $this->beanCache->put($this->getCacheKey("services"), $this->services);
                 $this->beanCache->put($this->getCacheKey("route"), $this->route);
@@ -176,6 +181,7 @@ class Engine {
         $registeredHostPath = $this->getRegisteredHostPath();
         $request = $this->route->createRequest($urlName, $registeredHostPath);
 
+
         //Controller
         $controllerName = $request->getControllerClassName();
         /** @var $controller Controller */
@@ -189,6 +195,7 @@ class Engine {
 
         $controller->setServices($this->services);
         $controller->init($request, $responseParams);
+
 
         //ACTION->VIEW
         $this->handleAction($responseParams, $request, $controller);
@@ -246,6 +253,7 @@ class Engine {
      * @throws \ErrorException
      */
     private function handleAction($errorArray, $request, $controller) {
+
         /** @var $viewModel ViewModel */
         $methodName = $request->getMethodName();
         $viewModel = $controller->$methodName();
@@ -298,10 +306,6 @@ class Engine {
         }
     }
 
-    private function isBeanCacheEnabled() {
-        return Objects::isNotNull($this->beanCache);
-    }
-
     private function filter($filters = array(), Request $request) {
         if (Collections::isNotEmpty($filters)) {
             $filtersIterator = new \ArrayIterator($filters);
@@ -311,7 +315,7 @@ class Engine {
     }
 
     private function hasAllreadyCachedData() {
-        return $this->isBeanCacheEnabled() && $this->beanCache->has($this->getCacheKey("services"));
+        return $this->apcuExtensionLoaded && $this->beanCache->has($this->getCacheKey("services"));
     }
 
     /**
@@ -325,7 +329,7 @@ class Engine {
      * @return null
      */
     private function isApcuCacheEnabled() {
-        return $this->config->getProperty(Config::APCU_CACHE_ENABLED, false);
+        return $this->apcuExtensionLoaded && $this->config->getProperty(EnableApcuAnnotationHandler::APCU_CACHE_ENABLED, false);
     }
 
 

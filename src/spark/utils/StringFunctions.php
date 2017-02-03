@@ -34,4 +34,10 @@ class StringFunctions {
             return StringUtils::split($x, $splitter);
         };
     }
+
+    public static function equals($value) {
+        return function($x) use ($value) {
+            return StringUtils::equals($x, $value);
+        };
+    }
 }

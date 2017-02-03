@@ -18,6 +18,7 @@ use spark\utils\StringUtils;
  */
 class EnableApcuAnnotationHandler extends AnnotationHandler {
 
+    const APCU_CACHE_ENABLED = "spark.apcu.cache.enabled";
     private $annotationName;
 
     public function __construct() {
@@ -31,7 +32,7 @@ class EnableApcuAnnotationHandler extends AnnotationHandler {
 
 
         if ($annotation->isPresent()) {
-            $this->getConfig()->set(Config::APCU_CACHE_ENABLED, true);
+            $this->getConfig()->set(self::APCU_CACHE_ENABLED, true);
         }
     }
 

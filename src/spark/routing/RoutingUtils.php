@@ -121,7 +121,7 @@ class RoutingUtils {
 
             if (Collections::contains($requestMethod, $requestMethods)) {
                 $hasHeaders = Collections::isEmpty($item->getRequestHeaders());
-                if ($hasHeaders || Collections::containsAny($item->getRequestHeaders(), Collections::getKeys($headers))) {
+                if ($hasHeaders || Collections::containsAll($item->getRequestHeaders(), Collections::getKeys($headers))) {
                     return Optional::of($item);
                 }
             }

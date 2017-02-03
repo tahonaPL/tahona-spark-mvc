@@ -2,6 +2,7 @@
 
 namespace spark\core\annotation\handler;
 
+use ReflectionClass;
 use spark\Config;
 use spark\core\annotation\handler\AnnotationHandler;
 use spark\core\annotation\RequestPath;
@@ -22,18 +23,33 @@ use spark\utils\StringUtils;
 class RequestPathAnnotationHandler extends AnnotationHandler {
 
     private $annotationName;
+    private $classes;
 
     public function __construct() {
         $this->annotationName = "spark\\core\\annotation\\RequestPath";
+        $this->classes = array();
     }
 
-    public function handleMethodAnnotations($annotations = array(), $bean, \ReflectionMethod $methodReflection) {
-        $annotation = Collections::builder($annotations)
-            ->findFirst(Predicates::compute($this->getClassName(), StringUtils::predEquals($this->annotationName)));
+    public function handleClassAnnotations($annotations = array(), $bean, ReflectionClass $classReflection) {
+//        $annotation = Collections::builder($annotations)
+//            ->findFirst(Predicates::compute($this->getClassName(), StringUtils::predEquals($this->annotationName)));
+//
+//        if ($annotation) {
+//
+//        }
+    }
 
-        if ($annotation->isPresent()) {
-            /** @var RequestPath $ann */
-            $ann = $annotation->get();
+
+    public function handleMethodAnnotations($annotations = array(), $bean, \ReflectionMethod $methodReflection) {
+
+
+        $annotations = Collections::builder($annotations)
+            ->filter(Predicates::compute($this->getClassName(), StringUtils::predEquals($this->annotationName)))
+            ->get();
+
+
+        /** @var RequestPath $ann */
+        foreach ($annotations as $ann) {
             $reflectionClass = $methodReflection->getDeclaringClass();
 
             $routingDefinition = new RoutingDefinition();
@@ -50,7 +66,6 @@ class RequestPathAnnotationHandler extends AnnotationHandler {
             $this->getRouting()->addDefinition($routingDefinition);
         }
     }
-
 
 
     private function getClassName() {
