@@ -121,13 +121,13 @@ final class Collections {
         return false;
     }
 
-    public static function removeByIndex(&$collection= array(), $index) {
+    public static function removeByIndex(&$collection = array(), $index) {
         Asserts::checkState(Objects::isArray($collection));
 
         $i = 0;
-        $toRemoveKey=null;
+        $toRemoveKey = null;
 
-        foreach ($collection as $k=>$v) {
+        foreach ($collection as $k => $v) {
             $toRemoveKey = $k;
             if ($i >= $index) {
                 break;
@@ -344,7 +344,7 @@ final class Collections {
         return $observerList;
     }
 
-    public static function asArray($array=array()) {
+    public static function asArray($array = array()) {
         if (Objects::isArray($array)) {
             return $array;
         }
@@ -354,8 +354,12 @@ final class Collections {
 
     public static function containsAll($valuesToSearch, $all) {
         $array_intersect = array_intersect($valuesToSearch, $all);
-        return count($array_intersect)===count($valuesToSearch);
+        return count($array_intersect) === count($valuesToSearch);
 
+    }
+
+    public static function merge($array1 = array(), $array2 = array()) {
+        return array_merge($array1, $array2);
     }
 
 

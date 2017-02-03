@@ -47,7 +47,6 @@ class LangMessageResource {
      * @PostConstruct()
      */
     public function init() {
-        $this->config->getProperty("app.path");
 
         foreach ($this->filePath as $key => $pathArr) {
             foreach ($pathArr as $path) {

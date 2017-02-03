@@ -212,14 +212,6 @@ class Engine {
     }
 
     private function addBaseServices() {
-        if ($this->config->hasProperty("messages")) {
-            $messagesLocalizationFilePaths = $this->config->getProperty("messages");
-        } else {
-            $messagesLocalizationFilePaths = array();
-        }
-
-//        $this->services->clear();
-        $this->services->register(LangMessageResource::NAME, new LangMessageResource($messagesLocalizationFilePaths));
         $this->services->register(SmartyPlugins::NAME, new SmartyPlugins());
         $this->services->register(RequestProvider::NAME, new RequestProvider());
         $this->services->register(RoutingInfo::NAME, new RoutingInfo($this->route));

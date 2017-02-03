@@ -34,15 +34,15 @@ abstract class AnnotationHandler {
      */
     private $config;
 
-    public function handleClassAnnotations($annotations = array(), $bean, ReflectionClass $classReflection) {
+    public function handleClassAnnotations($annotations = array(), $class, ReflectionClass $classReflection) {
 
     }
 
-    public function handleMethodAnnotations($annotations = array(), $bean, ReflectionMethod $methodReflection) {
+    public function handleMethodAnnotations($annotations = array(), $class, ReflectionMethod $methodReflection) {
 
     }
 
-    public function handleFieldAnnotations($annotations = array(), $bean, ReflectionProperty $fieldReflection) {
+    public function handleFieldAnnotations($annotations = array(), $class, ReflectionProperty $fieldReflection) {
 
     }
 

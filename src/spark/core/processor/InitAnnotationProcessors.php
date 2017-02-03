@@ -47,17 +47,17 @@ class InitAnnotationProcessors extends AnnotationHandler {
 
     }
 
-    public function handleClassAnnotations($annotations = array(), $bean, ReflectionClass $classReflection) {
+    public function handleClassAnnotations($annotations = array(), $class, ReflectionClass $classReflection) {
         /** @var AnnotationHandler $handler */
         foreach ($this->handlers as $handler) {
-            $handler->handleClassAnnotations($annotations, $bean, $classReflection);
+            $handler->handleClassAnnotations($annotations, $class, $classReflection);
         }
     }
 
-    public function handleMethodAnnotations($annotations = array(), $bean, ReflectionMethod $methodReflection) {
+    public function handleMethodAnnotations($annotations = array(), $class, ReflectionMethod $methodReflection) {
         /** @var AnnotationHandler $handler */
         foreach ($this->handlers as $handler) {
-            $handler->handleMethodAnnotations($annotations, $bean, $methodReflection);
+            $handler->handleMethodAnnotations($annotations, $class, $methodReflection);
         }
     }
 

@@ -7,6 +7,7 @@ use spark\common\IllegalArgumentException;
 use spark\common\IllegalStateException;
 use spark\core\definition\BeanDefinition;
 use spark\core\definition\ToInjectObserver;
+use spark\core\library\Annotations;
 use spark\core\service\ServiceHelper;
 use spark\filter\HttpFilter;
 use spark\utils\Asserts;
@@ -62,12 +63,9 @@ class Services {
             $bean->setConfig($this->getConfig());
         }
 
-        $overrideInjections = Collections::builder(ReflectionUtils::getClassAnnotations(Objects::getClassName($bean), self::OVERRIDE_INJECT_ANNOTATION))
-            ->convertToMap(Functions::field("oldName"))
-            ->get();
+        $overrideInjections = Annotations::getOverrideInjections(Objects::getClassName($bean));
 
-
-        return ReflectionUtils::handlePropertyAnnotation($bean, self::INJECT_ANNOTATION,
+        return ReflectionUtils::handlePropertyAnnotation($bean, Annotations::INJECT,
             function ($bean, \ReflectionProperty $property, $annotation) use ($overrideInjections) {
                 $beanNameToInject = $this->getBeanName($property, $annotation);
 
@@ -80,14 +78,13 @@ class Services {
 
                 if ($hasKey) {
                     $property->setAccessible(true);
-                    $property->setValue($bean, $this->beanContainer[$beanNameToInject]->getBean());
+                    $property->setValue($bean, $this->get($beanNameToInject));
                     return null;
                 }
 
                 return new ToInjectObserver($bean, $beanNameToInject);
             }
         );
-
     }
 
     /**
@@ -217,14 +214,15 @@ class Services {
     private function injectAndCreate(&$beansToInject) {
 
         //Inject all beans already created
-        foreach ($beansToInject as $serviceName => $service) {
-            $failedInjectionList = $this->injectTo($service->getBean());
+        /** @var BeanDefinition $definition */
+        foreach ($beansToInject as $serviceName => $definition) {
+            $bean = $definition->getBean();
+            $failedInjectionList = $this->injectTo($bean);
 
             if (Collections::isNotEmpty($failedInjectionList)) {
-
                 $this->waitingList[$serviceName] = $failedInjectionList;
             } else {
-                $this->beanContainer[$serviceName] = $service;
+                $this->beanContainer[$serviceName] = $definition;
             }
         }
 
@@ -232,9 +230,9 @@ class Services {
         //Build Normal
         $excludeBuildNamesList = Collections::getKeys($this->waitingList);
 
-        foreach ($this->beanContainer as $serviceName => $service) {
+        foreach ($this->beanContainer as $serviceName => $definition) {
             if (!Collections::contains($serviceName, $excludeBuildNamesList)) {
-                $this->buildBeanAnnotation($service->getBean());
+                $this->buildBeanAnnotation($definition->getBean());
             }
         }
 

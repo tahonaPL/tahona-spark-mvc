@@ -122,18 +122,18 @@ class BeanLoader {
     private function processAnnotations($class) {
         $reflectionObject = new ReflectionClass($class);
         $classAnnotations = $this->annotationReader->getClassAnnotations($reflectionObject);
-        $this->annotationProcessor->handleClassAnnotations($classAnnotations, null, $reflectionObject);
+        $this->annotationProcessor->handleClassAnnotations($classAnnotations, $class, $reflectionObject);
 
         $reflectionMethods = $reflectionObject->getMethods();
         foreach ($reflectionMethods as $method) {
             $methodAnnotations = $this->annotationReader->getMethodAnnotations($method);
-            $this->annotationProcessor->handleMethodAnnotations($methodAnnotations, null, $method);
+            $this->annotationProcessor->handleMethodAnnotations($methodAnnotations, $class, $method);
         }
 
         $reflectionProperties = $reflectionObject->getProperties();
         foreach ($reflectionProperties as $property) {
             $methodAnnotations = $this->annotationReader->getPropertyAnnotations($property);
-            $this->annotationProcessor->handleFieldAnnotations($methodAnnotations, null, $property);
+            $this->annotationProcessor->handleFieldAnnotations($methodAnnotations, $class, $property);
         }
     }
 
