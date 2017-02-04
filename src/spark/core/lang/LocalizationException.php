@@ -6,7 +6,7 @@
  * Time: 19:16
  */
 
-namespace spark\lang;
+namespace spark\core\lang;
 
 
 class LocalizationException extends \Exception {

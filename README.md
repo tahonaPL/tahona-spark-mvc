@@ -158,8 +158,8 @@ Bean definition
     /**
     * @Bean
     */
-    public function langMessageResource() {
-        return new LangMessageResource(array(
+    public function anyPrefixNameMessageResource() {
+        return new LangResourcePath(array(
             "pl"=>array(
                 "/house/house_pl.properties"
             ),
@@ -176,6 +176,21 @@ Where "pl","cz","en" are cookie value with key "lang";
 
 ```
 core.thank.you.message=Thank You %s
+```
+
+* Use in php
+```php
+    /**
+     * @Inject
+     * @var langMessageResource
+     */
+    private $langMessageResource;
+
+
+    ...
+
+    $this->langMessageResource->get("core.thank.you.message", array("John"));
+
 ```
 
 * Use in smarty

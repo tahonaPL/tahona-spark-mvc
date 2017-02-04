@@ -16,6 +16,7 @@ use spark\core\engine\EngineConfig;
 use spark\core\engine\EngineFactory;
 use spark\core\error\EngineExceptionWrapper;
 use spark\core\error\GlobalErrorHandler;
+use spark\core\lang\LangResourcePath;
 use spark\core\library\BeanLoader;
 use spark\core\processor\InitAnnotationProcessors;
 use spark\core\provider\BeanProvider;
@@ -24,7 +25,7 @@ use spark\http\Request;
 use spark\http\RequestProvider;
 use spark\loader\ClassLoaderRegister;
 use spark\routing\RoutingInfo;
-use spark\lang\LangMessageResource;
+use spark\core\lang\LangMessageResource;
 use spark\http\utils\RequestUtils;
 use spark\utils\ConfigHelper;
 use spark\utils\FileUtils;
@@ -116,7 +117,7 @@ class Engine {
             $this->config->set("app.path", $rootAppPath);
             $this->config->set("src.path", $rootAppPath."/src");
 
-            $this->addBaseServices();
+
             $initAnnotationProcessors = new InitAnnotationProcessors($this->route, $this->config, $this->container);
 
             $beanLoader = new BeanLoader($initAnnotationProcessors, $this->config);
@@ -125,9 +126,12 @@ class Engine {
             $beanLoader->addPersistanceLib();
             $beanLoader->process();
 
+            $this->addBaseServices();
+
             $this->container->registerObj($this->container);
             $this->container->setConfig($this->config);
             $this->container->initServices();
+            $this->afterAllBean();
 
             if ($this->isApcuCacheEnabled()) {
                 $this->beanCache->put($this->getCacheKey("config"), $this->config);
@@ -212,6 +216,7 @@ class Engine {
     }
 
     private function addBaseServices() {
+        $this->container->register(LangMessageResource::NAME, new LangMessageResource(array()));
         $this->container->register(SmartyPlugins::NAME, new SmartyPlugins());
         $this->container->register(RequestProvider::NAME, new RequestProvider());
         $this->container->register(RoutingInfo::NAME, new RoutingInfo($this->route));
@@ -220,7 +225,14 @@ class Engine {
         $this->container->registerObj($this->route);
 
         $this->addViewHandlersToService();
+    }
 
+    private function afterAllBean() {
+        $resourcePaths = $this->container->getByType(LangResourcePath::CLASS_NAME);
+
+        /** @var LangMessageResource $resource */
+        $resource = $this->container->get(LangMessageResource::NAME);
+        $resource->addResources($resourcePaths);
     }
 
     private function addViewHandlersToService() {

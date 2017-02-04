@@ -12,7 +12,7 @@ namespace spark\view\smarty;
 use spark\core\annotation\Inject;
 use spark\seo\SeoUrlFactory;
 use spark\seo\WithSeoUrl;
-use spark\lang\LangMessageResource;
+use spark\core\lang\LangMessageResource;
 use spark\utils\UrlUtils;
 use spark\utils\Collections;
 use spark\utils\StringUtils;
