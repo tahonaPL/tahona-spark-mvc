@@ -64,7 +64,7 @@ class RequestPathAnnotationHandler extends AnnotationHandler {
                     $routingDefinition->setActionMethod($methodReflection->getName());
 
                     $routingDefinition->setRequestHeaders(Collections::merge($prefixAnnotation->header, $ann->header));
-                    $routingDefinition->setRequestMethods(Collections::merge($prefixAnnotation->method, $ann->header));
+                    $routingDefinition->setRequestMethods(Collections::merge($prefixAnnotation->method, $ann->method));
 
                     if (RoutingUtils::hasExpression($path)) {
                         $routingDefinition->setParams(RoutingUtils::getParametrizedUrlKeys($path));
