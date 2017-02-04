@@ -187,12 +187,36 @@ Results: Thank You John
 
 ### @RequestPath ###
 
+Annotation Defonition
+
+
+```php
 @RequestPath(path="/login/{test}", method="get")
 
+```
+
+Fetch path paramether in Controller class;
+```php
 $this->getParam("test");
 
+```
+
+### MULTI fetch by component   ###
 
 
+Example is for dynami menu module that will popup when new project or classes are added.
+```php
+
+    /**
+    * @Inject
+    */
+    private $beanProvider;
+
+
+    public function getMenuModules() {
+        return $beanProvider->getByType(MenuModule::class);
+    }
+```
 
 ### Composer ###
 
