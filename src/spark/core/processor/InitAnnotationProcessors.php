@@ -26,9 +26,9 @@ class InitAnnotationProcessors extends AnnotationHandler {
     private $handlers;
     private $routing;
     private $config;
-    private $services;
+    private $container;
 
-    public function __construct(&$routing, &$config, &$services) {
+    public function __construct(&$routing, &$config, &$container) {
         $this->handlers = array(
             new ComponentAnnotationHandler(),
             new EnableApcuAnnotationHandler(),
@@ -38,7 +38,7 @@ class InitAnnotationProcessors extends AnnotationHandler {
 
         $this->routing = $routing;
         $this->config = $config;
-        $this->services = $services;
+        $this->container = $container;
 
         /** @var AnnotationHandler $handler */
         foreach ($this->handlers as $handler) {
@@ -79,7 +79,7 @@ class InitAnnotationProcessors extends AnnotationHandler {
     private function updateHanlder($handler) {
         $handler->setConfig($this->config);
         $handler->setRouting($this->routing);
-        $handler->setServices($this->services);
+        $handler->setContainer($this->container);
     }
 
 

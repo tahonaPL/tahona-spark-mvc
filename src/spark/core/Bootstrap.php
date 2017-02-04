@@ -2,13 +2,11 @@
 
 namespace spark\core;
 
-use Doctrine\ORM\EntityManager;
 use spark\Config;
+use spark\Container;
 use spark\Controller;
 use spark\http\Request;
 use spark\Routing;
-use spark\Services;
-use spark\utils\Objects;
 use spark\view\ViewModel;
 
 abstract class Bootstrap {
@@ -21,9 +19,9 @@ abstract class Bootstrap {
 
     /**
      *
-     * @var \spark\Services
+     * @var Container
      */
-    private $services;
+    private $container;
 
     /**
      *
@@ -85,11 +83,11 @@ abstract class Bootstrap {
     }
 
     public function get($name) {
-        return $this->services->get($name);
+        return $this->container->get($name);
     }
 
-    public function setServices(\spark\Services $services) {
-        $this->services = $services;
+    public function setContainer(Container $container) {
+        $this->container = $container;
     }
 
     /**
@@ -116,9 +114,9 @@ abstract class Bootstrap {
     /**
      * To add new beans in new module
      *
-     * @return \spark\Services
+     * @return Container
      */
-    protected final function getServices() {
-        return $this->services;
+    protected final function getContainer() {
+        return $this->container;
     }
 }

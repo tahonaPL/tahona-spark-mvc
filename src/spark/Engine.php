@@ -69,9 +69,9 @@ class Engine {
     private $config;
 
     /**
-     * @var Services
+     * @var Container
      */
-    private $services;
+    private $container;
 
     /**
      * @var BeanCache
@@ -97,7 +97,7 @@ class Engine {
         $this->beanCache->init();
 
         if ($this->hasAllreadyCachedData()) {
-            $this->services = $this->beanCache->get($this->getCacheKey("services"));
+            $this->container = $this->beanCache->get($this->getCacheKey("container"));
             $this->route = $this->beanCache->get($this->getCacheKey("route"));
             $this->config = $this->beanCache->get($this->getCacheKey("config"));
         }
@@ -109,7 +109,7 @@ class Engine {
 
             $src = $rootAppPath . "/src";
 
-            $this->services = new Services();
+            $this->container = new Container();
             $this->route = new Routing(array());
             $this->config = new Config();
 
@@ -117,7 +117,7 @@ class Engine {
             $this->config->set("src.path", $rootAppPath."/src");
 
             $this->addBaseServices();
-            $initAnnotationProcessors = new InitAnnotationProcessors($this->route, $this->config, $this->services);
+            $initAnnotationProcessors = new InitAnnotationProcessors($this->route, $this->config, $this->container);
 
             $beanLoader = new BeanLoader($initAnnotationProcessors, $this->config);
             $beanLoader->addFromPath($src);
@@ -125,13 +125,13 @@ class Engine {
             $beanLoader->addPersistanceLib();
             $beanLoader->process();
 
-            $this->services->registerObj($this->services);
-            $this->services->setConfig($this->config);
-            $this->services->initServices();
+            $this->container->registerObj($this->container);
+            $this->container->setConfig($this->config);
+            $this->container->initServices();
 
             if ($this->isApcuCacheEnabled()) {
                 $this->beanCache->put($this->getCacheKey("config"), $this->config);
-                $this->beanCache->put($this->getCacheKey("services"), $this->services);
+                $this->beanCache->put($this->getCacheKey("container"), $this->container);
                 $this->beanCache->put($this->getCacheKey("route"), $this->route);
             }
         }
@@ -188,12 +188,12 @@ class Engine {
         $controller = new $controllerName();
 
         /** @var RequestProvider $requestProvider */
-        $requestProvider = $this->services->get(RequestProvider::NAME);
+        $requestProvider = $this->container->get(RequestProvider::NAME);
         $requestProvider->setRequest($request);
 
-        $this->filter($this->services->getFilters(), $request);
+        $this->filter($this->container->getFilters(), $request);
 
-        $controller->setServices($this->services);
+        $controller->setContainer($this->container);
         $controller->init($request, $responseParams);
 
 
@@ -212,12 +212,12 @@ class Engine {
     }
 
     private function addBaseServices() {
-        $this->services->register(SmartyPlugins::NAME, new SmartyPlugins());
-        $this->services->register(RequestProvider::NAME, new RequestProvider());
-        $this->services->register(RoutingInfo::NAME, new RoutingInfo($this->route));
-        $this->services->registerObj(new BeanProvider($this->services));
-        $this->services->registerObj($this->config);
-        $this->services->registerObj($this->route);
+        $this->container->register(SmartyPlugins::NAME, new SmartyPlugins());
+        $this->container->register(RequestProvider::NAME, new RequestProvider());
+        $this->container->register(RoutingInfo::NAME, new RoutingInfo($this->route));
+        $this->container->registerObj(new BeanProvider($this->container));
+        $this->container->registerObj($this->config);
+        $this->container->registerObj($this->route);
 
         $this->addViewHandlersToService();
 
@@ -230,11 +230,11 @@ class Engine {
 
         $provider = new ViewHandlerProvider();
 
-        $this->services->register(ViewHandlerProvider::NAME, $provider);
-        $this->services->register("defaultViewHandler", $smartyViewHandler);
-        $this->services->register(SmartyViewHandler::NAME, $smartyViewHandler);
-        $this->services->register(PlainViewHandler::NAME, $plainViewHandler);
-        $this->services->register(JsonViewHandler::NAME, $jsonViewHandler);
+        $this->container->register(ViewHandlerProvider::NAME, $provider);
+        $this->container->register("defaultViewHandler", $smartyViewHandler);
+        $this->container->register(SmartyViewHandler::NAME, $smartyViewHandler);
+        $this->container->register(PlainViewHandler::NAME, $plainViewHandler);
+        $this->container->register(JsonViewHandler::NAME, $jsonViewHandler);
     }
 
     /**
@@ -276,7 +276,7 @@ class Engine {
      * @param Request $request
      */
     private function handleView($viewModel, $request) {
-        $handler = $this->services->get(ViewHandlerProvider::NAME);
+        $handler = $this->container->get(ViewHandlerProvider::NAME);
         /** @var $handler ViewHandlerProvider */
         $handler->handleView($viewModel, $request);
     }

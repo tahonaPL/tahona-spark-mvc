@@ -2,22 +2,22 @@
 
 namespace spark\core\service;
 
-use spark\Services;
+use spark\Container;
 
 class ServiceHelper {
 
     /**
      *
-     * @var Services 
+     * @var Container
      */
-    private $services;
+    private $container;
 
     /**
      *  Method for bean locating and getting from Service resources.
      *
      * use:
      *
-     * Services->register("UserService", new UserService());
+     * Container->register("UserService", new UserService());
      * $this->get("UserService");
      *
      *
@@ -25,11 +25,11 @@ class ServiceHelper {
      * @return mixed
      */
     protected function get($name) {
-        return $this->services->get($name);
+        return $this->container->get($name);
     }
 
-    public function setServices(Services $services) {
-        $this->services = $services;
+    public function setContainer(Container $container) {
+        $this->container = $container;
     }
 
 }

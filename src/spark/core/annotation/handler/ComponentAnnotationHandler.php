@@ -37,7 +37,7 @@ class ComponentAnnotationHandler extends AnnotationHandler {
         if ($annotation->isPresent()) {
             $className = $classReflection->getName();
             $beanName = $this->getBeanName($annotation->get(), $className);
-            $this->getServices()->register($beanName, new $className);
+            $this->getContainer()->register($beanName, new $className);
         }
     }
 

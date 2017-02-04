@@ -15,14 +15,14 @@ use ReflectionProperty;
 use spark\Config;
 use spark\Routing;
 use spark\routing\RoutingInfo;
-use spark\Services;
+use spark\Container;
 
 abstract class AnnotationHandler {
 
     /**
-     * @var Services
+     * @var Container
      */
-    private $services;
+    private $container;
 
     /**
      * @var Routing
@@ -47,17 +47,17 @@ abstract class AnnotationHandler {
     }
 
     /**
-     * @return Services
+     * @return Container
      */
-    protected function getServices() {
-        return $this->services;
+    protected function getContainer() {
+        return $this->container;
     }
 
     /**
-     * @param Services $services
+     * @param Container $container
      */
-    public function setServices(&$services) {
-        $this->services = $services;
+    public function setContainer(&$container) {
+        $this->container = $container;
     }
 
     /**

@@ -24,9 +24,9 @@ class Controller {
 
     /**
      *
-     * @var Services
+     * @var Container
      */
-    private $services;
+    private $container;
 
     public function init($request, $responseParams) {
         $this->request = $request;
@@ -41,12 +41,12 @@ class Controller {
     }
 
     public function get($name) {
-        return $this->services->get($name);
+        return $this->container->get($name);
     }
 
-    public function setServices(Services $services) {
-        $this->services = $services;
-        $this->services->injectTo($this);
+    public function setContainer(Container $container) {
+        $this->container = $container;
+        $this->container->injectTo($this);
     }
 
     protected function getParam($key, $defaultValue = null) {

@@ -13,7 +13,7 @@ use spark\common\IllegalArgumentException;
 use spark\Config;
 use spark\core\annotation\Inject;
 use spark\core\provider\BeanProvider;
-use spark\Services;
+use spark\Container;
 use spark\utils\Asserts;
 use spark\utils\Collections;
 use spark\utils\Objects;

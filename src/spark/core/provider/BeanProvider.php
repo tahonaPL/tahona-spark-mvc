@@ -9,29 +9,29 @@
 namespace spark\core\provider;
 
 
-use spark\Services;
+use spark\Container;
 
 class BeanProvider {
 
     /**
-     * @var Services
+     * @var Container
      */
-    private $services;
+    private $container;
 
     /**
      * BeanProvider constructor.
-     * @param Services $services
+     * @param Container $container
      */
-    public function __construct(Services $services) {
-        $this->services = $services;
+    public function __construct(Container $container) {
+        $this->container = $container;
     }
 
     public function getBean($string) {
-        return $this->services->get($string);
+        return $this->container->get($string);
     }
 
     public function getByType($className) {
-        return $this->services->getByType($className);
+        return $this->container->getByType($className);
     }
 
 

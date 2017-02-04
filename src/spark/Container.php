@@ -17,7 +17,7 @@ use spark\utils\Objects;
 use spark\utils\ReflectionUtils;
 use spark\utils\StringUtils;
 
-class Services {
+class Container {
 
     private $config;
     private $beanContainer = array();
@@ -57,7 +57,7 @@ class Services {
     public function injectTo($bean) {
 
         if ($bean instanceof ServiceHelper) {
-            $bean->setServices($this);
+            $bean->setContainer($this);
         }
         if ($bean instanceof core\ConfigAware) {
             $bean->setConfig($this->getConfig());
