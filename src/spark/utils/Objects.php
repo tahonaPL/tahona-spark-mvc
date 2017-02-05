@@ -62,9 +62,10 @@ class Objects {
 
     public static function getClassNames($obj) {
         $parents = class_parents($obj);
+        $implements = class_implements($obj);
         $className = self::getClassName($obj);
-        Collections::addAll($parents, array($className=>$className));
-        return $parents;
+        Collections::addAll($parents, array($className => $className));
+            return Collections::merge($parents, $implements);
     }
 
     public static function isPrimitive($obj) {

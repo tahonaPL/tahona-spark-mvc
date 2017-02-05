@@ -16,6 +16,7 @@ use spark\core\engine\EngineConfig;
 use spark\core\engine\EngineFactory;
 use spark\core\error\EngineExceptionWrapper;
 use spark\core\error\GlobalErrorHandler;
+use spark\core\interceptor\HandlerInterceptor;
 use spark\core\lang\LangResourcePath;
 use spark\core\library\BeanLoader;
 use spark\core\processor\InitAnnotationProcessors;
@@ -27,6 +28,7 @@ use spark\loader\ClassLoaderRegister;
 use spark\routing\RoutingInfo;
 use spark\core\lang\LangMessageResource;
 use spark\http\utils\RequestUtils;
+use spark\utils\BooleanUtils;
 use spark\utils\ConfigHelper;
 use spark\utils\FileUtils;
 use spark\utils\Predicates;
@@ -79,6 +81,9 @@ class Engine {
      */
     private $beanCache;
 
+
+    private $interceptors;
+
     public function __construct($name, $rootAppPath) {
         $this->apcuExtensionLoaded = extension_loaded("apcu");
 
@@ -101,6 +106,7 @@ class Engine {
             $this->container = $this->beanCache->get($this->getCacheKey("container"));
             $this->route = $this->beanCache->get($this->getCacheKey("route"));
             $this->config = $this->beanCache->get($this->getCacheKey("config"));
+            $this->interceptors = $this->beanCache->get($this->getCacheKey("interceptors"));
         }
 
         if (!$this->hasAllreadyCachedData() || isset($_GET["reset"])) {
@@ -133,10 +139,15 @@ class Engine {
             $this->container->initServices();
             $this->afterAllBean();
 
+            $this->interceptors = $this->container->getByType(HandlerInterceptor::CLASS_NAME);
+//            var_dump($this->container->get("menuSupplierInterceptor"));exit();
+//            var_dump($this->interceptors);exit;
+
             if ($this->isApcuCacheEnabled()) {
                 $this->beanCache->put($this->getCacheKey("config"), $this->config);
                 $this->beanCache->put($this->getCacheKey("container"), $this->container);
                 $this->beanCache->put($this->getCacheKey("route"), $this->route);
+                $this->beanCache->put($this->getCacheKey("interceptors"), $this->interceptors);
             }
         }
 
@@ -185,6 +196,8 @@ class Engine {
         $registeredHostPath = $this->getRegisteredHostPath();
         $request = $this->route->createRequest($urlName, $registeredHostPath);
 
+        //Interceptor
+        $this->preHandleInterceptor($request);
 
         //Controller
         $controllerName = $request->getControllerClassName();
@@ -202,7 +215,7 @@ class Engine {
 
 
         //ACTION->VIEW
-        $this->handleAction($responseParams, $request, $controller);
+        $this->handleAction($request, $controller);
     }
 
     private function devToolsInit() {
@@ -241,7 +254,6 @@ class Engine {
         $jsonViewHandler = new JsonViewHandler();
 
         $provider = new ViewHandlerProvider();
-
         $this->container->register(ViewHandlerProvider::NAME, $provider);
         $this->container->register("defaultViewHandler", $smartyViewHandler);
         $this->container->register(SmartyViewHandler::NAME, $smartyViewHandler);
@@ -250,19 +262,22 @@ class Engine {
     }
 
     /**
-     * @param $errorArray
      * @param $request Request
      * @param $controller
-     * @param $bootstrap Bootstrap
-     * @throws \ErrorException
+     * @throws ErrorException
+     * @throws common\IllegalStateException
+     * @internal param $errorArray
+     * @internal param Bootstrap $bootstrap
      */
-    private function handleAction($errorArray, $request, $controller) {
+    private function handleAction(Request $request, $controller) {
 
         /** @var $viewModel ViewModel */
         $methodName = $request->getMethodName();
         $viewModel = $controller->$methodName();
 
         Asserts::checkState($viewModel instanceof ViewModel, "Wrong viewModel type. Returned type from controller needs to be instance of ViewModel.");
+
+        $this->postHandleIntercetors($request, $viewModel);
 
         if (isset($viewModel)) {
             $redirect = $viewModel->getRedirect();
@@ -336,6 +351,22 @@ class Engine {
         return $this->apcuExtensionLoaded && $this->config->getProperty(EnableApcuAnnotationHandler::APCU_CACHE_ENABLED, false);
     }
 
+    private function preHandleInterceptor(Request $request) {
+        /** @var HandlerInterceptor $interceptor */
+        foreach ($this->interceptors as $interceptor) {
+            if (BooleanUtils::isFalse($interceptor->preHandle($request))) {
+                break;
+            }
+        }
+    }
+
+    private function postHandleIntercetors(Request $request,ViewModel $viewModel) {
+        /** @var HandlerInterceptor $interceptor */
+        foreach ($this->interceptors as $interceptor) {
+            $interceptor->postHandle($request, $viewModel);
+        }
+
+    }
 
 
 }
