@@ -227,12 +227,35 @@ Example is for dynami menu module that will popup when new project or classes ar
     */
     private $beanProvider;
 
-
     public function getMenuModules() {
         return $beanProvider->getByType(MenuModule::class);
     }
 ```
 
+### Interceptors ###
+
+/**
+* @Component
+*/
+class UserInterceptor implements HandlerInterceptor {
+    const CLASS_NAME = "spark\\core\\interceptor\\HandlerInterceptor";
+
+    /**
+    * @Inject
+    */
+    private $someUserHolder;
+
+    public function preHandle(Request $request) {
+
+    }
+
+
+    public function postHandle(Request $request, ViewModel $viewModel) {
+        $viewModel->add("loggedUser", $someUserHolder->getUserFromSession())
+    }
+
+
+}
 ### Composer ###
 
 ```
