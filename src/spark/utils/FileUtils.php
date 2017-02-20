@@ -98,7 +98,8 @@ class FileUtils {
     }
 
     public static function getFilesInPath($path) {
-        Asserts::checkArgument(is_dir($path));
+        Asserts::checkArgument(is_dir($path), "Path should be point to directory ");
+
         $scandir = scandir($path);
         $scandir = array_diff($scandir, array('.', '..'));
         $result = array();

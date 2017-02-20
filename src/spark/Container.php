@@ -187,7 +187,6 @@ class Container {
             $this->buildBeanAnnotation($newBean);
         }
 
-
         ReflectionUtils::handleMethodAnnotation($bean, "spark\\core\\annotation\\PostConstruct",
             function ($bean, \ReflectionMethod $method, $annotation) {
                 $method->setAccessible(true);
@@ -261,22 +260,28 @@ class Container {
         $beanDefinition = &$this->beanContainer[$newBeanName];
         $beansToUpdate = $this->getBeansToUpdate($newBeanName);
 
-
         if (Collections::isNotEmpty($beansToUpdate)) {
 
             $this->updateBeansRelation($beansToUpdate, $beanDefinition);
 
             //Remove beans from waiting list if there is nothing to injdect
             /** @var ToInjectObserver $obs */
+
+            //if buildBean invoke multiple times
+            $arry = array();
             foreach ($this->waitingList as $serviceName => $observerList) {
                 if (Collections::isEmpty($observerList)) {
+                    $arry[$serviceName] = $observerList;
                     Collections::removeByKey($this->waitingList, $serviceName);
-                    $this->buildBeanAnnotation($this->get($serviceName));
                 }
             }
+
+            foreach ($arry as $serviceName => $observerList) {
+                $this->buildBeanAnnotation($this->get($serviceName));
+            }
         }
-//        var_dump($this->waitingList);exit();
     }
+
 
     public function getBeanName(\ReflectionProperty $property, $annotation) {
         if (StringUtils::isNotBlank($annotation->name)) {

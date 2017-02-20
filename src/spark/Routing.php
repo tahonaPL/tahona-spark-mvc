@@ -196,8 +196,8 @@ class Routing {
      */
     public function addAll($routing) {
         foreach ($routing as $key => $value) {
-            Asserts::checkArgument(false === Collections::hasKey($this->routing, $key), "Can't use same weg");
-            Asserts::checkArgument(false === Collections::hasKey($this->parametrizedRouting, $key), "Can't");
+            Asserts::checkArgument(false === Collections::hasKey($this->routing, $key), "Can't use same path in routing");
+            Asserts::checkArgument(false === Collections::hasKey($this->parametrizedRouting, $key), "Can't use same path in routing");
 
             $definition = new RoutingDefinition();
             $definition->setPath($key);
