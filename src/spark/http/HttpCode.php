@@ -16,6 +16,7 @@ class HttpCode {
     public static $BAD_REQUEST; //400
     public static $NOT_FOUND; //404
     public static $UNSUPPORTED_MEDIA_TYPE; //415
+    public static $INTERNAL_SERVER_ERROR; //415
 
     private $code;
     private $message;
@@ -26,6 +27,7 @@ class HttpCode {
         self::$BAD_REQUEST = new HttpCode(400, "Bad Request");
         self::$NOT_FOUND = new HttpCode(404, "Not Found");
         self::$UNSUPPORTED_MEDIA_TYPE = new HttpCode(415, "Unsupported Media Type");
+        self::$INTERNAL_SERVER_ERROR = new HttpCode(500, "Internal Server Error");
     }
 
     private function __construct($code, $message) {

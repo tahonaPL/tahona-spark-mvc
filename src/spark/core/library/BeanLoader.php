@@ -16,7 +16,9 @@ use spark\core\processor\InitAnnotationProcessors;
 use spark\utils\Collections;
 use spark\utils\Dev;
 use spark\utils\FileUtils;
+use spark\utils\Predicates;
 use spark\utils\ReflectionUtils;
+use spark\utils\StringUtils;
 
 class BeanLoader {
 
@@ -67,7 +69,7 @@ class BeanLoader {
     /**
      * When AnnotationHandler must load first and when "Enable" annotation will be loaded,
      * then Framework will load corespondent @Configuration file.
-     * s
+     *
      * @param PostLoadDefinition $definition
      */
     public function addPostLoadLib(PostLoadDefinition $definition) {
@@ -78,8 +80,14 @@ class BeanLoader {
         }
     }
 
-    public function addFromPath($src) {
-        Collections::addAllOrReplace($this->classesInSrc, FileUtils::getAllClassesInPath($src));
+    public function addFromPath($src, $excludeDir = array()) {
+        $this->classesInSrc = Collections::builder(FileUtils::getAllClassesInPath($src))
+            ->filter(function ($cls) use ($excludeDir) {
+                return !Collections::builder($excludeDir)->anyMatch(function($x) use ($cls){
+                    return StringUtils::startsWith($cls,$x);
+                });
+            })
+            ->get();
     }
 
     public function addPersistanceLib() {
@@ -98,7 +106,6 @@ class BeanLoader {
 
             $this->annotationProcessor->addHandler(new \spark\tools\mail\annotation\handler\EnableMailerAnnotationHandler());
         }
-
     }
 
     public function process() {
@@ -136,5 +143,4 @@ class BeanLoader {
             $this->annotationProcessor->handleFieldAnnotations($methodAnnotations, $class, $property);
         }
     }
-
 }

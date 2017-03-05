@@ -106,13 +106,15 @@ class Routing {
                     return $this->parametrizedRouting[$path];
                 })
                 ->get();
-
+            
             foreach ($parametrizedPaths as $routeDefinitions) {
                 $routeDefinition = RoutingUtils::findRouteDefinition($routeDefinitions);
+
                 if ($routeDefinition->isPresent()) {
                     return $this->checkRoute($routeDefinition);
                 }
             }
+
             throw new IllegalStateException("Route not found for: " . RequestUtils::getMethod() . " $urlPath");
         }
     }
@@ -203,8 +205,8 @@ class Routing {
             $definition->setPath($key);
             $definition->setControllerClassName($value[Routing::CONTROLLER_NAME]);
             $definition->setActionMethod($value[Routing::METHOD_NAME]);
-            $definition->setRequestHeaders(Collections::getValue($value, Routing::REQUEST_HEADERS_NAME));
-            $definition->setRequestMethods(Collections::getValue($value, Routing::REQUEST_METHODS_NAME));
+            $definition->setRequestHeaders(Collections::getValueOrDefault($value, Routing::REQUEST_HEADERS_NAME, array()));
+            $definition->setRequestMethods(Collections::getValueOrDefault($value, Routing::REQUEST_METHODS_NAME, array()));
 
             if (RoutingUtils::hasExpression($key)) {
                 $definition->setParams(RoutingUtils::getParametrizedUrlKeys($key));

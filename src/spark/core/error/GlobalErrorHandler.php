@@ -19,22 +19,27 @@ class GlobalErrorHandler {
      */
     private $handler;
 
-    public function handleException($severity, $message, $filename, $lineno) {
+    /**
+     *
+     * @param $exception \Exception
+     * @throws \Exception
+     */
+    public function handleException($exception) {
+
         if (error_reporting() == 0) {
             return;
         }
-        if (error_reporting() & $severity) {
-            $exc = new \ErrorException($message, 0, $severity, $filename, $lineno);
+        if (error_reporting()) {
             $invoke = $this->handler;
-            $invoke($exc);
+            $exec = new \Exception($exception->getMessage(), $exception->getCode(), $exception);
+            $invoke($exception);
+
+            throw $exec;
+            return;
         }
     }
 
-    function handleFatal() {
-        $errfile = "unknown file";
-        $errstr = "shutdown";
-        $errno = E_CORE_ERROR;
-        $errline = 0;
+    public function handleFatal($severity, $message, $filename, $lineno) {
 
         $error = error_get_last();
 
@@ -53,12 +58,14 @@ class GlobalErrorHandler {
 
             $invoke = $this->handler;
             $invoke($exc);
+            return $exc;
+
         }
     }
 
     public function setup() {
-        set_error_handler(array($this, self::EXCEPTION_HANDLER));
-//        register_shutdown_function(array($this, self::FATAL_HANDLER));
+        set_exception_handler(array($this, self::EXCEPTION_HANDLER));
+        set_error_handler(array($this, self::FATAL_HANDLER));
     }
 
     public function setHandler(\Closure $handler) {

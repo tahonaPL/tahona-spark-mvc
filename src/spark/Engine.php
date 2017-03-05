@@ -22,8 +22,10 @@ use spark\core\library\BeanLoader;
 use spark\core\processor\InitAnnotationProcessors;
 use spark\core\provider\BeanProvider;
 use spark\filter\FilterChain;
+use spark\http\HttpCode;
 use spark\http\Request;
 use spark\http\RequestProvider;
+use spark\http\ResponseHelper;
 use spark\loader\ClassLoaderRegister;
 use spark\routing\RoutingInfo;
 use spark\core\lang\LangMessageResource;
@@ -87,7 +89,7 @@ class Engine {
     public function __construct($name, $rootAppPath) {
         $this->apcuExtensionLoaded = extension_loaded("apcu");
 
-        $fileList = FileUtils::getDirList($rootAppPath . "/src");
+        $fileList = FileUtils::getDirList($rootAppPath . "/src", array("proxy"));
 
         $namespaces = Collections::builder($fileList)
             ->map(StringUtils::mapReplace("/","\\"))
@@ -127,7 +129,7 @@ class Engine {
             $initAnnotationProcessors = new InitAnnotationProcessors($this->route, $this->config, $this->container);
 
             $beanLoader = new BeanLoader($initAnnotationProcessors, $this->config);
-            $beanLoader->addFromPath($src);
+            $beanLoader->addFromPath($src, array("proxy"));
             $beanLoader->addLib("spark\\core\\CoreConfig");
             $beanLoader->addPersistanceLib();
             $beanLoader->process();
@@ -140,8 +142,6 @@ class Engine {
             $this->afterAllBean();
 
             $this->interceptors = $this->container->getByType(HandlerInterceptor::CLASS_NAME);
-//            var_dump($this->container->get("menuSupplierInterceptor"));exit();
-//            var_dump($this->interceptors);exit;
 
             if ($this->isApcuCacheEnabled()) {
                 $this->beanCache->put($this->getCacheKey("config"), $this->config);
@@ -150,10 +150,16 @@ class Engine {
                 $this->beanCache->put($this->getCacheKey("interceptors"), $this->interceptors);
             }
         }
+        $engine = $this;
 
         $errorHandler = new GlobalErrorHandler();
-        $errorHandler->setHandler(function ($error) {
-            throw $error;
+        $errorHandler->setHandler(function ($error) use ($engine){
+            /** @var ErrorException $error */
+            ResponseHelper::setCode(HttpCode::$INTERNAL_SERVER_ERROR);
+//            var_dump("Sad");
+
+
+//            throw $error;
         });
         $errorHandler->setup();
     }
@@ -176,11 +182,7 @@ class Engine {
         $registeredHostPath = $this->getRegisteredHostPath();
         $urlName = UrlUtils::getPathInfo($registeredHostPath);
 
-//        try {
         $this->handleRequest($urlName);
-//        } catch (\Exception $exception) {
-//            $this->handleRequestException($exception);
-//        }
     }
 
     /**
@@ -212,7 +214,6 @@ class Engine {
 
         $controller->setContainer($this->container);
         $controller->init($request, $responseParams);
-
 
         //ACTION->VIEW
         $this->handleAction($request, $controller);
@@ -309,8 +310,9 @@ class Engine {
     }
 
     private function handleRequestException(\Exception $exception) {
-        $errorHandling = $this->config->getProperty(Config::ERROR_HANDLING_ENABLED, true);
+        $errorHandling = $this->config->getProperty(Config::ERROR_HANDLING_ENABLED, false);
 
+        ResponseHelper::setCode(HttpCode::$INTERNAL_SERVER_ERROR);
 
         if ($errorHandling) {
             $basePath = $this->route->getBaseErrorPath();
@@ -321,6 +323,7 @@ class Engine {
                 ));
             }
         } else {
+
             throw new EngineExceptionWrapper("Not handled exception", 0, $exception);
         }
     }

@@ -117,10 +117,10 @@ class FileUtils {
             })->get();
     }
 
-    public static function getDirList($path) {
+    public static function getDirList($path, $exclude = array()) {
         return Collections::builder(self::getFilesInPath($path))
-            ->filter(function($file) use ($path) {
-                return is_dir($path."/".$file);
+            ->filter(function($file) use ($path, $exclude){
+                return is_dir($path."/".$file) && !Collections::isIn($file, $exclude);
             })->get();
     }
 

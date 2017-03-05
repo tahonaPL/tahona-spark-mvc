@@ -243,7 +243,7 @@ final class Collections {
     }
 
     public static function getValue($array = array(), $key) {
-        return self::getValueOrDefault($array, $key, array());
+        return self::getValueOrDefault($array, $key, null);
     }
 
     public static function getValueOrDefault($array = array(), $key, $default = null) {
@@ -360,6 +360,10 @@ final class Collections {
 
     public static function merge($array1 = array(), $array2 = array()) {
         return array_merge($array1, $array2);
+    }
+
+    public static function isIn($value, $array = array()) {
+        return array_search($value, $array);
     }
 
 
