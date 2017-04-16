@@ -5,7 +5,6 @@ namespace spark;
 header('Content-Type: text/html; charset=utf-8');
 
 use ErrorException;
-use house\HouseConfig;
 use ReflectionClass;
 use spark\cache\ApcuBeanCache;
 use spark\cache\BeanCache;
@@ -15,6 +14,7 @@ use spark\core\CoreConfig;
 use spark\core\engine\EngineConfig;
 use spark\core\engine\EngineFactory;
 use spark\core\error\EngineExceptionWrapper;
+use spark\core\error\ExceptionResolver;
 use spark\core\error\GlobalErrorHandler;
 use spark\core\interceptor\HandlerInterceptor;
 use spark\core\lang\LangResourcePath;
@@ -132,6 +132,7 @@ class Engine {
             $beanLoader->addFromPath($src, array("proxy"));
             $beanLoader->addLib("spark\\core\\CoreConfig");
             $beanLoader->addPersistanceLib();
+            $beanLoader->addSecurity();
             $beanLoader->process();
 
             $this->addBaseServices();
@@ -140,6 +141,7 @@ class Engine {
             $this->container->setConfig($this->config);
             $this->container->initServices();
             $this->afterAllBean();
+            $beanLoader->postProcess();
 
             $this->interceptors = $this->container->getByType(HandlerInterceptor::CLASS_NAME);
 
@@ -152,16 +154,7 @@ class Engine {
         }
         $engine = $this;
 
-        $errorHandler = new GlobalErrorHandler();
-        $errorHandler->setHandler(function ($error) use ($engine){
-            /** @var ErrorException $error */
-            ResponseHelper::setCode(HttpCode::$INTERNAL_SERVER_ERROR);
-//            var_dump("Sad");
-
-
-//            throw $error;
-        });
-        $errorHandler->setup();
+        $this->initErrorHandler($engine);
     }
 
     /**
@@ -198,6 +191,8 @@ class Engine {
         $registeredHostPath = $this->getRegisteredHostPath();
         $request = $this->route->createRequest($urlName, $registeredHostPath);
 
+        $this->updateRequest($request);
+
         //Interceptor
         $this->preHandleInterceptor($request);
 
@@ -205,10 +200,6 @@ class Engine {
         $controllerName = $request->getControllerClassName();
         /** @var $controller Controller */
         $controller = new $controllerName();
-
-        /** @var RequestProvider $requestProvider */
-        $requestProvider = $this->container->get(RequestProvider::NAME);
-        $requestProvider->setRequest($request);
 
         $this->filter($this->container->getFilters(), $request);
 
@@ -276,27 +267,7 @@ class Engine {
         $methodName = $request->getMethodName();
         $viewModel = $controller->$methodName();
 
-        Asserts::checkState($viewModel instanceof ViewModel, "Wrong viewModel type. Returned type from controller needs to be instance of ViewModel.");
-
-        $this->postHandleIntercetors($request, $viewModel);
-
-        if (isset($viewModel)) {
-            $redirect = $viewModel->getRedirect();
-            if (StringUtils::isNotBlank($redirect)) {
-                $request->instantRedirect($redirect);
-            }
-
-            $page = UrlUtils::getSite();
-
-            //Deprecated use e.g.: {path path="/next/page"}
-            $viewModel->add("web", array(
-                "page" => $page
-            ));
-
-            $this->handleView($viewModel, $request);
-        } else {
-            throw new ErrorException("ViewModel not found. Did you initiated ViewModel? ");
-        }
+        $this->handleViewModel($request, $viewModel);
     }
 
     /**
@@ -309,24 +280,6 @@ class Engine {
         $handler->handleView($viewModel, $request);
     }
 
-    private function handleRequestException(\Exception $exception) {
-        $errorHandling = $this->config->getProperty(Config::ERROR_HANDLING_ENABLED, false);
-
-        ResponseHelper::setCode(HttpCode::$INTERNAL_SERVER_ERROR);
-
-        if ($errorHandling) {
-            $basePath = $this->route->getBaseErrorPath();
-            if (isset($basePath)) {
-                $this->handleRequest($basePath, array(
-                    "stackTrace" => $exception->getTraceAsString(),
-                    "exception" => $exception
-                ));
-            }
-        } else {
-
-            throw new EngineExceptionWrapper("Not handled exception", 0, $exception);
-        }
-    }
 
     private function filter($filters = array(), Request $request) {
         if (Collections::isNotEmpty($filters)) {
@@ -337,7 +290,7 @@ class Engine {
     }
 
     private function hasAllreadyCachedData() {
-        return $this->apcuExtensionLoaded && $this->beanCache->has($this->getCacheKey("services"));
+        return $this->apcuExtensionLoaded && $this->beanCache->has($this->getCacheKey("container"));
     }
 
     /**
@@ -371,5 +324,80 @@ class Engine {
 
     }
 
+    /**
+     *
+     * @param Request $request
+     * @param $viewModel
+     * @throws ErrorException
+     * @throws common\IllegalStateException
+     */
+    private function handleViewModel(Request $request, $viewModel) {
+        Asserts::checkState($viewModel instanceof ViewModel, "Wrong viewModel type. Returned type from controller needs to be instance of ViewModel.");
+
+        $this->postHandleIntercetors($request, $viewModel);
+
+        if (isset($viewModel)) {
+            $redirect = $viewModel->getRedirect();
+            if (StringUtils::isNotBlank($redirect)) {
+                $request->instantRedirect($redirect);
+            }
+
+            $page = UrlUtils::getSite();
+
+            //Deprecated use e.g.: {path path="/next/page"}
+            $viewModel->add("web", array(
+                "page" => $page
+            ));
+
+            $this->handleView($viewModel, $request);
+        } else {
+            throw new ErrorException("ViewModel not found. Did you initiated ViewModel? ");
+        }
+    }
+
+    /**
+     *
+     * @param $engine
+     */
+    private function initErrorHandler($engine) {
+        $errorHandler = new GlobalErrorHandler();
+        $errorHandler->setHandler(function ($error) use ($engine) {
+
+            $exceptionResolvers = Collections::builder($this->container->getByType(ExceptionResolver::CLASS_NAME))
+                ->sort(function ($x, $y) {
+                    /** @var ExceptionResolver $x */
+                    return $x->getOrder() > $y->getOrder();
+                })
+                ->get();
+
+            foreach ($exceptionResolvers as $resolver) {
+                /** @var ExceptionResolver $resolver */
+                $viewModel = $resolver->doResolveException($error);
+                if (Objects::isNotNull($viewModel)) {
+                    $request = new Request();
+                    $this->updateRequest($request);
+                    $this->handleViewModel($request, $viewModel);
+                    return;
+                }
+            }
+
+            //Default behavior
+            /** @var ErrorException $error */
+            ResponseHelper::setCode(HttpCode::$INTERNAL_SERVER_ERROR);
+            throw new \Exception($error->getMessage(), $error->getCode(), $error);
+        });
+        $errorHandler->setup();
+    }
+
+    /**
+     *
+     * @param $request
+     * @throws \Exception
+     */
+    private function updateRequest($request) {
+        /** @var RequestProvider $requestProvider */
+        $requestProvider = $this->container->get(RequestProvider::NAME);
+        $requestProvider->setRequest($request);
+    }
 
 }

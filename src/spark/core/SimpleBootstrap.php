@@ -9,7 +9,7 @@
 namespace spark\core;
 
 use spark\Config;
-use spark\security\AuthenticationProviderService;
+use spark\security\core\service\AuthenticationService;
 use spark\security\exception\AccessDeniedException;
 use spark\utils\StringUtils;
 
@@ -42,10 +42,10 @@ class SimpleBootstrap extends Bootstrap {
     }
 
     /**
-     * @return AuthenticationProviderService
+     * @return AuthenticationService
      */
     private function getAuthenticationService() {
-        return $this->get(AuthenticationProviderService::NAME);
+        return $this->get(AuthenticationService::NAME);
     }
 
     private function addLoggedUserToView() {

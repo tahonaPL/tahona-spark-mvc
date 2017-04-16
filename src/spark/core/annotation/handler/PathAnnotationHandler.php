@@ -5,7 +5,7 @@ namespace spark\core\annotation\handler;
 use ReflectionClass;
 use spark\Config;
 use spark\core\annotation\handler\AnnotationHandler;
-use spark\core\annotation\RequestPath;
+use spark\core\annotation\Path;
 use spark\core\routing\RoutingDefinition;
 use spark\routing\RoutingUtils;
 use spark\utils\Collections;
@@ -21,15 +21,17 @@ use spark\utils\StringUtils;
  * Date: 30.01.17
  * Time: 08:57
  */
-class RequestPathAnnotationHandler extends AnnotationHandler {
+class PathAnnotationHandler extends AnnotationHandler {
 
     private $annotationName;
     private $classes;
 
     private $annotations;
 
+    const PATH_ANNOTATION = "spark\\core\\annotation\\Path";
+
     public function __construct() {
-        $this->annotationName = "spark\\core\\annotation\\RequestPath";
+        $this->annotationName = self::PATH_ANNOTATION;
         $this->classes = array();
         $this->annotations = array();
     }
@@ -49,11 +51,11 @@ class RequestPathAnnotationHandler extends AnnotationHandler {
 
 
         if (Collections::hasKey($this->annotations, $class) && Collections::isNotEmpty($this->annotations[$class])) {
-            /** @var RequestPath $prefixAnnotation */
+            /** @var Path $prefixAnnotation */
 
             foreach ($this->annotations[$class] as $prefixAnnotation) {
 
-                /** @var RequestPath $ann */
+                /** @var Path $ann */
                 foreach ($annotations as $ann) {
                     $reflectionClass = $methodReflection->getDeclaringClass();
                     $path = $prefixAnnotation->path . $ann->path;
@@ -69,6 +71,7 @@ class RequestPathAnnotationHandler extends AnnotationHandler {
                     if (RoutingUtils::hasExpression($path)) {
                         $routingDefinition->setParams(RoutingUtils::getParametrizedUrlKeys($path));
                     }
+//                    $routingDefinition->setRoles($)
 
                     $this->getRouting()->addDefinition($routingDefinition);
                 }
@@ -76,7 +79,7 @@ class RequestPathAnnotationHandler extends AnnotationHandler {
 
         } else {
 
-            /** @var RequestPath $ann */
+            /** @var Path $ann */
             foreach ($annotations as $ann) {
                 $reflectionClass = $methodReflection->getDeclaringClass();
 

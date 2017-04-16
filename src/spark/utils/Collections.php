@@ -367,4 +367,9 @@ final class Collections {
     }
 
 
+    public static function range($first, $last, $step = 1) {
+        return range($first, $last, $step);
+    }
+
+
 }

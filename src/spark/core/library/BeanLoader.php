@@ -23,7 +23,6 @@ use spark\utils\StringUtils;
 class BeanLoader {
 
     private $classesInSrc;
-    private $localLib;
 
     /**
      * @var InitAnnotationProcessors
@@ -32,7 +31,6 @@ class BeanLoader {
 
 
     private $postLoad;
-    private $annotationReader;
     /**
      * @var Config
      */
@@ -46,12 +44,9 @@ class BeanLoader {
         $this->annotationProcessor = $annotationProcessor;
 
         $this->classesInSrc = array();
-        $this->localLib = array();
         $this->postLoad = array();
 
         $this->config = $config;
-
-        $this->annotationReader = ReflectionUtils::getReaderInstance();
     }
 
     /**
@@ -62,7 +57,7 @@ class BeanLoader {
         $class_exists = class_exists($classPath);
 
         if ($class_exists) {
-            $this->localLib[$classPath] = $classPath;
+            $this->classesInSrc[$classPath] = $classPath;
         }
     }
 
@@ -108,39 +103,47 @@ class BeanLoader {
         }
     }
 
+    public function addSecurity() {
+        $classPath = "spark\\security\\SecurityConfig";
+        $class_exists = class_exists($classPath);
+
+        if ($class_exists) {
+            $this->addLib($classPath);
+
+            $this->annotationProcessor->addHandler(new \spark\security\annotation\handler\EnableSecurityAnnotationHandler());
+            $this->annotationProcessor->addPostHandler(new \spark\security\annotation\handler\AuthorizeAnnotationHandler());
+        }
+    }
+
     public function process() {
         foreach ($this->classesInSrc as $class) {
             //project beans
-            $this->processAnnotations($class);
+            $this->annotationProcessor->processAnnotations($class);
         }
 
         //spark beans
         /** @var PostLoadDefinition $postLoadDefinition */
         foreach ($this->postLoad as $postLoadDefinition) {
             if ($postLoadDefinition->canLoad()) {
-                $this->processAnnotations($postLoadDefinition->getClass());
+                $this->annotationProcessor->processAnnotations($postLoadDefinition->getClass());
+            }
+        }
+
+    }
+
+    public function  postProcess(){
+        foreach ($this->classesInSrc as $class) {
+            //project beans
+            $this->annotationProcessor->processPostAnnotations($class);
+        }
+
+        //spark beans
+        /** @var PostLoadDefinition $postLoadDefinition */
+        foreach ($this->postLoad as $postLoadDefinition) {
+            if ($postLoadDefinition->canLoad()) {
+                $this->annotationProcessor->processPostAnnotations($postLoadDefinition->getClass());
             }
         }
     }
 
-    /**
-     * @param $class
-     */
-    private function processAnnotations($class) {
-        $reflectionObject = new ReflectionClass($class);
-        $classAnnotations = $this->annotationReader->getClassAnnotations($reflectionObject);
-        $this->annotationProcessor->handleClassAnnotations($classAnnotations, $class, $reflectionObject);
-
-        $reflectionMethods = $reflectionObject->getMethods();
-        foreach ($reflectionMethods as $method) {
-            $methodAnnotations = $this->annotationReader->getMethodAnnotations($method);
-            $this->annotationProcessor->handleMethodAnnotations($methodAnnotations, $class, $method);
-        }
-
-        $reflectionProperties = $reflectionObject->getProperties();
-        foreach ($reflectionProperties as $property) {
-            $methodAnnotations = $this->annotationReader->getPropertyAnnotations($property);
-            $this->annotationProcessor->handleFieldAnnotations($methodAnnotations, $class, $property);
-        }
-    }
 }

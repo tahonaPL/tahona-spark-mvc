@@ -36,6 +36,8 @@ class ReflectionUtils {
     private static $reader;
 
     public static function handlePropertyAnnotation(&$bean, $annotationName, \Closure $handler) {
+        Asserts::notNull($bean);
+
         $annotationReader = self::getReaderInstance();
 
         $reflectionObject = new \ReflectionObject($bean);
@@ -52,7 +54,6 @@ class ReflectionUtils {
         }
 
         $properties = $fluentIterables->get();
-
 
         $observersWaitingToInject = array();
 
@@ -83,6 +84,7 @@ class ReflectionUtils {
     }
 
     public static function handleMethodAnnotation($bean, $annotationName, \Closure $handler) {
+        Asserts::notNull($bean);
         $annotationReader = self::getReaderInstance();
 
         $reflectionObject = new \ReflectionObject($bean);

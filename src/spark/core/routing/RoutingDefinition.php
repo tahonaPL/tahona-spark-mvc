@@ -29,6 +29,7 @@ class RoutingDefinition {
     private $requestMethods;
     private $requestHeaders;
     private $params;
+    private $roles;
 
     /**
      * RoutingDefinition constructor.
@@ -135,7 +136,11 @@ class RoutingDefinition {
     }
 
     public function getRoles() {
-        return array();
+        return $this->roles;
+    }
+
+    public function setRoles($roles=array()) {
+        $this->roles = $roles;
     }
 
 

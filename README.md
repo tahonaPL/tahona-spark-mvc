@@ -41,14 +41,14 @@ app/src/MyAppController.php
 class MyAppController extends Controller {
 
     /**
-     * @RequestPath("/index")
+     * @Path("/index")
      */
     public function indexAction() {
         return new PlainViewModel("Hello World");
     }
 
     /**
-     * @RequestPath("/get")
+     * @Path("/get")
      */
     public function getAction() {
         return new JsonViewModel(array(
@@ -57,7 +57,7 @@ class MyAppController extends Controller {
     }
 
     /**
-     * @RequestPath("/newView")
+     * @Path("/newView")
      */
      public function showNewViewAction() {
         return new ViewModel(array(
@@ -113,8 +113,8 @@ src.path - ścieżka do katalogu /app/src
 
 Handle multiple connections.
 ```
- @EnableDataRepository(managerName="dataSource", managerName="entityManager") //default
- @EnableDataRepository(managerName="dataSourceSuper", managerName="exodusManager")
+ @RepositoryData(managerName="dataSource", managerName="entityManager") //default
+ @RepositoryData(managerName="dataSourceSuper", managerName="exodusManager")
 
 ```
 
@@ -200,13 +200,13 @@ core.thank.you.message=Thank You %s
 ```
 Results: Thank You John
 
-### @RequestPath ###
+### @Path ###
 
 Annotation Defonition
 
 
 ```php
-@RequestPath(path="/login/{test}", method="get")
+@Path(path="/login/{test}", method="get")
 
 ```
 

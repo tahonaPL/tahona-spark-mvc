@@ -16,7 +16,7 @@ use Doctrine\ORM\Mapping;
  * @Annotation
  * @Target({"CLASS", "METHOD"})
  */
-final class RequestPath implements Mapping\Annotation {
+final class Path implements Mapping\Annotation {
 
     /** @var string */
     public $path = "";

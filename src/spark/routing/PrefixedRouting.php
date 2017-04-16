@@ -26,7 +26,6 @@ abstract class PrefixedRouting {
      */
     protected  abstract function  getDefaultPrefix();
 
-
     public function getRouting($prefix = null) {
         $defaultRoutes = $this->getDefaultRoutes();
 

@@ -142,7 +142,7 @@ class UrlUtils {
 //        }
 //
 //        return UrlUtils::wrapRequestSchemeIfNeeded($host, RequestUtils::getRequestScheme());
-        return $_SERVER['SERVER_NAME'];
+        return $_SERVER['HTTP_HOST'];
     }
 
 

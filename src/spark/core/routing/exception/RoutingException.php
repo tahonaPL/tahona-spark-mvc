@@ -6,7 +6,7 @@
  * Time: 21:37
  */
 
-namespace spark\core\routing;
+namespace spark\core\routing\exception;
 
 
 class RoutingException extends \Exception {

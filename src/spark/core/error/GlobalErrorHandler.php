@@ -31,10 +31,8 @@ class GlobalErrorHandler {
         }
         if (error_reporting()) {
             $invoke = $this->handler;
-            $exec = new \Exception($exception->getMessage(), $exception->getCode(), $exception);
-            $invoke($exception);
 
-            throw $exec;
+            $invoke($exception);
             return;
         }
     }
@@ -65,7 +63,7 @@ class GlobalErrorHandler {
 
     public function setup() {
         set_exception_handler(array($this, self::EXCEPTION_HANDLER));
-        set_error_handler(array($this, self::FATAL_HANDLER));
+//        set_error_handler(array($this, self::FATAL_HANDLER));
     }
 
     public function setHandler(\Closure $handler) {

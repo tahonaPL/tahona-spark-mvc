@@ -12,6 +12,7 @@ use spark\Config;
 use spark\core\annotation\Inject;
 use spark\http\Request;
 use spark\utils\Objects;
+use spark\utils\StringUtils;
 use spark\view\utils\ViewUrlUtils;
 use spark\view\ViewHandler;
 use spark\view\ViewModel;
@@ -63,6 +64,8 @@ class SmartyViewHandler extends ViewHandler {
             $viewPath = ViewUrlUtils::createFullViewPath($request);
         }
 
+        $viewPath = $this->removePrefix($viewPath);
+
 
 //        $s = new SpeedTester();
 //        $s->start();
@@ -99,5 +102,18 @@ class SmartyViewHandler extends ViewHandler {
             $this->smarty = $smarty;
         }
         return $this->smarty;
+    }
+
+    /**
+     *
+     * @param $viewPath
+     * @return string
+     */
+    private function removePrefix($viewPath) {
+        if (StringUtils::startsWith($viewPath, "/")) {
+            $viewPath = StringUtils::subString($viewPath, 1, StringUtils::length($viewPath));
+            return $viewPath;
+        }
+        return $viewPath;
     }
 }

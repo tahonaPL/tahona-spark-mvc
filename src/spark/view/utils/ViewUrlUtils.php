@@ -16,8 +16,6 @@ class ViewUrlUtils {
      */
     public static function createFullViewPath(Request $request) {
         return StringUtils::join("/", array(
-            __ROOT__."app",
-            "view",
             self::createViewPathWithViewName($request)
         ));
     }
