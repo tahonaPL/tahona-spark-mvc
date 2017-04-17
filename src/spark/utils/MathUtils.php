@@ -33,4 +33,8 @@ class MathUtils {
         };
 
     }
+
+    public static function isNumeric($value) {
+        return is_numeric($value);
+    }
 } 
