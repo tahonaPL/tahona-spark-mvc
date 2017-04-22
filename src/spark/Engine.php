@@ -2,8 +2,7 @@
 
 namespace spark;
 
-header('Content-Type: text/html; charset=utf-8');
-
+use Doctrine\Common\Annotations\AnnotationRegistry;
 use ErrorException;
 use ReflectionClass;
 use spark\cache\ApcuBeanCache;
@@ -47,7 +46,6 @@ use spark\view\smarty\SmartyViewHandler;
 use spark\view\ViewHandlerProvider;
 use spark\view\ViewModel;
 
-
 /**
  * Description of Engine
  *
@@ -89,17 +87,19 @@ class Engine {
     public function __construct($name, $rootAppPath) {
         $this->apcuExtensionLoaded = extension_loaded("apcu");
 
-        $fileList = FileUtils::getDirList($rootAppPath . "/src", array("proxy"));
+//        $fileList = FileUtils::getDirList($rootAppPath . "/src", array("proxy"));
+//
+//        $namespaces = Collections::builder($fileList)
+//            ->map(StringUtils::mapReplace("/","\\"))
+//            ->get();
 
-        $namespaces = Collections::builder($fileList)
-            ->map(StringUtils::mapReplace("/","\\"))
-            ->get();
+//        $this->engineConfig = new EngineConfig($rootAppPath, $namespaces);
+        $this->engineConfig = new EngineConfig($rootAppPath, array());
 
-        $this->engineConfig = new EngineConfig($rootAppPath, $namespaces);
+        self::$ROOT_APP_PATH = $rootAppPath;
 
-        self::$ROOT_APP_PATH = $this->engineConfig->getRootAppPath();
-
-        ClassLoaderRegister::register($this->engineConfig);
+//        ClassLoaderRegister::register($this->engineConfig);
+        AnnotationRegistry::registerLoader('class_exists');
 
         $this->beanCache = new ApcuBeanCache();
         $this->beanCache->init();
@@ -213,10 +213,7 @@ class Engine {
     private function devToolsInit() {
         $enabled = $this->config->getProperty(Config::DEV_ENABLED);
         if ($enabled) {
-            $xdebugEnabled = $this->config->getProperty(Config::DEV_XDEBUG);
-            if ($xdebugEnabled) {
-                RequestUtils::setCookie("XDEBUG_SESSION", true);
-            }
+            RequestUtils::setCookie("XDEBUG_SESSION", true);
         }
     }
 

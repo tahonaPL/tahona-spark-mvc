@@ -41,7 +41,7 @@ class Predicates {
         };
     }
 
-    public static function contains($defined=array()) {
+    public static function contains($defined = array()) {
         return function ($x) use ($defined) {
             return Collections::contains($x, $defined);
         };
@@ -50,6 +50,12 @@ class Predicates {
     public static function compute(\Closure $function, \Closure $predicate) {
         return function ($x) use ($function, $predicate) {
             return $predicate($function($x));
+        };
+    }
+
+    public static function equals($defined) {
+        return function ($x) use ($defined) {
+            return $x == $defined;
         };
     }
 

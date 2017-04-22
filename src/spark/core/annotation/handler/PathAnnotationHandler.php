@@ -43,30 +43,30 @@ class PathAnnotationHandler extends AnnotationHandler {
             ->get();
     }
 
-    public function handleMethodAnnotations($annotations = array(), $class, \ReflectionMethod $methodReflection) {
+    public function handleMethodAnnotations($methodAnnotations = array(), $class, \ReflectionMethod $methodReflection) {
 
-        $annotations = Collections::builder($annotations)
+        $methodAnnotations = Collections::builder($methodAnnotations)
             ->filter(Predicates::compute($this->getClassName(), StringUtils::predEquals($this->annotationName)))
             ->get();
 
 
         if (Collections::hasKey($this->annotations, $class) && Collections::isNotEmpty($this->annotations[$class])) {
-            /** @var Path $prefixAnnotation */
+            /** @var Path $classPathAnnotation */
 
-            foreach ($this->annotations[$class] as $prefixAnnotation) {
+            foreach ($this->annotations[$class] as $classPathAnnotation) {
 
-                /** @var Path $ann */
-                foreach ($annotations as $ann) {
+                /** @var Path $methodAnnotation */
+                foreach ($methodAnnotations as $methodAnnotation) {
                     $reflectionClass = $methodReflection->getDeclaringClass();
-                    $path = $prefixAnnotation->path . $ann->path;
+                    $path = $classPathAnnotation->path . $methodAnnotation->path;
 
                     $routingDefinition = new RoutingDefinition();
                     $routingDefinition->setPath($path);
                     $routingDefinition->setControllerClassName($reflectionClass->getName());
                     $routingDefinition->setActionMethod($methodReflection->getName());
 
-                    $routingDefinition->setRequestHeaders(Collections::merge($prefixAnnotation->header, $ann->header));
-                    $routingDefinition->setRequestMethods(Collections::merge($prefixAnnotation->method, $ann->method));
+                    $routingDefinition->setRequestHeaders(Collections::merge($classPathAnnotation->header, $methodAnnotation->header));
+                    $routingDefinition->setRequestMethods(Collections::merge($classPathAnnotation->method, $methodAnnotation->method));
 
                     if (RoutingUtils::hasExpression($path)) {
                         $routingDefinition->setParams(RoutingUtils::getParametrizedUrlKeys($path));
@@ -80,20 +80,19 @@ class PathAnnotationHandler extends AnnotationHandler {
         } else {
 
             /** @var Path $ann */
-            foreach ($annotations as $ann) {
+            foreach ($methodAnnotations as $methodAnnotation) {
                 $reflectionClass = $methodReflection->getDeclaringClass();
 
                 $routingDefinition = new RoutingDefinition();
-                $routingDefinition->setPath($ann->path);
+                $routingDefinition->setPath($methodAnnotation->path);
                 $routingDefinition->setControllerClassName($reflectionClass->getName());
                 $routingDefinition->setActionMethod($methodReflection->getName());
 
+                $routingDefinition->setRequestHeaders($methodAnnotation->header);
+                $routingDefinition->setRequestMethods($methodAnnotation->method);
 
-                $routingDefinition->setRequestHeaders($ann->header);
-                $routingDefinition->setRequestMethods($ann->header);
-
-                if (RoutingUtils::hasExpression($ann->path)) {
-                    $routingDefinition->setParams(RoutingUtils::getParametrizedUrlKeys($ann->path));
+                if (RoutingUtils::hasExpression($methodAnnotation->path)) {
+                    $routingDefinition->setParams(RoutingUtils::getParametrizedUrlKeys($methodAnnotation->path));
                 }
 
                 $this->getRouting()->addDefinition($routingDefinition);

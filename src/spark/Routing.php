@@ -100,28 +100,30 @@ class Routing {
         } else {
 
             $ctx = $this;
-            $parametrizedPaths = Collections::builder(Collections::getKeys($this->parametrizedRouting))
-                ->filter(function ($path) use ($urlPath, $ctx) {
-                    return $ctx->checkAllPathElements($path, $urlPath);
-                })
-                ->map(function ($path) {
-                    return $this->parametrizedRouting[$path];
+
+            $routeDefinitions = Collections::builder($this->parametrizedRouting)
+                ->flatMap(function($def){return $def;})
+                ->filter(function ($definition) use ($urlPath, $ctx) {
+                    /** @var RoutingDefinition $definition */
+                    return RoutingUtils::hasExpressionParams($definition->getPath(), $urlPath, $definition->getParams());
                 })
                 ->get();
-            
-            foreach ($parametrizedPaths as $routeDefinitions) {
-                $routeDefinition = RoutingUtils::findRouteDefinition($routeDefinitions);
 
-                if ($routeDefinition->isPresent()) {
-                    return $this->checkRoute($routeDefinition);
-                }
+            $routeDefinition = RoutingUtils::findRouteDefinition($routeDefinitions);
+
+            if ($routeDefinition->isPresent()) {
+                return $this->checkRoute($routeDefinition);
             }
 
             throw new RouteNotFoundException(RequestUtils::getMethod(), $urlPath);
         }
     }
 
-
+    /**
+     * @param $route
+     * @param $urlPath
+     * @return bool
+     */
     private function checkAllPathElements($route, $urlPath) {
         $keys = RoutingUtils::getParametrizedUrlKeys($route);
         return RoutingUtils::hasExpressionParams($route, $urlPath, $keys);

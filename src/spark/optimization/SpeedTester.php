@@ -22,6 +22,6 @@ class SpeedTester {
     }
 
     public function displayTime($message=null) {
-        var_dump($this->getTime().$message);
+        var_dump($this->getTime()." ".$message);
     }
 }

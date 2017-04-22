@@ -14,17 +14,28 @@ class PropertyHelper {
         }
     }
 
+    /**
+     * @param $key
+     * @param $value
+     * @return $this PropertyHelper
+     */
     public function add($key, $value) {
         $filteredKey = $this->filter($key);
         $filteredValue = $this->filter($value);
 
         $this->properties[$filteredKey] = $filteredValue;
+        return $this;
     }
 
+    /**
+     * @param $array
+     * @return $this PropertyHelper
+     */
     public function addAll($array) {
         foreach ($array as $key => $value) {
             $this->add($key, $value);
         }
+        return $this;
     }
 
     public function getParams() {
@@ -43,8 +54,14 @@ class PropertyHelper {
         return $this->properties[$key];
     }
 
+    /**
+     *
+     * @param $key
+     * @return $this PropertyHelper
+     */
     public function remove($key) {
         unset($this->properties[$key]);
+        return $this;
     }
 
 }

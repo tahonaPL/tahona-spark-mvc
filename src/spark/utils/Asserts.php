@@ -15,6 +15,12 @@ use spark\utils\Objects;
 
 class Asserts {
 
+    /**
+     *
+     * @param $object
+     * @param string $message
+     * @throws IllegalArgumentException
+     */
     public static function notNull($object, $message = "Object cannot be null or undefined.") {
         if (false == isset($object) || is_null($object)) {
             throw new IllegalArgumentException($message);
