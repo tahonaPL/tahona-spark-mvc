@@ -239,7 +239,6 @@ Example is for dynami menu module that will popup when new project or classes ar
 * @Component
 */
 class UserInterceptor implements HandlerInterceptor {
-    const CLASS_NAME = "spark\\core\\interceptor\\HandlerInterceptor";
 
     /**
     * @Inject
@@ -260,14 +259,13 @@ class UserInterceptor implements HandlerInterceptor {
 
 ```
 {
-
-	"autoload": {
-		"psr-4": {"": "app/src/"}
+    "autoload": {
+        "psr-4": {"": "app/src/"}
 	},
 
-    "require": {
-		"smarty/smarty": "3.1.27",
-		"tahona/spark-mvc": "*",
-	}
+	"require": {
+        "smarty/smarty": "3.1.27",
+        "tahona/spark-mvc": "*"
+    }
 }
 ```
