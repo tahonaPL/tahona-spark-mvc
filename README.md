@@ -234,6 +234,7 @@ Example is for dynami menu module that will popup when new project or classes ar
 
 ### Interceptors ###
 
+```
 /**
 * @Component
 */
@@ -246,16 +247,15 @@ class UserInterceptor implements HandlerInterceptor {
     private $someUserHolder;
 
     public function preHandle(Request $request) {
-
+        //Do something like redirect or add values to request or auto-conversion(id to entity);
     }
-
 
     public function postHandle(Request $request, ViewModel $viewModel) {
         $viewModel->add("loggedUser", $someUserHolder->getUserFromSession())
     }
-
-
 }
+```
+
 ### Composer ###
 
 ```

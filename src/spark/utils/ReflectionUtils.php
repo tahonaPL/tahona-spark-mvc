@@ -10,30 +10,23 @@ namespace spark\utils;
 
 
 use Doctrine\Common\Annotations\AnnotationReader;
+use Doctrine\Common\Annotations\AnnotationRegistry;
 use spark\utils\Collections;
 use spark\utils\Objects;
 
 class ReflectionUtils {
 
-//    private static $injectionCache = array();
+
+    private static $ANNOTATION_READER;
 
     public static function setValue(&$bean, $property, &$value) {
         $className = get_class($bean);
-//
-//        $key = $className."_".$property;
 
-//        if (isset(self::$injectionCache[$key])) {
-//            $reflectionProperty = self::$injectionCache[$key];
-//        } else {
         $reflectionProperty = new \ReflectionProperty($className, $property);
         $reflectionProperty->setAccessible(true);
-
-//            self::$injectionCache[$key] = $reflectionProperty;
-//        }
         $reflectionProperty->setValue($bean, $value);
     }
 
-    private static $reader;
 
     public static function handlePropertyAnnotation(&$bean, $annotationName, \Closure $handler) {
         Asserts::notNull($bean);
@@ -70,17 +63,18 @@ class ReflectionUtils {
         }
 
         return $observersWaitingToInject;
-//        return property_exists($bean, $serviceName)
     }
 
     /**
      * @return AnnotationReader
      */
     public static function getReaderInstance() {
-        if (false == isset(self::$reader)) {
-            self::$reader = new AnnotationReader();
+        if (false == isset(self::$ANNOTATION_READER)) {
+            //RegisterAutoLoader for annotations
+            AnnotationRegistry::registerLoader("class_exists");
+            self::$ANNOTATION_READER = new AnnotationReader();
         }
-        return self::$reader;
+        return self::$ANNOTATION_READER;
     }
 
     public static function handleMethodAnnotation($bean, $annotationName, \Closure $handler) {

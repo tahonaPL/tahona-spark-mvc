@@ -99,7 +99,6 @@ class Engine {
         self::$ROOT_APP_PATH = $rootAppPath;
 
 //        ClassLoaderRegister::register($this->engineConfig);
-        AnnotationRegistry::registerLoader('class_exists');
 
         $this->beanCache = new ApcuBeanCache();
         $this->beanCache->init();
