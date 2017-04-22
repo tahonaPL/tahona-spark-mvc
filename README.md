@@ -234,7 +234,7 @@ Example is for dynami menu module that will popup when new project or classes ar
 
 ### Interceptors ###
 
-```
+```php
 /**
 * @Component
 */
