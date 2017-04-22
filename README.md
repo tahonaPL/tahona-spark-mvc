@@ -255,7 +255,7 @@ class UserInterceptor implements HandlerInterceptor {
 }
 ```
 
-### Instalation - Composer ###
+### Installation - Composer ###
 
 ```
 {
