@@ -256,10 +256,15 @@ class UserInterceptor implements HandlerInterceptor {
 }
 ```
 
-### Composer ###
+### Instalation - Composer ###
 
 ```
 {
+
+	"autoload": {
+		"psr-4": {"": "app/src/"}
+	},
+
     "require": {
 		"smarty/smarty": "3.1.27",
 		"tahona/spark-mvc": "*",
