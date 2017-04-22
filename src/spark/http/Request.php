@@ -21,7 +21,6 @@ class Request {
     private $urlParams = array();
 
     private $hostPath;
-    private $securityRoles;
 
     //headers
     private $headers;
@@ -133,22 +132,6 @@ class Request {
     public function setHostPath($hostPath) {
         $this->hostPath = UrlUtils::wrapHttpIfNeeded($hostPath);
     }
-
-    public function setSecurityRoles($securityRoles) {
-        $this->securityRoles = $securityRoles;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getSecurityRoles() {
-        return $this->securityRoles;
-    }
-
-    public function hasSecurityRoles() {
-        return false == empty($this->securityRoles);
-    }
-
 
     public function setNamespace($namespace) {
         $this->namespace = $namespace;

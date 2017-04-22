@@ -242,8 +242,13 @@ final class Collections {
         }
     }
 
+    /**
+     * @param array $array
+     * @param $key
+     * @return array|null
+     */
     public static function getValue($array = array(), $key) {
-        return self::getValueOrDefault($array, $key, null);
+        return self::getValueOrDefault($array, $key);
     }
 
     public static function getValueOrDefault($array = array(), $key, $default = null) {

@@ -34,6 +34,15 @@ class Functions {
         };
     }
 
+    /**
+     * Synaptic sugar
+     * @param $propertyName
+     * @return callable
+     */
+    public static function get($propertyName) {
+        return self::invokeGetMethod($propertyName);
+    }
+
     public static function field($field) {
         return function ($obj) use ($field) {
             if (isset($obj->$field)) {

@@ -25,7 +25,7 @@ class RoutingDefinitionConverter {
             $definition->setActionMethod($value[Routing::METHOD_NAME]);
             $definition->setRequestHeaders(Collections::getValueOrDefault($value, Routing::REQUEST_HEADERS_NAME, array()));
             $definition->setRequestMethods(Collections::getValueOrDefault($value, Routing::REQUEST_METHODS_NAME, array()));
-            $definition->setRoles(Collections::getValueOrDefault($value, Routing::ROLES, array()));
+//            $definition->setRoles(Collections::getValueOrDefault($value, Routing::ROLES, array()));
 
             if (RoutingUtils::hasExpression($key)) {
                 $definition->setParams(RoutingUtils::getParametrizedUrlKeys($key));

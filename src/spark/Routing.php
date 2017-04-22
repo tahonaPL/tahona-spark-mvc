@@ -54,25 +54,24 @@ class Routing {
     }
 
     /**
-     *
-     * @param type $urlPath
-     * @param type $nameSpace string or array
-     * @param type $registeredHostPath
-     * @return \spark\http\Request
+     * @param $urlPath
+     * @param string $registeredHostPath
+     * @return Request
+     * @throws RouteNotFoundException
      */
     public function createRequest($urlPath, $registeredHostPath = "") {
         $urlPath = $this->getPath();
 
-        $request = new \spark\http\Request();
-        $request->setHostPath($registeredHostPath);
-
         $routeDefinition = $this->getDefinition($urlPath);
 
+        $request = new \spark\http\Request();
+        $request->setHostPath($registeredHostPath);
         $request->setMethodName($routeDefinition->getActionMethod());
         $request->setControllerClassName($routeDefinition->getControllerClassName());
-        $request->setSecurityRoles($this->getRoles($routeDefinition));
+
         $urlParams = $this->extractUrlParameters($urlPath, $routeDefinition);
         $request->setUrlParams($urlParams);
+
         $this->fillModuleData($request, $routeDefinition->getControllerClassName());
 
         return $request;
@@ -127,13 +126,6 @@ class Routing {
     private function checkAllPathElements($route, $urlPath) {
         $keys = RoutingUtils::getParametrizedUrlKeys($route);
         return RoutingUtils::hasExpressionParams($route, $urlPath, $keys);
-    }
-
-    private function getRoles(RoutingDefinition $routePath) {
-        if (isset($routePath)) {
-            return $routePath->getRoles();
-        }
-        return array();
     }
 
     private function extractUrlParameters($urlPath, RoutingDefinition $routeDefinition) {
