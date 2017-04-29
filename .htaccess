@@ -1,0 +1,29 @@
+
+RewriteEngine On
+
+#RewriteCond %{REQUEST_FILENAME} !^.*/files/media/(.*)$
+
+RewriteRule ^js/(.*)?$  app/public/js/$1 [QSA,L]
+RewriteRule ^img/(.*)?$  app/public/img/$1 [QSA,L]
+RewriteRule ^house/(.*)?$  app/public/house/$1 [QSA,L]
+RewriteRule ^tahona/(.*)?$  app/public/tahona/$1 [QSA,L]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(.*)?$  app/public/index.php [L]
+#RewriteRule ^(.*)?$  app/public/index.php/$1 [QSA,L]
+
+
+#RewriteCond %{HTTPS} !=on
+#RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+<IfModule mod_headers.c>
+    # WEEK
+    <FilesMatch "\.(jpg|jpeg|png|gif|swf|js)$">
+        Header set Cache-Control "max-age=604800, public"
+    </FilesMatch>
+
+    <FilesMatch "\.(ttf|otf|eot|woff)$">
+        Header set Access-Control-Allow-Origin "*"
+    </FilesMatch>
+</IfModule>
+

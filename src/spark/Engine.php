@@ -8,7 +8,6 @@ use ReflectionClass;
 use spark\cache\ApcuBeanCache;
 use spark\cache\BeanCache;
 use spark\core\annotation\handler\EnableApcuAnnotationHandler;
-use spark\core\Bootstrap;
 use spark\core\CoreConfig;
 use spark\core\engine\EngineConfig;
 use spark\core\engine\EngineFactory;
@@ -250,12 +249,9 @@ class Engine {
     }
 
     /**
-     * @param $request Request
+     * @param Request $request
      * @param $controller
      * @throws ErrorException
-     * @throws common\IllegalStateException
-     * @internal param $errorArray
-     * @internal param Bootstrap $bootstrap
      */
     private function handleAction(Request $request, $controller) {
 
