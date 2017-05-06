@@ -41,6 +41,9 @@ class RequestUtils {
         $params = $_POST;
         return self::filterParams($params);
     }
+    public static function getAllFilesParams() {
+        return $_FILES;
+    }
 
     public static function isFile() {
         return false == empty($_FILES);

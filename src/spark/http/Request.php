@@ -83,7 +83,9 @@ class Request {
      * @return array
      */
     public function getPostData() {
-        return RequestUtils::getPostParams();
+        return Collections::builder(RequestUtils::getPostParams())
+            ->addAll(RequestUtils::getAllFilesParams())
+            ->get();
     }
 
     public function getParam($name, $default = null) {

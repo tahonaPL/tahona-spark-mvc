@@ -29,7 +29,7 @@ class FileObject {
     }
 
     /**
-     * @return ContentType
+     * @return string
      */
     public function getContentType() {
         return $this->contentType;
