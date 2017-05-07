@@ -175,7 +175,7 @@ Where "pl","cz","en" are cookie value with key "lang";
 /house/house_pl.properties
 
 ```
-core.thank.you.message=Thank You %s
+core.thank.you.message=Thank You {0} and {1}
 ```
 
 * Use in php
@@ -189,16 +189,16 @@ core.thank.you.message=Thank You %s
 
     ...
 
-    $this->langMessageResource->get("core.thank.you.message", array("John"));
+    $this->langMessageResource->get("core.thank.you.message", array("John", "Trevor"));
 
 ```
 
 * Use in smarty
 
 ```
-{lang code="core.thank.you.message" value=["John"]}
+{lang code="core.thank.you.message" value=["John", "Trevor"]}
 ```
-Results: Thank You John
+Results: Thank You John and Trevor
 
 ### @Path ###
 

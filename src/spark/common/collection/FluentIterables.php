@@ -160,5 +160,17 @@ class FluentIterables {
         return Collections::builder($array);;
     }
 
+    /**
+     * Reorganizate indexes
+     * @return array
+     */
+    public function getList() {
+        $array = array();
+        foreach($this->collection as $v){
+            $array[]=$v;
+        }
+        return $array;
+    }
+
 
 }

@@ -64,8 +64,12 @@ class Objects {
         $parents = class_parents($obj);
         $implements = class_implements($obj);
         $className = self::getClassName($obj);
-        Collections::addAll($parents, array($className => $className));
-        return Collections::merge($parents, $implements);
+
+        return Collections::builder()
+            ->add($className)
+            ->addAll($parents)
+            ->addAll($implements)
+            ->getList();
     }
 
     public static function isPrimitive($obj) {
