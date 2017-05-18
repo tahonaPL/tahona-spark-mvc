@@ -150,9 +150,11 @@ class Engine {
                 $this->beanCache->put($this->getCacheKey("interceptors"), $this->interceptors);
             }
         }
-        $engine = $this;
 
-        $this->initErrorHandler($engine);
+        $engine = $this;
+        /** @var GlobalErrorHandler $globalErrorHandler */
+        $globalErrorHandler = $this->container->get(GlobalErrorHandler::NAME);
+        $globalErrorHandler->setup();
     }
 
     /**
@@ -223,6 +225,7 @@ class Engine {
         $this->container->registerObj(new BeanProvider($this->container));
         $this->container->registerObj($this->config);
         $this->container->registerObj($this->route);
+        $this->container->registerObj(new GlobalErrorHandler($this));
 
         $this->addViewHandlersToService();
     }
@@ -323,7 +326,7 @@ class Engine {
      * @throws ErrorException
      * @throws common\IllegalStateException
      */
-    private function handleViewModel(Request $request, $viewModel) {
+    public  function handleViewModel(Request $request, $viewModel) {
         Asserts::checkState($viewModel instanceof ViewModel, "Wrong viewModel type. Returned type from controller needs to be instance of ViewModel.");
 
         $this->postHandleIntercetors($request, $viewModel);
@@ -349,44 +352,10 @@ class Engine {
 
     /**
      *
-     * @param $engine
-     */
-    private function initErrorHandler($engine) {
-        $errorHandler = new GlobalErrorHandler();
-        $errorHandler->setHandler(function ($error) use ($engine) {
-
-            $exceptionResolvers = Collections::builder($this->container->getByType(ExceptionResolver::CLASS_NAME))
-                ->sort(function ($x, $y) {
-                    /** @var ExceptionResolver $x */
-                    return $x->getOrder() > $y->getOrder();
-                })
-                ->get();
-
-            foreach ($exceptionResolvers as $resolver) {
-                /** @var ExceptionResolver $resolver */
-                $viewModel = $resolver->doResolveException($error);
-                if (Objects::isNotNull($viewModel)) {
-                    $request = new Request();
-                    $this->updateRequest($request);
-                    $this->handleViewModel($request, $viewModel);
-                    return;
-                }
-            }
-
-            //Default behavior
-            /** @var ErrorException $error */
-            ResponseHelper::setCode(HttpCode::$INTERNAL_SERVER_ERROR);
-            throw new \Exception($error->getMessage(), $error->getCode(), $error);
-        });
-        $errorHandler->setup();
-    }
-
-    /**
-     *
      * @param $request
      * @throws \Exception
      */
-    private function updateRequest($request) {
+    public function updateRequest($request) {
         /** @var RequestProvider $requestProvider */
         $requestProvider = $this->container->get(RequestProvider::NAME);
         $requestProvider->setRequest($request);

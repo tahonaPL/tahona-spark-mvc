@@ -9,15 +9,39 @@
 namespace spark\core\error;
 
 
+use spark\Container;
+use spark\core\annotation\Inject;
+use spark\core\provider\BeanProvider;
+use spark\Engine;
+use spark\http\HttpCode;
+use spark\http\Request;
+use spark\http\ResponseHelper;
+use spark\utils\Collections;
+use spark\utils\Objects;
+
 class GlobalErrorHandler {
 
+    const NAME = "globalErrorHandler";
     const EXCEPTION_HANDLER = "handleException";
     const FATAL_HANDLER = "handleFatal";
 
     /**
-     * @var \Closure
+     * @Inject()
+     * @var BeanProvider
      */
-    private $handler;
+    private $beanProvider;
+    /**
+     * @var Engine
+     */
+    private $engine;
+
+    /**
+     * GlobalErrorHandler constructor.
+     */
+    public function __construct(Engine $engine) {
+        $this->engine = $engine;
+    }
+
 
     /**
      *
@@ -30,7 +54,7 @@ class GlobalErrorHandler {
             return;
         }
         if (error_reporting()) {
-            $invoke = $this->handler;
+            $invoke = $this->getHandler();
 
             $invoke($exception);
             return;
@@ -54,7 +78,7 @@ class GlobalErrorHandler {
         if (error_reporting()) {
             $exc = new \ErrorException($message, 0, $severity, $filename, $lineno);
 
-            $invoke = $this->handler;
+            $invoke = $this->getHandler();
             $invoke($exc);
             return $exc;
 
@@ -66,7 +90,32 @@ class GlobalErrorHandler {
 //        set_error_handler(array($this, self::FATAL_HANDLER));
     }
 
-    public function setHandler(\Closure $handler) {
-        $this->handler = $handler;
+    private function getHandler() {
+        return function ($error) {
+
+            $exceptionResolvers = Collections::builder($this->beanProvider->getByType(ExceptionResolver::CLASS_NAME))
+                ->sort(function ($x, $y) {
+                    /** @var ExceptionResolver $x */
+                    return $x->getOrder() > $y->getOrder();
+                })
+                ->get();
+
+            foreach ($exceptionResolvers as $resolver) {
+                /** @var ExceptionResolver $resolver */
+                $viewModel = $resolver->doResolveException($error);
+                if (Objects::isNotNull($viewModel)) {
+                    $request = new Request();
+                    $this->engine->updateRequest($request);
+                    $this->engine->handleViewModel($request, $viewModel);
+
+                    return;
+                }
+            }
+
+            //Default behavior
+            /** @var ErrorException $error */
+            ResponseHelper::setCode(HttpCode::$INTERNAL_SERVER_ERROR);
+            throw new \Exception($error->getMessage(), $error->getCode(), $error);
+        };
     }
 } 

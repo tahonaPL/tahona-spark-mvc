@@ -29,13 +29,12 @@ class UrlUtils {
     public static function getPathInfo($host = null) {
 
         $actualLink = self::getUrl();
-        $host = self::removeHttpTags($host);
+        $host = self::getHost();
         $actualLink = self::removeHttpTags($actualLink);
-
 
         if (isset($host)) {
             $urlParts = StringUtils::split($actualLink, $host);
-            Asserts::checkArgument(Collections::size($urlParts) == 2, "Wrong url setup? Check config. Looking for host: " . $host);
+            Asserts::checkArgument(Collections::size($urlParts) >= 2, "Wrong url setup? Check config. Looking for host: " . $host);
 
             $urlVal = $urlParts[1];
         } else {

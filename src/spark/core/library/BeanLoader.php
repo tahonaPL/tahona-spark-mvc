@@ -128,7 +128,6 @@ class BeanLoader {
                 $this->annotationProcessor->processAnnotations($postLoadDefinition->getClass());
             }
         }
-
     }
 
     public function  postProcess(){

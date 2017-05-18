@@ -60,5 +60,11 @@ class DateUtils {
         return floor($diff / (24 * 60 * 60));
     }
 
+    public static function getYearsBetween(DateTime $from, DateTime $to) {
+        $da = new DateTime();
+        $interval = date_diff($from, $to);
+        return $interval->y;
+    }
+
 
 }

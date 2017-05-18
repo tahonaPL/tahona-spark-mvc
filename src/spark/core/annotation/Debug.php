@@ -12,6 +12,8 @@ use Doctrine\ORM\Mapping\Annotation;
 
 
 /**
+ * cookie Param: XDEBUG_SESSION
+ *
  * @Annotation
  * @Target({"CLASS"})
  */
