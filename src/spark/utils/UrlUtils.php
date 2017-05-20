@@ -30,7 +30,6 @@ class UrlUtils {
 
         $actualLink = self::getUrl();
         $host = self::getHost();
-        $actualLink = self::removeHttpTags($actualLink);
 
         if (isset($host)) {
             $urlParts = StringUtils::split($actualLink, $host);

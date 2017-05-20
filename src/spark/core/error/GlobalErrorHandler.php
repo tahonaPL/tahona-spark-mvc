@@ -26,14 +26,10 @@ class GlobalErrorHandler {
     const FATAL_HANDLER = "handleFatal";
 
     /**
-     * @Inject()
-     * @var BeanProvider
-     */
-    private $beanProvider;
-    /**
      * @var Engine
      */
     private $engine;
+    private $exceptionResolvers;
 
     /**
      * GlobalErrorHandler constructor.
@@ -85,7 +81,8 @@ class GlobalErrorHandler {
         }
     }
 
-    public function setup() {
+    public function setup($resolvers=array()) {
+        $this->exceptionResolvers = $resolvers;
         set_exception_handler(array($this, self::EXCEPTION_HANDLER));
 //        set_error_handler(array($this, self::FATAL_HANDLER));
     }
@@ -93,7 +90,7 @@ class GlobalErrorHandler {
     private function getHandler() {
         return function ($error) {
 
-            $exceptionResolvers = Collections::builder($this->beanProvider->getByType(ExceptionResolver::CLASS_NAME))
+            $exceptionResolvers = Collections::builder($this->exceptionResolvers)
                 ->sort(function ($x, $y) {
                     /** @var ExceptionResolver $x */
                     return $x->getOrder() > $y->getOrder();
@@ -118,4 +115,6 @@ class GlobalErrorHandler {
             throw new \Exception($error->getMessage(), $error->getCode(), $error);
         };
     }
+
+
 } 

@@ -28,7 +28,7 @@ class ComponentAnnotationHandler extends AnnotationHandler {
         );
     }
 
-    public function handleClassAnnotations($annotations = array(), $bean, \ReflectionClass $classReflection) {
+    public function handleClassAnnotations($annotations = array(), $class, \ReflectionClass $classReflection) {
         $defined = $this->annotationNames;
         $annotation = Collections::builder($annotations)
             ->filter(Predicates::compute($this->getClassName(), Predicates::contains($defined)))

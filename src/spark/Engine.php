@@ -7,6 +7,7 @@ use ErrorException;
 use ReflectionClass;
 use spark\cache\ApcuBeanCache;
 use spark\cache\BeanCache;
+use spark\cache\TestCache;
 use spark\core\annotation\handler\EnableApcuAnnotationHandler;
 use spark\core\CoreConfig;
 use spark\core\engine\EngineConfig;
@@ -53,6 +54,11 @@ use spark\view\ViewModel;
 class Engine {
     private static $ROOT_APP_PATH;
     private $apcuExtensionLoaded;
+    const CONTAINER_CACHE_KEY = "container";
+    const ROUTE_CACHE_KEY = "route";
+    const CONFIG_CACHE_KEY = "config";
+    const INTERCEPTORS_CACHE_KEY = "interceptors";
+    const ERROR_HANDLERS_CACHE_KEY = "exceptionResolvers";
 
     /**
      * @var EngineConfig
@@ -82,6 +88,7 @@ class Engine {
 
 
     private $interceptors;
+    private $exceptionResolvers;
 
     public function __construct($name, $rootAppPath) {
         $this->apcuExtensionLoaded = extension_loaded("apcu");
@@ -103,10 +110,11 @@ class Engine {
         $this->beanCache->init();
 
         if ($this->hasAllreadyCachedData()) {
-            $this->container = $this->beanCache->get($this->getCacheKey("container"));
-            $this->route = $this->beanCache->get($this->getCacheKey("route"));
-            $this->config = $this->beanCache->get($this->getCacheKey("config"));
-            $this->interceptors = $this->beanCache->get($this->getCacheKey("interceptors"));
+            $this->container = $this->beanCache->get($this->getCacheKey(self::CONTAINER_CACHE_KEY));
+            $this->route = $this->beanCache->get($this->getCacheKey(self::ROUTE_CACHE_KEY));
+            $this->config = $this->beanCache->get($this->getCacheKey(self::CONFIG_CACHE_KEY));
+            $this->interceptors = $this->beanCache->get($this->getCacheKey(self::INTERCEPTORS_CACHE_KEY));
+            $this->exceptionResolvers = $this->beanCache->get($this->getCacheKey(self::ERROR_HANDLERS_CACHE_KEY));
         }
 
         if (!$this->hasAllreadyCachedData() || isset($_GET["reset"])) {
@@ -142,19 +150,21 @@ class Engine {
             $beanLoader->postProcess();
 
             $this->interceptors = $this->container->getByType(HandlerInterceptor::CLASS_NAME);
+            $this->exceptionResolvers = $this->container->getByType(ExceptionResolver::CLASS_NAME);
 
             if ($this->isApcuCacheEnabled()) {
-                $this->beanCache->put($this->getCacheKey("config"), $this->config);
-                $this->beanCache->put($this->getCacheKey("container"), $this->container);
-                $this->beanCache->put($this->getCacheKey("route"), $this->route);
-                $this->beanCache->put($this->getCacheKey("interceptors"), $this->interceptors);
+                $this->beanCache->put($this->getCacheKey(self::CONFIG_CACHE_KEY), $this->config);
+                $this->beanCache->put($this->getCacheKey(self::CONTAINER_CACHE_KEY), $this->container);
+                $this->beanCache->put($this->getCacheKey(self::ROUTE_CACHE_KEY), $this->route);
+                $this->beanCache->put($this->getCacheKey(self::INTERCEPTORS_CACHE_KEY), $this->interceptors);
+                $this->beanCache->put($this->getCacheKey(self::ERROR_HANDLERS_CACHE_KEY), $this->exceptionResolvers);
             }
         }
 
         $engine = $this;
         /** @var GlobalErrorHandler $globalErrorHandler */
         $globalErrorHandler = $this->container->get(GlobalErrorHandler::NAME);
-        $globalErrorHandler->setup();
+        $globalErrorHandler->setup($this->exceptionResolvers);
     }
 
     /**
@@ -195,15 +205,13 @@ class Engine {
 
         //Interceptor
         $this->preHandleInterceptor($request);
+        $this->filter($this->container->getFilters(), $request);
 
         //Controller
         $controllerName = $request->getControllerClassName();
         /** @var $controller Controller */
-        $controller = new $controllerName();
 
-        $this->filter($this->container->getFilters(), $request);
-
-        $controller->setContainer($this->container);
+        $controller = $this->container->get($controllerName);
         $controller->init($request, $responseParams);
 
         //ACTION->VIEW
@@ -285,7 +293,7 @@ class Engine {
     }
 
     private function hasAllreadyCachedData() {
-        return $this->apcuExtensionLoaded && $this->beanCache->has($this->getCacheKey("container"));
+        return $this->apcuExtensionLoaded && $this->beanCache->has($this->getCacheKey(self::CONTAINER_CACHE_KEY));
     }
 
     /**

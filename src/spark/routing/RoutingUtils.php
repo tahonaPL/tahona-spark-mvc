@@ -37,16 +37,17 @@ class RoutingUtils {
         $paramsCount = count($routeDefinitionParams);
         $hasPathParams = $paramsCount > 0;
 
-        $routeStaticElementsCount = count($exRoute) - $paramsCount;
+        $routeElementsCount = count($exRoute);
+        $routeStaticElementsCount = $routeElementsCount - $paramsCount;
 
         if (false == $hasPathParams) {
             return false;
         }
 
-        $isPathElementsCountEqual = (count($exRoute) === count($exUrlPath));
+        $isPathElementsCountEqual = ($routeElementsCount === count($exUrlPath));
 
         if ($isPathElementsCountEqual) {
-            for ($i = 0; $i < count($exRoute); $i++) {
+            for ($i = 0; $i < $routeElementsCount; $i++) {
                 $routeExpressionKey = $exRoute[$i];
                 $urlElement = $exUrlPath[$i];
 

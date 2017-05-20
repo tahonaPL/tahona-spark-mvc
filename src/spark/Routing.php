@@ -91,30 +91,23 @@ class Routing {
             $routesDefinitions = $this->routing[$urlPath];
 
             $routeDefinition = RoutingUtils::findRouteDefinition($routesDefinitions);
-            $routeDefinition->orElseThrow(new IllegalStateException("Route not found for: " . RequestUtils::getMethod() . " $urlPath " . RequestUtils::getMethod()));
-
-            $routingDefinition = $this->checkRoute($routeDefinition);
-            return $routingDefinition;
+            return $routeDefinition->orElseThrow(new RouteNotFoundException(RequestUtils::getMethod(),$urlPath));
 
         } else {
 
             $ctx = $this;
 
-            $routeDefinitions = Collections::builder($this->parametrizedRouting)
+            $routeDefinition = Collections::builder($this->parametrizedRouting)
                 ->flatMap(function($def){return $def;})
-                ->filter(function ($definition) use ($urlPath, $ctx) {
+                ->findFirst(function ($definition) use ($urlPath, $ctx) {
+                    if (RoutingUtils::hasExpressionParams($definition->getPath(), $urlPath, $definition->getParams())) {
+                        return RoutingUtils::findRouteDefinition(array($definition));
+                    }
                     /** @var RoutingDefinition $definition */
-                    return RoutingUtils::hasExpressionParams($definition->getPath(), $urlPath, $definition->getParams());
-                })
-                ->get();
+                    return null;
+                });
 
-            $routeDefinition = RoutingUtils::findRouteDefinition($routeDefinitions);
-
-            if ($routeDefinition->isPresent()) {
-                return $this->checkRoute($routeDefinition);
-            }
-
-            throw new RouteNotFoundException(RequestUtils::getMethod(), $urlPath);
+            return $routeDefinition->orElseThrow(new RouteNotFoundException(RequestUtils::getMethod(), $urlPath));
         }
     }
 
@@ -215,25 +208,6 @@ class Routing {
         $routing[$routingDefinition->getPath()][] = $routingDefinition;
     }
 
-    /**
-     *
-     * @param Optional $route
-     * @return RoutingDefinition
-     * @throws \Exception
-     * @internal param $urlPath
-     */
-    private function checkRoute(Optional $route) {
-
-        //backward compatibility: "com.some.AccController " change into com\some\AccController
-        $route->map(Functions::invokeGetMethod(RoutingDefinition::D_CONTROLLER_CLASS_NAME))
-            ->map(StringFunctions::replace(".", "\\"))
-            ->orElseThrow(new RoutingException("Nod defined controller class in rout"));
-
-        $route->mapProperty(RoutingDefinition::D_ACTION_METHOD)
-            ->orElseThrow(new RoutingException("Not defined action method in routing."));
-
-        return $route->get();
-    }
 
     public function getCurrentDefinition() {
         return $this->getDefinition($this->getPath());

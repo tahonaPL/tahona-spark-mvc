@@ -25,7 +25,7 @@ class EnableApcuAnnotationHandler extends AnnotationHandler {
         $this->annotationName = "spark\\core\\annotation\\EnableApcuBeanCache";
     }
 
-    public function handleClassAnnotations($annotations = array(), $bean, \ReflectionClass $classReflection) {
+    public function handleClassAnnotations($annotations = array(), $class, \ReflectionClass $classReflection) {
 
         $annotation = Collections::builder($annotations)
             ->findFirst(Predicates::compute($this->getClassName(), StringUtils::predEquals($this->annotationName)));

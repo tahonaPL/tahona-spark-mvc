@@ -254,6 +254,11 @@ class UserInterceptor implements HandlerInterceptor {
     }
 }
 ```
+### Installation - Composer - Speed up###
+
+
+dump-autoload -a
+
 
 ### Installation - Composer ###
 
@@ -269,3 +274,4 @@ class UserInterceptor implements HandlerInterceptor {
     }
 }
 ```
+

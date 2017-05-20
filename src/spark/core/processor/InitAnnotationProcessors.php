@@ -15,6 +15,7 @@ use ReflectionMethod;
 use ReflectionProperty;
 use spark\core\annotation\handler\AnnotationHandler;
 use spark\core\annotation\handler\ComponentAnnotationHandler;
+use spark\core\annotation\handler\ControllerClassHandler;
 use spark\core\annotation\handler\DebugAnnotationHandler;
 use spark\core\annotation\handler\EnableApcuAnnotationHandler;
 use spark\core\annotation\handler\EnableMailerAnnotationHandler;
@@ -42,7 +43,8 @@ class InitAnnotationProcessors extends AnnotationHandler {
             new EnableApcuAnnotationHandler(),
             new PathAnnotationHandler(),
             new SmartyViewConfigurationAnnotationHandler(),
-            new DebugAnnotationHandler()
+            new DebugAnnotationHandler(),
+            new ControllerClassHandler()
         );
 
         $this->postHandlers = array();

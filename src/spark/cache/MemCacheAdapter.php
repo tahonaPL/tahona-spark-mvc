@@ -1,6 +1,7 @@
 <?php
 
 
+use spark\cache\BeanCache;
 use spark\utils\Asserts;
 
 class MemCacheAdapter implements BeanCache {
@@ -26,5 +27,13 @@ class MemCacheAdapter implements BeanCache {
 
     public function get($key) {
         return $this->cache->get($key);
+    }
+
+    public function has($key) {
+        // TODO: Implement has() method.
+    }
+
+    public function clearAll() {
+//        return $this->cache->del
     }
 }
