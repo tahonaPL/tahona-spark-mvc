@@ -211,7 +211,11 @@ class Engine {
         $controllerName = $request->getControllerClassName();
         /** @var $controller Controller */
 
+
         $controller = $this->container->get($controllerName);
+//        $controller = new $controllerName();
+//        $controller->setContainer($this->container);
+
         $controller->init($request, $responseParams);
 
         //ACTION->VIEW

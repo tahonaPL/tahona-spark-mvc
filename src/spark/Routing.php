@@ -101,7 +101,8 @@ class Routing {
                 ->flatMap(function($def){return $def;})
                 ->findFirst(function ($definition) use ($urlPath, $ctx) {
                     if (RoutingUtils::hasExpressionParams($definition->getPath(), $urlPath, $definition->getParams())) {
-                        return RoutingUtils::findRouteDefinition(array($definition));
+                        $optional = RoutingUtils::findRouteDefinition(array($definition));
+                        return $optional->orElse(null);
                     }
                     /** @var RoutingDefinition $definition */
                     return null;
