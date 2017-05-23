@@ -200,8 +200,8 @@ class StringUtils {
         return strlen($value);
     }
 
-    public static function lowerCase($scope) {
-        return strtolower($scope);
+    public static function lowerCase($str) {
+        return strtolower($str);
     }
 
 }

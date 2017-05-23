@@ -61,10 +61,4 @@ class Asserts {
             throw new IllegalStateException($message);
         }
     }
-
-    public static function checkNotNull($obj, $message = "Object cannot be null") {
-        $isNotNull = Objects::isNotNull($obj);
-        $checkState = self::checkState($isNotNull, $message);
-        return $checkState;
-    }
 }

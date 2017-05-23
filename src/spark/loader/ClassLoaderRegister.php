@@ -23,8 +23,6 @@ class ClassLoaderRegister {
     public static function register(EngineConfig $config) {
         $register = new ClassLoaderRegister($config);
         $register->init();
-
-        AnnotationRegistry::registerLoader('class_exists');
     }
 
     public function __construct(EngineConfig $config) {

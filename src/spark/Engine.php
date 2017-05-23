@@ -104,7 +104,7 @@ class Engine {
 
         self::$ROOT_APP_PATH = $rootAppPath;
 
-        ClassLoaderRegister::register($this->engineConfig);
+//        ClassLoaderRegister::register($this->engineConfig);
 
         $this->beanCache = new ApcuBeanCache();
         $this->beanCache->init();
@@ -130,7 +130,6 @@ class Engine {
 
             $this->config->set("app.path", $rootAppPath);
             $this->config->set("src.path", $rootAppPath."/src");
-
 
             $initAnnotationProcessors = new InitAnnotationProcessors($this->route, $this->config, $this->container);
 
@@ -211,11 +210,7 @@ class Engine {
         $controllerName = $request->getControllerClassName();
         /** @var $controller Controller */
 
-
         $controller = $this->container->get($controllerName);
-//        $controller = new $controllerName();
-//        $controller->setContainer($this->container);
-
         $controller->init($request, $responseParams);
 
         //ACTION->VIEW

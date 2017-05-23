@@ -44,7 +44,7 @@ class ViewHandlerProvider {
         } else {
 
             $viewHandler = $this->getProvider($viewModel, $request);
-            Asserts::checkNotNull($viewHandler, "ViewHandler not found for viewModelType: ".Objects::getClassName($viewModel));
+            Asserts::notNull($viewHandler, "ViewHandler not found for viewModelType: ".Objects::getClassName($viewModel));
 
             $viewHandler->handleView($viewModel, $request);
         }

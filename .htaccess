@@ -2,16 +2,27 @@
 RewriteEngine On
 
 #RewriteCond %{REQUEST_FILENAME} !^.*/files/media/(.*)$
+#
+#RewriteRule ^js/(.*)?$  app/public/js/$1 [QSA,L]
+#RewriteRule ^img/(.*)?$  app/public/img/$1 [QSA,L]
+#RewriteRule ^house/(.*)?$  app/public/house/$1 [QSA,L]
+#RewriteRule ^tahona/(.*)?$  app/public/tahona/$1 [QSA,L]
 
-RewriteRule ^js/(.*)?$  app/public/js/$1 [QSA,L]
-RewriteRule ^img/(.*)?$  app/public/img/$1 [QSA,L]
-RewriteRule ^house/(.*)?$  app/public/house/$1 [QSA,L]
-RewriteRule ^tahona/(.*)?$  app/public/tahona/$1 [QSA,L]
+# -f - is normal file
+# !-f - is not, a file
+# [QSA] - append to url
+# [L] - last command and now rewrite
 
-RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_URI} !^/app/public(.*)?$
+
+#RewriteCond %{REQUEST_URI} !^(.*)(jpg|jpeg|png|gif|swf|js|css)$
+#//Same as exec.png or somethibg
+RewriteCond %{REQUEST_URI} !^.*\..+$
 RewriteRule ^(.*)?$  app/public/index.php [L]
-#RewriteRule ^(.*)?$  app/public/index.php/$1 [QSA,L]
 
+#Sprawdza Jeżeli plik istnieje to przekieruj
+RewriteCond %{DOCUMENT_ROOT}/app/public%{REQUEST_URI} -f
+RewriteRule ^(.*)?$ /app/public/$1 [QSA,L]
 
 #RewriteCond %{HTTPS} !=on
 #RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
