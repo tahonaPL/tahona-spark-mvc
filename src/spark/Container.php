@@ -107,6 +107,11 @@ class Container {
     }
 
 
+    /**
+     *
+     * @param $type example -  Foo\Bar\Something
+     * @return array
+     */
     public function getByType($type) {
         return Collections::builder($this->beanContainer)
             ->filter(function ($definition) use ($type) {

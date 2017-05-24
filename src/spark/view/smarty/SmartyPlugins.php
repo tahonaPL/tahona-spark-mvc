@@ -10,6 +10,8 @@ namespace spark\view\smarty;
 
 
 use spark\core\annotation\Inject;
+use spark\core\annotation\PostConstruct;
+use spark\core\provider\BeanProvider;
 use spark\seo\SeoUrlFactory;
 use spark\seo\WithSeoUrl;
 use spark\core\lang\LangMessageResource;
@@ -21,11 +23,30 @@ class SmartyPlugins {
     const NAME = "smartyPlugins";
 
     const SEO_OBJECT = "seoObject";
+    private $definedPlugins;
     /**
      * @Inject
      * @var LangMessageResource
      */
     private $langMessageResource;
+
+
+    /**
+     * @Inject()
+     * @var BeanProvider
+     */
+    private $beanProvider;
+
+
+    /**
+     * @PostConstruct()
+     */
+    private function init() {
+        $this->definedPlugins = $this->beanProvider->getByType(SmartyPlugin::class);
+
+        $this->beanProvider = null; //dangereous to have thsi
+    }
+
 
     public function path($params, $smarty) {
         $path = $params["path"];
@@ -65,6 +86,13 @@ class SmartyPlugins {
             return SeoUrlFactory::getSeoUrlFromSeoObject($seoObject);
         }
         return "";
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDefinedPlugins() {
+        return $this->definedPlugins;
     }
 
 } 
