@@ -2,6 +2,8 @@
 
 namespace spark\http;
 
+use spark\common\Optional;
+use spark\http\utils\CookieUtils;
 use spark\http\utils\RequestUtils;
 use spark\utils\UrlUtils;
 use spark\upload\FileObject;
@@ -182,5 +184,9 @@ class Request {
             ->addAll($this->getUrlParams())
             ->addAll($this->getPostData())
             ->get();
+    }
+
+    public function getCookie($key, $def = null) {
+        return Optional::ofNullable(CookieUtils::getCookieValue($key))->orElse($def);
     }
 }

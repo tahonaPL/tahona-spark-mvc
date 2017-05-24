@@ -27,4 +27,8 @@ class CookieUtils {
         return false;
     }
 
+    public static function getCookieValue($key) {
+        return self::hasCookie($key) ? $_COOKIE[$key] : null;
+    }
+
 }

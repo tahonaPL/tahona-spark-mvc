@@ -30,14 +30,20 @@ class StringFunctions {
     }
 
     public static function split($splitter) {
-        return function($x) use ($splitter) {
+        return function ($x) use ($splitter) {
             return StringUtils::split($x, $splitter);
         };
     }
 
     public static function equals($value) {
-        return function($x) use ($value) {
+        return function ($x) use ($value) {
             return StringUtils::equals($x, $value);
+        };
+    }
+
+    public static function join($joiner) {
+        return function ($x) use ($joiner) {
+            return StringUtils::join($joiner, $x);
         };
     }
 }
