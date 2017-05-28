@@ -91,7 +91,7 @@ class Routing {
             $routesDefinitions = $this->routing[$urlPath];
 
             $routeDefinition = RoutingUtils::findRouteDefinition($routesDefinitions);
-            return $routeDefinition->orElseThrow(new RouteNotFoundException(RequestUtils::getMethod(),$urlPath));
+            return $routeDefinition->orElseThrow(new RouteNotFoundException(RequestUtils::getMethod(), $urlPath));
 
         } else {
 
@@ -104,11 +104,19 @@ class Routing {
                         $optional = RoutingUtils::findRouteDefinition(array($definition));
                         return $optional->orElse(null);
                     }
-                    /** @var RoutingDefinition $definition */
                     return null;
                 });
 
-            return $routeDefinition->orElseThrow(new RouteNotFoundException(RequestUtils::getMethod(), $urlPath));
+            /** @var RoutingDefinition $dev */
+            $dev = $routeDefinition->orElseThrow(new RouteNotFoundException(RequestUtils::getMethod(), $urlPath));
+
+            $definitionsWithSamePath = $this->parametrizedRouting[$dev->getPath()];
+            $size = Collections::size($definitionsWithSamePath);
+            if ($size > 1){
+                $dev = RoutingUtils::findRouteDefinition($definitionsWithSamePath, false)->orElse($dev);
+            }
+
+            return $dev;
         }
     }
 

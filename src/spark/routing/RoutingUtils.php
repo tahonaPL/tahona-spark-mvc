@@ -108,12 +108,11 @@ class RoutingUtils {
      * @param array $routes
      * @return Optional
      */
-    public static function findRouteDefinition($routes = array()) {
+    public static function findRouteDefinition($routes = array(), $ignoreEmptyRequestMethod = true) {
         $requestMethod = RequestUtils::getMethod();
         $headers = RequestUtils::getHeaders();
 
         /** @var RoutingDefinition $item */
-        $routeWithNoMethod = null;
 
         foreach ($routes as $item) {
             $requestMethods = $item->getRequestMethods();
@@ -125,12 +124,12 @@ class RoutingUtils {
                 }
             }
 
-            if (Collections::isEmpty($requestMethods)) {
-                $routeWithNoMethod = $item;
+            if ($ignoreEmptyRequestMethod && Collections::isEmpty($requestMethods)) {
+                return Optional::of($item);
             }
         }
 
-        return Optional::ofNullable($routeWithNoMethod);
+        return Optional::absent();
     }
 
     public static function getParametrizedUrlKeys($parametrizedPath) {
@@ -146,7 +145,6 @@ class RoutingUtils {
                 return RoutingUtils::clearRouteParamExpression($x);
             })
             ->get();
-
     }
 
 } 
