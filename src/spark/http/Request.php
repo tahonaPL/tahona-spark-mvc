@@ -92,7 +92,7 @@ class Request {
 
     public function getParam($name, $default = null) {
         $param = $this->getParamOrNull($name);
-        return $param != null ? $param : $default;
+        return Objects::isNotNull($param)? $param : $default;
     }
 
     public function setUrlParams($urlParams) {
