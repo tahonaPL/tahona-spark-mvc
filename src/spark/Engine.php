@@ -9,6 +9,9 @@ use spark\cache\ApcuBeanCache;
 use spark\cache\BeanCache;
 use spark\cache\TestCache;
 use spark\core\annotation\handler\EnableApcuAnnotationHandler;
+use spark\core\command\Command;
+use spark\core\command\input\InputInterface;
+use spark\core\command\output\OutputInterface;
 use spark\core\CoreConfig;
 use spark\core\engine\EngineConfig;
 use spark\core\engine\EngineFactory;
@@ -20,6 +23,7 @@ use spark\core\lang\LangResourcePath;
 use spark\core\library\BeanLoader;
 use spark\core\processor\InitAnnotationProcessors;
 use spark\core\provider\BeanProvider;
+use spark\core\utils\SystemUtils;
 use spark\filter\FilterChain;
 use spark\http\HttpCode;
 use spark\http\Request;
@@ -32,8 +36,10 @@ use spark\http\utils\RequestUtils;
 use spark\utils\BooleanUtils;
 use spark\utils\ConfigHelper;
 use spark\utils\FileUtils;
+use spark\utils\Functions;
 use spark\utils\Predicates;
 use spark\utils\ReflectionUtils;
+use spark\utils\StringFunctions;
 use spark\utils\UrlUtils;
 use spark\utils\Asserts;
 use spark\utils\Collections;
@@ -45,6 +51,7 @@ use spark\view\smarty\SmartyPlugins;
 use spark\view\smarty\SmartyViewHandler;
 use spark\view\ViewHandlerProvider;
 use spark\view\ViewModel;
+use Symfony\Component\Console\Tests\Command\CommandTest;
 
 /**
  * Description of Engine
@@ -177,7 +184,11 @@ class Engine {
     }
 
     public function run() {
-        $this->runController();
+        if (SystemUtils::isCommandLineInterface()){
+            $this->runCommand();
+        } else {
+            $this->runController();
+        }
     }
 
     private function runController() {
@@ -366,6 +377,21 @@ class Engine {
         /** @var RequestProvider $requestProvider */
         $requestProvider = $this->container->get(RequestProvider::NAME);
         $requestProvider->setRequest($request);
+    }
+
+    private function runCommand() {
+        $input = new InputInterface();
+        $out = new OutputInterface();
+
+        $commands = $this->container->getByType(Command::class);
+        Collections::builder($commands)
+            ->filter(Predicates::compute(Functions::get("name"), function ($n) use ($input) {
+                return StringUtils::startsWith($n, $input->get("command"));
+            }))
+            ->each(function ($command) use ($input, $out) {
+                /** @var Command $command */
+                $command->execute($input, $out);
+            });
     }
 
 }

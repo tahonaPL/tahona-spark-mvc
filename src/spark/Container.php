@@ -109,7 +109,7 @@ class Container {
 
     /**
      *
-     * @param $type example -  Foo\Bar\Something
+     * @param $type Class -  Foo\Bar\Something
      * @return array
      */
     public function getByType($type) {

@@ -118,8 +118,6 @@ Handle multiple connections.
 
 ```
 
-
-
 ```php
     /**
      * @Bean
@@ -218,8 +216,7 @@ $this->getParam("test");
 
 ### MULTI fetch by component   ###
 
-
-Example is for dynami menu module that will popup when new project or classes are added.
+Example is for dynamic menu module that will popup when new project or classes are added.
 ```php
 
     /**
@@ -254,6 +251,60 @@ class UserInterceptor implements HandlerInterceptor {
     }
 }
 ```
+
+
+
+
+
+### Command behaviour for PHP cli ###
+
+First, create class Command implementation
+
+```php
+/**
+ * @Component()
+ */
+class ExampleCommand implements Command {
+
+    /**
+     * @Inject()
+     * @var SomeBean
+     */
+    private $someBean;
+
+    public function getName() {
+        return "example:exampleCommandCommand";
+    }
+
+    public function execute(InputInterface $in, OutputInterface $out) {
+        $out->writeln("executing " . $this->getName());
+
+        //Example ....
+        $this->someBean->doSomething()
+        $out->writeObject($this->someBean->getSomething());
+
+
+        $out->writeln("finish!");
+    }
+}
+
+```
+in console execute:
+
+```
+php app/public/index.php command=example:exampleCommand
+```
+
+
+Output:
+```
+executing example:exampleCommand
+
+object(...)
+
+finish!
+```
+
 ### Installation - Composer - Speed up###
 
 
