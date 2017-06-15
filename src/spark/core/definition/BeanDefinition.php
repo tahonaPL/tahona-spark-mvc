@@ -2,6 +2,7 @@
 
 namespace spark\core\definition;
 
+use spark\cache\service\CacheableServiceBeanProxy;
 use spark\core\interceptor\HandlerInterceptor;
 use spark\utils\Objects;
 use spark\utils\StringUtils;
@@ -15,6 +16,7 @@ use spark\utils\StringUtils;
 class BeanDefinition {
 
     const D_BEAN = "bean";
+    const D_NAME = "name";
 
     private $name;
     private $bean;
@@ -26,11 +28,11 @@ class BeanDefinition {
      * @param $name
      * @param $bean
      */
-    public function __construct($name, &$bean) {
+    public function __construct($name, &$bean, $classNames) {
         $this->name = $name;
         $this->bean = $bean;
 
-        $this->classNames = Objects::getClassNames($bean);
+        $this->classNames = $classNames;
     }
 
     /**

@@ -96,11 +96,11 @@ class ReflectionUtils {
         $methods = $fluentIterables->get();
 
         /** @var $methods \ReflectionMethod */
-        foreach ($methods as $reflectionProperty) {
-            $annotation = $annotationReader->getMethodAnnotation($reflectionProperty, $annotationName);
+        foreach ($methods as $reflectionMethod) {
+            $annotation = $annotationReader->getMethodAnnotation($reflectionMethod, $annotationName);
 
             if (false == is_null($annotation)) {
-                $handler($bean, $reflectionProperty, $annotation);
+                $handler($bean, $reflectionMethod, $annotation);
             }
         }
     }

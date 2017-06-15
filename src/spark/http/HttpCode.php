@@ -11,6 +11,9 @@ namespace spark\http;
 
 class HttpCode {
 
+    const OK = 200;
+    const UNAUTHORIZED = 401;
+
     public static $OK; //200
     public static $CREATED; //201
     public static $BAD_REQUEST; //400

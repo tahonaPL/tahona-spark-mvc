@@ -1,7 +1,8 @@
 <?php
 
 
-namespace  spark\cache;
+namespace spark\cache;
+use spark\common\IllegalArgumentException;
 
 /**
  * Created by PhpStorm.
@@ -9,14 +10,14 @@ namespace  spark\cache;
  * Date: 18.10.16
  * Time: 22:38
  */
-class ApcuBeanCache implements BeanCache{
-
-    public function init() {
-        // TODO: Implement init() method.
-    }
+class ApcuBeanCache implements BeanCache {
 
     public function put($key, $object) {
-        apcu_store($key, $object);
+        try{
+            apcu_store($key, $object);
+        }catch(\Exception $e){
+            throw new IllegalArgumentException("Error when serializing $key", $e);
+        }
     }
 
     public function get($key) {

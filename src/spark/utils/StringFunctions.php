@@ -46,4 +46,10 @@ class StringFunctions {
             return StringUtils::join($joiner, $x);
         };
     }
+
+    public static function trim() {
+        return function($x) {
+            return StringUtils::trim($x);
+        };
+    }
 }

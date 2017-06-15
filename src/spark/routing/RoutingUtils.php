@@ -109,6 +109,8 @@ class RoutingUtils {
      * @return Optional
      */
     public static function findRouteDefinition($routes = array(), $ignoreEmptyRequestMethod = true) {
+
+
         $requestMethod = RequestUtils::getMethod();
         $headers = RequestUtils::getHeaders();
 

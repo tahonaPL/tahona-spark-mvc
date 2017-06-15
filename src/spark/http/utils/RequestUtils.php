@@ -41,6 +41,7 @@ class RequestUtils {
         $params = $_POST;
         return self::filterParams($params);
     }
+
     public static function getAllFilesParams() {
         return $_FILES;
     }
@@ -177,5 +178,10 @@ class RequestUtils {
 
     public static function getHeaders() {
         return getallheaders();
+    }
+
+    public static function getBody() {
+        $entityBody = stream_get_contents(fopen("php://input","r"));
+        return $entityBody ? $entityBody : null;
     }
 }

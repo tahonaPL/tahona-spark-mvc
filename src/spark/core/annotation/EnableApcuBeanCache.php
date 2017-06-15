@@ -22,5 +22,7 @@ final class EnableApcuBeanCache implements Mapping\Annotation {
     /** @var string */
     public $prefix = "";
 
+    /** @var string */
+    public $resetParam = null;
 
 } 

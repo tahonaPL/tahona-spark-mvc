@@ -36,7 +36,7 @@ class Controller {
     /**
      * @return Request
      */
-    protected function getRequest() {
+    public function getRequest() {
         return $this->request;
     }
 

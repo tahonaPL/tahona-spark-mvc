@@ -4,12 +4,11 @@ namespace spark;
 
 use Exception;
 use spark\common\IllegalArgumentException;
-use spark\common\IllegalStateException;
 use spark\core\definition\BeanDefinition;
+use spark\core\definition\BeanProxy;
 use spark\core\definition\ToInjectObserver;
 use spark\core\library\Annotations;
 use spark\core\service\ServiceHelper;
-use spark\filter\HttpFilter;
 use spark\utils\Asserts;
 use spark\utils\Collections;
 use spark\utils\Functions;
@@ -21,7 +20,6 @@ class Container {
 
     private $config;
     private $beanContainer = array();
-    private $filters = array();
 
     private $initialized = false;
     private $waitingList = array();
@@ -36,7 +34,7 @@ class Container {
     public function register($name, $object) {
         Asserts::checkState(false === isset($this->beanContainer[$name]), "Bean already added: " . $name);
 
-        $this->beanContainer[$name] = new BeanDefinition($name, $object);
+        $this->beanContainer[$name] = new BeanDefinition($name, $object, $this->getClassNames($object));
 
         if ($this->initialized) {
             /** @var BeanDefinition $definition */
@@ -45,6 +43,7 @@ class Container {
             $this->updateRelations($name);
 
             $bean = $definition->getBean();
+
             $this->injectTo($bean);
             $this->buildBeanAnnotation($bean);
         }
@@ -56,6 +55,11 @@ class Container {
      */
     public function injectTo($bean) {
 
+        $toInjectObservers = Collections::builder();
+        if ($bean instanceof BeanProxy) {
+            $toInjectObservers->addAll($this->injectTo($bean->getBean()));
+        }
+
         if ($bean instanceof ServiceHelper) {
             $bean->setContainer($this);
         }
@@ -65,7 +69,7 @@ class Container {
 
         $overrideInjections = Annotations::getOverrideInjections(Objects::getClassName($bean));
 
-        return ReflectionUtils::handlePropertyAnnotation($bean, Annotations::INJECT,
+        $result = ReflectionUtils::handlePropertyAnnotation($bean, Annotations::INJECT,
             function ($bean, \ReflectionProperty $property, $annotation) use ($overrideInjections) {
                 $beanNameToInject = $this->getBeanName($property, $annotation);
 
@@ -85,6 +89,8 @@ class Container {
                 return new ToInjectObserver($bean, $beanNameToInject);
             }
         );
+        $toInjectObservers->addAll($result);
+        return $toInjectObservers->get();
     }
 
     /**
@@ -109,7 +115,7 @@ class Container {
 
     /**
      *
-     * @param $type Class -  Foo\Bar\Something
+     * @param $type - e.g. Foo\Bar\Something
      * @return array
      */
     public function getByType($type) {
@@ -118,26 +124,18 @@ class Container {
                 /** @var BeanDefinition $definition */
                 return $definition->hasType($type);
             })
-            ->map(Functions::invokeGetMethod(BeanDefinition::D_BEAN))
+            ->convertToMap(Functions::get(BeanDefinition::D_NAME))
+            ->map(Functions::get(BeanDefinition::D_BEAN))
             ->get();
     }
 
     public final function initServices() {
-        $this->beforeInit();
-
-        $this->initialized = true;
-
-        $beansToInject = $this->beanContainer;
-
-        $this->injectAndCreate($beansToInject);
-
-        $this->filters = $this->getByType(HttpFilter::CLASS_NAME);
-
-        foreach ($this->filters as $filter) {
-            $this->injectTo($filter);
+        if (!$this->initialized) {
+            $this->beforeInit();
+            $this->injectAndCreate($this->beanContainer);
+            $this->afterInit();
         }
-
-        $this->afterInit();
+        $this->initialized = true;
     }
 
     public function getBeanNames() {
@@ -156,10 +154,6 @@ class Container {
         $this->beanContainer = array();
     }
 
-    public function getFilters() {
-        return $this->filters;
-    }
-
     private function buildBeanAnnotation($bean) {
 
         $buildedBeans = array();
@@ -174,8 +168,9 @@ class Container {
 
                 $method->setAccessible(true);
                 $newBean = $method->invoke($bean);
+                //TODO cacheBean ?
 
-                $beanDef = new BeanDefinition($name, $newBean);
+                $beanDef = new BeanDefinition($name, $newBean, $this->getClassNames($newBean));
                 $buildedBeans[$name] = $beanDef;
                 $this->beanContainer[$name] = $beanDef;
 
@@ -313,7 +308,7 @@ class Container {
             ->flatMap(Functions::getSameObject())
             ->filter(function ($observer) use ($name) {
                 /** @var ToInjectObserver $observer */
-                return  StringUtils::equals($observer->getBeanNameToInject(), $name);
+                return StringUtils::equals($observer->getBeanNameToInject(), $name);
             })->get();
         return $beansToUpdate;
     }
@@ -351,6 +346,20 @@ class Container {
                     });
 
             }
+        }
+    }
+
+    /**
+     * @param $object
+     * @return array
+     */
+    private function getClassNames($object) {
+        if ($object instanceof BeanProxy) {
+            $classNames = Objects::getClassNames($object->getBean());
+            return $classNames;
+        } else {
+            $classNames = Objects::getClassNames($object);
+            return $classNames;
         }
     }
 

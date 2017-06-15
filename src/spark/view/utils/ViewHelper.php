@@ -9,6 +9,7 @@
 namespace spark\view\utils;
 
 
+use spark\Controller;
 use spark\view\ViewModel;
 
 class ViewHelper {
@@ -18,7 +19,7 @@ class ViewHelper {
      * @param array $arr
      * @return ViewModel
      */
-    public static function createRedirectView($url, $arr= array()) {
+    public static function createRedirectView($url, $arr = array()) {
         $viewModel = new ViewModel();
         $viewModel->addAll($arr);
         $viewModel->setRedirect($url);
@@ -30,5 +31,15 @@ class ViewHelper {
         $viewModel->setViewName($viewPath);
         $viewModel->addAll($arr);
         return $viewModel;
+    }
+
+    /**
+     * @param Controller $controller
+     * @param $viewName
+     * @return ViewModel
+     */
+    public static function local(Controller $controller, $viewName) {
+        $viewModel = new ViewModel();
+        return $viewModel->setViewName(ViewUrlUtils::createViewPathWithViewName($controller->getRequest(), $viewName));
     }
 }

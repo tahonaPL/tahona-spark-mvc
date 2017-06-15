@@ -29,11 +29,15 @@ app/src/MyAppConfig.php
 ```php
 /**
  * @Configuration()
- * @EnableApcuBeanCache("code1")
+ * @EnableApcuBeanCache(resetParam="reset")
  */
 class MyAppConfig {
 }
 ```
+
+* resetParam - parameter for clearing cache. (GET http://app.com?reset).
+It's for development environment and should be deleted for production.
+
 
 ### Controller ###
 app/src/MyAppController.php
@@ -252,10 +256,6 @@ class UserInterceptor implements HandlerInterceptor {
 }
 ```
 
-
-
-
-
 ### Command behaviour for PHP cli ###
 
 First, create class Command implementation
@@ -304,11 +304,31 @@ object(...)
 
 finish!
 ```
+### Built-in cache service ###
+In Bean class add @Cache annotation
+
+```php
+@Cache(name="cache", key="user {0}.id", time=10)
+public function getLeaderByCompany($company){
+    return ...someDao->getByCompanyId($company->getId())
+}
+
+- cache name is, a name of bean that implement spark\cache\Cache interface.
+- ApcCache needed for application is added as default name="cache"
+- "time" parameters is in minutes (10 minutes)
+- "key" parameter is for distinguish cached values
+
+```
+
+
+
 
 ### Installation - Composer - Speed up###
 
 
-dump-autoload -a
+```
+composer dump-autoload -a
+```
 
 
 ### Installation - Composer ###

@@ -92,7 +92,7 @@ class Request {
 
     public function getParam($name, $default = null) {
         $param = $this->getParamOrNull($name);
-        return Objects::isNotNull($param)? $param : $default;
+        return Objects::isNotNull($param) ? $param : $default;
     }
 
     public function setUrlParams($urlParams) {
@@ -188,5 +188,9 @@ class Request {
 
     public function getCookie($key, $def = null) {
         return Optional::ofNullable(CookieUtils::getCookieValue($key))->orElse($def);
+    }
+
+    public function getBody() {
+        return RequestUtils::getBody();
     }
 }

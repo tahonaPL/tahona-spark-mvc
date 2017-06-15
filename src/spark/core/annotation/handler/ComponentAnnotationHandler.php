@@ -2,11 +2,15 @@
 
 namespace spark\core\annotation\handler;
 
+use spark\cache\service\CacheableServiceBeanProxy;
+use spark\cache\service\CacheService;
+use spark\core\annotation\Cache;
 use spark\core\annotation\handler\AnnotationHandler;
 use spark\utils\Collections;
 use spark\utils\Functions;
 use spark\utils\Objects;
 use spark\utils\Predicates;
+use spark\utils\ReflectionUtils;
 use spark\utils\StringUtils;
 
 /**
@@ -37,7 +41,8 @@ class ComponentAnnotationHandler extends AnnotationHandler {
         if ($annotation->isPresent()) {
             $className = $classReflection->getName();
             $beanName = $this->getBeanName($annotation->get(), $className);
-            $this->getContainer()->register($beanName, new $className);
+
+            $this->getContainer()->register($beanName, $this->getCreateBean($class));
         }
     }
 
@@ -54,6 +59,24 @@ class ComponentAnnotationHandler extends AnnotationHandler {
         $isOk = Objects::isNotNull($annotation) && StringUtils::isNotBlank($annotation->name);
         $array = StringUtils::split($class, "\\");
         return $isOk ? $annotation->name : lcfirst(end($array));
+
+    }
+
+    private function getCreateBean($class) {
+        $bean = new $class;
+
+        $cacheDefinition = array();
+        ReflectionUtils::handleMethodAnnotation($bean, "spark\core\annotation\Cache", function ($bean, $reflectionProperty, $annotation) use (&$cacheDefinition) {
+            /** @var Cache $annotation */
+            /** @var \ReflectionMethod $reflectionProperty */
+            $cacheDefinition[$reflectionProperty->getName()] = $annotation;
+        });
+
+        if (Collections::isNotEmpty($cacheDefinition)) {
+            return new CacheableServiceBeanProxy($bean);
+        } else {
+            return $bean;
+        }
 
     }
 

@@ -8,15 +8,9 @@ namespace spark\cache;
  * Date: 18.10.16
  * Time: 22:12
  */
-interface BeanCache {
+interface BeanCache extends Cache{
 
 
-    public function init();
-
-    public function put($key, $object);
-
-    public function get($key);
-    public function has($key);
     public function clearAll();
 
 }

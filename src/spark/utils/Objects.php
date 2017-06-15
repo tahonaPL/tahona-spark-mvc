@@ -30,9 +30,8 @@ class Objects {
         return is_string($obj);
     }
 
-    public static function invokeMethod($obj, $propertyName) {
-        $getMethod = $propertyName;
-        return $obj->$getMethod();
+    public static function invokeMethod($obj, $methodName, $args=array()) {
+        return call_user_func_array(array($obj, $methodName), $args);
     }
 
     public static function invokeGetMethod($obj, $propertyName) {

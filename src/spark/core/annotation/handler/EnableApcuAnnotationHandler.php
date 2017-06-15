@@ -3,6 +3,7 @@
 namespace spark\core\annotation\handler;
 
 use spark\Config;
+use spark\core\annotation\EnableApcuBeanCache;
 use spark\core\annotation\handler\AnnotationHandler;
 use spark\utils\Collections;
 use spark\utils\Functions;
@@ -19,6 +20,9 @@ use spark\utils\StringUtils;
 class EnableApcuAnnotationHandler extends AnnotationHandler {
 
     const APCU_CACHE_ENABLED = "spark.apcu.cache.enabled";
+    const APCU_CACHE_PREFIX = "spark.apcu.cache.prefix";
+    const APCU_CACHE_RESET = "spark.apcu.cache.reset";
+
     private $annotationName;
 
     public function __construct() {
@@ -30,9 +34,14 @@ class EnableApcuAnnotationHandler extends AnnotationHandler {
         $annotation = Collections::builder($annotations)
             ->findFirst(Predicates::compute($this->getClassName(), StringUtils::predEquals($this->annotationName)));
 
-
         if ($annotation->isPresent()) {
-            $this->getConfig()->set(self::APCU_CACHE_ENABLED, true);
+            /** @var EnableApcuBeanCache $param */
+            $param = $annotation->getOrNull();
+
+            $config = $this->getConfig();
+            $config->set(self::APCU_CACHE_ENABLED, true);
+            $config->set(self::APCU_CACHE_PREFIX, $param->prefix);
+            $config->set(self::APCU_CACHE_RESET, $param->resetParam);
         }
     }
 

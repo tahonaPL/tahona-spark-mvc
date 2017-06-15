@@ -31,7 +31,6 @@ class MathUtils {
             }
             return $sum;
         };
-
     }
 
     public static function isNumeric($value) {

@@ -90,7 +90,11 @@ class Routing {
         if (isset($this->routing[$urlPath])) {
             $routesDefinitions = $this->routing[$urlPath];
 
-            $routeDefinition = RoutingUtils::findRouteDefinition($routesDefinitions);
+            $routeDefinition = RoutingUtils::findRouteDefinition($routesDefinitions, false);
+            if (!$routeDefinition->isPresent()){
+                $routeDefinition = RoutingUtils::findRouteDefinition($routesDefinitions);
+            }
+
             return $routeDefinition->orElseThrow(new RouteNotFoundException(RequestUtils::getMethod(), $urlPath));
 
         } else {

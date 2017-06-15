@@ -7,6 +7,8 @@ use ErrorException;
 use ReflectionClass;
 use spark\cache\ApcuBeanCache;
 use spark\cache\BeanCache;
+use spark\cache\service\CacheProvider;
+use spark\cache\service\CacheService;
 use spark\cache\TestCache;
 use spark\core\annotation\handler\EnableApcuAnnotationHandler;
 use spark\core\command\Command;
@@ -25,6 +27,7 @@ use spark\core\processor\InitAnnotationProcessors;
 use spark\core\provider\BeanProvider;
 use spark\core\utils\SystemUtils;
 use spark\filter\FilterChain;
+use spark\filter\HttpFilter;
 use spark\http\HttpCode;
 use spark\http\Request;
 use spark\http\RequestProvider;
@@ -60,12 +63,18 @@ use Symfony\Component\Console\Tests\Command\CommandTest;
  */
 class Engine {
     private static $ROOT_APP_PATH;
-    private $apcuExtensionLoaded;
+
     const CONTAINER_CACHE_KEY = "container";
     const ROUTE_CACHE_KEY = "route";
     const CONFIG_CACHE_KEY = "config";
     const INTERCEPTORS_CACHE_KEY = "interceptors";
     const ERROR_HANDLERS_CACHE_KEY = "exceptionResolvers";
+
+    /**
+     * @var string Application Name used in apcu Cache as a prefix
+     */
+    private $appName;
+    private $apcuExtensionLoaded;
 
     /**
      * @var EngineConfig
@@ -93,28 +102,18 @@ class Engine {
      */
     private $beanCache;
 
-
     private $interceptors;
     private $exceptionResolvers;
 
-    public function __construct($name, $rootAppPath) {
+    public function __construct($appName, $rootAppPath) {
+        $this->appName = $appName;
         $this->apcuExtensionLoaded = extension_loaded("apcu");
 
-//        $fileList = FileUtils::getDirList($rootAppPath . "/src", array("proxy"));
-//
-//        $namespaces = Collections::builder($fileList)
-//            ->map(StringUtils::mapReplace("/","\\"))
-//            ->get();
-
-//        $this->engineConfig = new EngineConfig($rootAppPath, $namespaces);
         $this->engineConfig = new EngineConfig($rootAppPath, array());
 
         self::$ROOT_APP_PATH = $rootAppPath;
 
-//        ClassLoaderRegister::register($this->engineConfig);
-
         $this->beanCache = new ApcuBeanCache();
-        $this->beanCache->init();
 
         if ($this->hasAllreadyCachedData()) {
             $this->container = $this->beanCache->get($this->getCacheKey(self::CONTAINER_CACHE_KEY));
@@ -122,9 +121,11 @@ class Engine {
             $this->config = $this->beanCache->get($this->getCacheKey(self::CONFIG_CACHE_KEY));
             $this->interceptors = $this->beanCache->get($this->getCacheKey(self::INTERCEPTORS_CACHE_KEY));
             $this->exceptionResolvers = $this->beanCache->get($this->getCacheKey(self::ERROR_HANDLERS_CACHE_KEY));
+
+            $this->clearCacheIfResetParam();
         }
 
-        if (!$this->hasAllreadyCachedData() || isset($_GET["reset"])) {
+        if (!$this->hasAllreadyCachedData()) {
             if ($this->apcuExtensionLoaded) {
                 $this->beanCache->clearAll();
             }
@@ -136,7 +137,7 @@ class Engine {
             $this->config = new Config();
 
             $this->config->set("app.path", $rootAppPath);
-            $this->config->set("src.path", $rootAppPath."/src");
+            $this->config->set("src.path", $rootAppPath . "/src");
 
             $initAnnotationProcessors = new InitAnnotationProcessors($this->route, $this->config, $this->container);
 
@@ -167,7 +168,6 @@ class Engine {
             }
         }
 
-        $engine = $this;
         /** @var GlobalErrorHandler $globalErrorHandler */
         $globalErrorHandler = $this->container->get(GlobalErrorHandler::NAME);
         $globalErrorHandler->setup($this->exceptionResolvers);
@@ -184,7 +184,7 @@ class Engine {
     }
 
     public function run() {
-        if (SystemUtils::isCommandLineInterface()){
+        if (SystemUtils::isCommandLineInterface()) {
             $this->runCommand();
         } else {
             $this->runController();
@@ -215,14 +215,15 @@ class Engine {
 
         //Interceptor
         $this->preHandleInterceptor($request);
-        $this->filter($this->container->getFilters(), $request);
+        $this->filter($request);
 
         //Controller
         $controllerName = $request->getControllerClassName();
-        /** @var $controller Controller */
 
+        /** @var $controller Controller */
         $controller = $this->container->get($controllerName);
         $controller->init($request, $responseParams);
+        $controller->setContainer($this->container);
 
         //ACTION->VIEW
         $this->handleAction($request, $controller);
@@ -236,6 +237,9 @@ class Engine {
     }
 
     private function addBaseServices() {
+        $this->container->register("cache", $this->beanCache);
+        $this->container->registerObj(new CacheProvider());
+        $this->container->registerObj(new CacheService());
         $this->container->register(LangMessageResource::NAME, new LangMessageResource(array()));
         $this->container->register(SmartyPlugins::NAME, new SmartyPlugins());
         $this->container->register(RequestProvider::NAME, new RequestProvider());
@@ -294,7 +298,9 @@ class Engine {
     }
 
 
-    private function filter($filters = array(), Request $request) {
+    private function filter( Request $request) {
+        $filters = $this->container->getByType(HttpFilter::CLASS_NAME);
+
         if (Collections::isNotEmpty($filters)) {
             $filtersIterator = new \ArrayIterator($filters);
             $chain = new FilterChain($filtersIterator->current(), $filtersIterator);
@@ -310,7 +316,7 @@ class Engine {
      * @return string
      */
     private function getCacheKey($key) {
-        return "spark_" . $key;
+        return $this->appName . "_" . $key;
     }
 
     /**
@@ -329,7 +335,7 @@ class Engine {
         }
     }
 
-    private function postHandleIntercetors(Request $request,ViewModel $viewModel) {
+    private function postHandleIntercetors(Request $request, ViewModel $viewModel) {
         /** @var HandlerInterceptor $interceptor */
         foreach ($this->interceptors as $interceptor) {
             $interceptor->postHandle($request, $viewModel);
@@ -344,7 +350,7 @@ class Engine {
      * @throws ErrorException
      * @throws common\IllegalStateException
      */
-    public  function handleViewModel(Request $request, $viewModel) {
+    public function handleViewModel(Request $request, $viewModel) {
         Asserts::checkState($viewModel instanceof ViewModel, "Wrong viewModel type. Returned type from controller needs to be instance of ViewModel.");
 
         $this->postHandleIntercetors($request, $viewModel);
@@ -392,6 +398,13 @@ class Engine {
                 /** @var Command $command */
                 $command->execute($input, $out);
             });
+    }
+
+    private function clearCacheIfResetParam() {
+        $resetParam = $this->config->getProperty(EnableApcuAnnotationHandler::APCU_CACHE_RESET);
+        if (isset($_GET[$resetParam])) {
+            $this->beanCache->clearAll();
+        }
     }
 
 }

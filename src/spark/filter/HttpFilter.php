@@ -12,7 +12,6 @@ namespace spark\filter;
 use spark\http\Request;
 
 
-//TODO - rename to HttpFilter
 interface HttpFilter {
     const CLASS_NAME = "spark\\filter\\HttpFilter";
 

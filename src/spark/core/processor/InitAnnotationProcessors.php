@@ -14,6 +14,7 @@ use ReflectionClass;
 use ReflectionMethod;
 use ReflectionProperty;
 use spark\core\annotation\handler\AnnotationHandler;
+use spark\core\annotation\handler\CacheAnnotationHandler;
 use spark\core\annotation\handler\ComponentAnnotationHandler;
 use spark\core\annotation\handler\ControllerClassHandler;
 use spark\core\annotation\handler\DebugAnnotationHandler;
@@ -47,7 +48,9 @@ class InitAnnotationProcessors extends AnnotationHandler {
             new ControllerClassHandler()
         );
 
-        $this->postHandlers = array();
+        $this->postHandlers = array(
+            new CacheAnnotationHandler()
+        );
 
         $this->routing = $routing;
         $this->config = $config;
@@ -55,6 +58,10 @@ class InitAnnotationProcessors extends AnnotationHandler {
 
         /** @var AnnotationHandler $handler */
         foreach ($this->handlers as $handler) {
+            $this->updateHanlder($handler);
+        }
+
+        foreach ($this->postHandlers as $handler) {
             $this->updateHanlder($handler);
         }
 

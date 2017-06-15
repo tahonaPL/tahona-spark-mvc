@@ -14,6 +14,7 @@ class MemCacheAdapter implements BeanCache {
 
     public function __construct() {
         $this->cache = new Memcached();
+        $this->init();
     }
 
     public function init() {

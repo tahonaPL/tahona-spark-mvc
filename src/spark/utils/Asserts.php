@@ -50,13 +50,13 @@ class Asserts {
         }
     }
 
-    public static function checkArgument($bool, $message = "Argument should be true") {
+    public static function checkArgument($bool, $message = "Invalid argument") {
         if (false === $bool) {
             throw new IllegalArgumentException($message);
         }
     }
 
-    public static function checkState($bool, $message = "Argument should be true") {
+    public static function checkState($bool, $message = 'Invaid state (should be "true")') {
         if (false === $bool) {
             throw new IllegalStateException($message);
         }
