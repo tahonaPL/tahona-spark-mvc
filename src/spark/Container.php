@@ -4,6 +4,7 @@ namespace spark;
 
 use Exception;
 use spark\common\IllegalArgumentException;
+use spark\common\IllegalStateException;
 use spark\core\definition\BeanDefinition;
 use spark\core\definition\BeanProxy;
 use spark\core\definition\ToInjectObserver;
@@ -131,24 +132,15 @@ class Container {
 
     public final function initServices() {
         if (!$this->initialized) {
-            $this->beforeInit();
+            $this->initialized = true;
             $this->injectAndCreate($this->beanContainer);
-            $this->afterInit();
         }
-        $this->initialized = true;
     }
 
     public function getBeanNames() {
         return Collections::getKeys($this->beanContainer);
     }
 
-    /**
-     * Filter array of filters
-     * @return array
-     */
-    protected function initFilters() {
-        return array();
-    }
 
     public final function clear() {
         $this->beanContainer = array();
@@ -195,17 +187,6 @@ class Container {
         );
     }
 
-    protected function afterInit() {
-        //hook
-    }
-
-    protected function beforeInit() {
-        //hook
-    }
-
-    protected function getModules() {
-        return array();
-    }
 
     /**
      * @param $beansToInject
@@ -238,10 +219,11 @@ class Container {
         if (Collections::isNotEmpty($this->waitingList)) {
             $message = "Missing Beans for: ";
             foreach ($this->waitingList as $k => $obsList) {
-                $message .= "( $k -> (" . $this->getName($obsList) . " ) <br/>";
+                $message .= "( $k -> (" . $this->getName($obsList) . " )) <br/>";
             }
 
-            throw  new IllegalArgumentException($message);
+            echo $message;
+            throw  new IllegalStateException("Can't match beans");
         }
     }
 
