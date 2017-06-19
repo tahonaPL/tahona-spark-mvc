@@ -132,6 +132,8 @@ class Container {
 
     public final function initServices() {
         if (!$this->initialized) {
+
+            // initialized flag must be before "injectAndCreate" for register bean in @PostConstruct block
             $this->initialized = true;
             $this->injectAndCreate($this->beanContainer);
         }
@@ -148,30 +150,17 @@ class Container {
 
     private function buildBeanAnnotation($bean) {
 
-        $buildedBeans = array();
-        //First - Build  all subBeans...
-        ReflectionUtils::handleMethodAnnotation($bean, "spark\\core\\annotation\\Bean",
-            function ($bean, \ReflectionMethod $method, $annotation) use (&$buildedBeans) {
-                if (StringUtils::isNotBlank($annotation->name)) {
-                    $name = $annotation->name;
-                } else {
-                    $name = $method->getName();
-                }
+        $newBeanDefinitions = $this->createBeans($bean);
 
-                $method->setAccessible(true);
-                $newBean = $method->invoke($bean);
-                //TODO cacheBean ?
-
-                $beanDef = new BeanDefinition($name, $newBean, $this->getClassNames($newBean));
-                $buildedBeans[$name] = $beanDef;
-                $this->beanContainer[$name] = $beanDef;
-
-            }
-        );
+        Collections::builder($newBeanDefinitions)
+            ->each(function($def)  {
+                /** @var BeanDefinition $def */
+                $this->beanContainer[$def->getName()] = $def;
+            });
 
         //Then - Update their relations
         /** @var BeanDefinition $beanDef */
-        foreach ($buildedBeans as $beanDef) {
+        foreach ($newBeanDefinitions as $beanDef) {
             $this->updateRelations($beanDef->getName());
 
             $newBean = $beanDef->getBean();
@@ -179,12 +168,7 @@ class Container {
             $this->buildBeanAnnotation($newBean);
         }
 
-        ReflectionUtils::handleMethodAnnotation($bean, "spark\\core\\annotation\\PostConstruct",
-            function ($bean, \ReflectionMethod $method, $annotation) {
-                $method->setAccessible(true);
-                $method->invoke($bean);
-            }
-        );
+        $this->invokePostConstruct($bean);
     }
 
 
@@ -205,7 +189,6 @@ class Container {
                 $this->beanContainer[$serviceName] = $definition;
             }
         }
-
 
         //Build Normal
         $excludeBuildNamesList = Collections::getKeys($this->waitingList);
@@ -343,6 +326,44 @@ class Container {
             $classNames = Objects::getClassNames($object);
             return $classNames;
         }
+    }
+
+    /**
+     * @param $bean
+     * @return array - bean definitions
+     */
+    private function createBeans($bean) {
+        $buildedBeans = array();
+        //First - Build  all subBeans...
+        ReflectionUtils::handleMethodAnnotation($bean, "spark\\core\\annotation\\Bean",
+            function ($bean, \ReflectionMethod $method, $annotation) use (&$buildedBeans) {
+                if (StringUtils::isNotBlank($annotation->name)) {
+                    $name = $annotation->name;
+                } else {
+                    $name = $method->getName();
+                }
+
+                $method->setAccessible(true);
+                $newBean = $method->invoke($bean);
+                //TODO cacheBean ?
+
+                $beanDef = new BeanDefinition($name, $newBean, $this->getClassNames($newBean));
+                $buildedBeans[$name] = $beanDef;
+            }
+        );
+        return $buildedBeans;
+    }
+
+    /**
+     * @param $bean
+     */
+    private function invokePostConstruct($bean) {
+        ReflectionUtils::handleMethodAnnotation($bean, "spark\\core\\annotation\\PostConstruct",
+            function ($bean, \ReflectionMethod $method, $annotation) {
+                $method->setAccessible(true);
+                $method->invoke($bean);
+            }
+        );
     }
 
 }
