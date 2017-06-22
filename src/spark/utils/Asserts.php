@@ -20,11 +20,13 @@ class Asserts {
      * @param $object
      * @param string $message
      * @throws IllegalArgumentException
+     * @return object
      */
     public static function notNull($object, $message = "Object cannot be null or undefined.") {
         if (false == isset($object) || is_null($object)) {
             throw new IllegalArgumentException($message);
         }
+        return $object;
     }
 
     /**

@@ -26,6 +26,11 @@ class ViewHelper {
         return $viewModel;
     }
 
+    /**
+     * @param $viewPath
+     * @param array $arr
+     * @return ViewModel
+     */
     public static function view($viewPath, $arr = array()) {
         $viewModel = new ViewModel();
         $viewModel->setViewName($viewPath);
