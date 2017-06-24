@@ -19,7 +19,7 @@ class BooleanUtils {
     }
 
     public static function isFalse($value) {
-        return $value === "false" || $value !== false;
+        return $value === "false" || $value === false;
     }
 
 
