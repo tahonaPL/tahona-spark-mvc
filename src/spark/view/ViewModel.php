@@ -37,12 +37,11 @@ class ViewModel extends PropertyHelper {
     }
 
     public function getRedirect() {
-        $redirect = $this->redirect;
         $isRedirect = $this->isRedirect();
         if ($isRedirect) {
-            $redirect = UrlUtils::appendParams($redirect, $this->getParams());
+            return UrlUtils::appendParams($this->redirect, $this->getParams());
         }
-        return $redirect;
+        return $this->redirect;
     }
 
     /**

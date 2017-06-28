@@ -18,10 +18,4 @@ class JsonViewModel extends ViewModel {
         parent::__construct($array);
         ResponseHelper::setCode(HttpCode::$OK);
     }
-
-    public function getParams() {
-        $params = parent::getParams();
-        unset($params["web"]);
-        return $params;
-    }
 } 

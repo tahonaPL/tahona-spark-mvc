@@ -10,8 +10,6 @@ use spark\utils\StringUtils;
 
 class UrlUtils {
 
-    public static $webPage = null;
-
     public static function isResource($urlName, $array) {
         foreach ($array as $value) {
             if (strpos($urlName, $value) > 0) {
@@ -56,15 +54,6 @@ class UrlUtils {
         }
     }
 
-    /**
-     * @deprecated use appendParams
-     * @param $params
-     * @return string
-     */
-    public static function getParseParamsToQuery($params) {
-        $q = "" . http_build_query($params);
-        return $q;
-    }
 
     /**
      * @param $url need to be passed ( e.g.from Config (web.page) - tahona.pl)
@@ -72,14 +61,19 @@ class UrlUtils {
      * @return string
      */
     public static function appendParams($url, $params = array()) {
-        $paramsQuery = "";
-        if (Collections::isNotEmpty($params)) {
-            $parsedParams = self::getParseParamsToQuery($params);
-            $questionMark = StringUtils::contains($url, "?") ? "" : "?";
-            $paramsQuery = $questionMark . $parsedParams;
-        }
-        return self::cleanPath($url) . $paramsQuery;
+        return self::cleanPath($url) . self::getParamsAsQuery($params);
     }
+
+    public static function getParamsAsQuery($params = []) {
+        if (Collections::isNotEmpty($params)) {
+            $parsedParams = http_build_query($params);
+            if (StringUtils::isNotBlank($parsedParams)) {
+                return "?" . $parsedParams;
+            }
+        }
+        return "";
+    }
+
 
     public static function wrapHttpIfNeeded($link) {
         $scheme = "http";

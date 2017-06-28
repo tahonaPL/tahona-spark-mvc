@@ -361,13 +361,6 @@ class Engine {
                 $request->instantRedirect($redirect);
             }
 
-            $page = UrlUtils::getSite();
-
-            //Deprecated use e.g.: {path path="/next/page"}
-            $viewModel->add("web", array(
-                "page" => $page
-            ));
-
             $this->handleView($viewModel, $request);
         } else {
             throw new ErrorException("ViewModel not found. Did you initiated ViewModel? ");
