@@ -9,6 +9,7 @@
 namespace spark\routing;
 
 
+use spark\core\routing\RoutingDefinition;
 use spark\Routing;
 use spark\utils\Collections;
 
@@ -25,23 +26,7 @@ class RoutingInfo {
     }
 
     public function getRoutingDefinitions() {
-        $definitions = $this->routing->getDefinitions();
-
-        $routing = Collections::builder()
-            ->addAll($definitions)
-            ->flatMap(function ($x) {
-                return $x;
-            }, true)
-            ->get();
-
-        $result = array();
-        foreach ($routing as $route => $def) {
-            $arr = array("path" => $route);
-            Collections::addAllOrReplace($arr, $def);
-            $result[] = $arr;
-        }
-
-        return $result;
+        return $this->routing->getDefinitions();
     }
 
 

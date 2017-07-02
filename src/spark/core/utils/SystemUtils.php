@@ -34,4 +34,11 @@ class SystemUtils {
         return $params;
     }
 
+
+    /**
+     * @return string|null
+     */
+    public static function getProfile() {
+        return self::getParam("profile");
+    }
 }

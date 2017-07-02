@@ -25,6 +25,7 @@ use spark\core\lang\LangResourcePath;
 use spark\core\library\BeanLoader;
 use spark\core\processor\InitAnnotationProcessors;
 use spark\core\provider\BeanProvider;
+use spark\core\utils\ConfigUtils;
 use spark\core\utils\SystemUtils;
 use spark\filter\FilterChain;
 use spark\filter\HttpFilter;
@@ -37,7 +38,6 @@ use spark\routing\RoutingInfo;
 use spark\core\lang\LangMessageResource;
 use spark\http\utils\RequestUtils;
 use spark\utils\BooleanUtils;
-use spark\utils\ConfigHelper;
 use spark\utils\FileUtils;
 use spark\utils\Functions;
 use spark\utils\Predicates;
@@ -54,7 +54,6 @@ use spark\view\smarty\SmartyPlugins;
 use spark\view\smarty\SmartyViewHandler;
 use spark\view\ViewHandlerProvider;
 use spark\view\ViewModel;
-use Symfony\Component\Console\Tests\Command\CommandTest;
 
 /**
  * Description of Engine
@@ -104,14 +103,16 @@ class Engine {
 
     private $interceptors;
     private $exceptionResolvers;
+    private $profile;
 
-    public function __construct($appName, $rootAppPath) {
+    public function __construct($appName, $profile, $rootAppPath) {
         $this->appName = $appName;
+        $this->profile = $profile;
         $this->apcuExtensionLoaded = extension_loaded("apcu");
 
-        $this->engineConfig = new EngineConfig($rootAppPath, array());
-
         self::$ROOT_APP_PATH = $rootAppPath;
+
+        $this->engineConfig = new EngineConfig($rootAppPath, array());
 
         $this->beanCache = new ApcuBeanCache();
 
@@ -136,6 +137,7 @@ class Engine {
             $this->route = new Routing(array());
             $this->config = new Config();
 
+            $this->config->set("app.profile", $this->getProfile());
             $this->config->set("app.path", $rootAppPath);
             $this->config->set("src.path", $rootAppPath . "/src");
 
@@ -298,7 +300,7 @@ class Engine {
     }
 
 
-    private function filter( Request $request) {
+    private function filter(Request $request) {
         $filters = $this->container->getByType(HttpFilter::CLASS_NAME);
 
         if (Collections::isNotEmpty($filters)) {
@@ -398,6 +400,13 @@ class Engine {
         if (isset($_GET[$resetParam])) {
             $this->beanCache->clearAll();
         }
+    }
+
+    private function getProfile() {
+        if (SystemUtils::isCommandLineInterface()) {
+            return SystemUtils::getProfile();
+        }
+        return $this->profile;
     }
 
 }

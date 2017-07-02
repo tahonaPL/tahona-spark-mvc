@@ -76,17 +76,17 @@ class RoutingUtils {
         return $routeElement;
     }
 
-    public static function validate($arr = array()) {
+    public static function validate(RoutingDefinition $arr) {
         $error = array();
-        if (Collections::hasKey($arr, "path") && $arr["path"] !== "") {
+        if (StringUtils::isNotBlank($arr->getPath())) {
             $pathErrors = array();
-            if (!StringUtils::startsWith($arr["path"], "/")) {
+            if (!StringUtils::startsWith($arr->getPath(), "/")) {
                 $pathErrors[] = "routing.error.wrong.path";
             }
 
-            if (StringUtils::contains($arr["path"], "{")) {
+            if (StringUtils::contains($arr->getPath(), "{")) {
 
-                if (!Collections::hasKey($arr, Routing::PARAMS) || Collections::isEmpty($arr[Routing::PARAMS])) {
+                if (!Collections::isEmpty($arr->getParams())) {
                     $pathErrors[] = "routing.error.path.missing.param";
                 }
             }

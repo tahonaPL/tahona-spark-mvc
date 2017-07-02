@@ -2,6 +2,7 @@
 
 namespace spark;
 
+use spark\common\collection\FluentIterables;
 use spark\common\IllegalStateException;
 use spark\common\Optional;
 use spark\core\routing\exception\RouteNotFoundException;
@@ -184,7 +185,10 @@ class Routing {
      * @return array
      */
     public function getDefinitions() {
-        return $this->definitions;
+        return Collections::builder()
+            ->addAll($this->parametrizedRouting)
+            ->addAll($this->routing)
+            ->get();
     }
 
     public function addDefinition(RoutingDefinition $routingDefinition) {

@@ -19,7 +19,8 @@ define("__VENDOR__", "../../vendor");
 
 require __VENDOR__ . "/autoload.php";
 
-$engine = new Engine("przemek_config", __ROOT__ . "app");
+$profileName ="someNameProfile";
+$engine = new Engine("przemek_config", $profileName, __ROOT__ . "app");
 $engine->run();
 
 ```
@@ -313,13 +314,45 @@ public function getLeaderByCompany($company){
     return ...someDao->getByCompanyId($company->getId())
 }
 
+```
+
 - cache name is, a name of bean that implement spark\cache\Cache interface.
 - ApcCache needed for application is added as default name="cache"
 - "time" parameters is in minutes (10 minutes)
 - "key" parameter is for distinguish cached values
 
+
+
+### Profiles ###
+
+```php
+$profileName = "production";
+$engine = new Engine("przemek_config",$profileName,  __ROOT__ . "app");
 ```
 
+```php
+@Configuration
+@Profile(name="production")
+class SomeProductionConfig(){
+..
+}
+
+@Configuration
+@Profile(name="development")
+class SomeDevelopmentConfig(){
+..
+}
+
+```
+
+In this case SomeDevelopmentConfig won't be added to container and bean declared in it (@Bean) as well.
+
+
+# Command Use
+
+```
+php app/public/index.php command=example:exampleCommand profile=production
+```
 
 
 

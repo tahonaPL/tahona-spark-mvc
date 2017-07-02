@@ -11,7 +11,7 @@ namespace spark\core\error;
 
 use spark\common\type\Orderable;
 
-abstract class ExceptionResolver implements Orderable{
+abstract class ExceptionResolver implements Orderable {
 
     const CLASS_NAME = "spark\\core\\error\\ExceptionResolver";
 

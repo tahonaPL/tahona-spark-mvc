@@ -4,13 +4,16 @@ namespace spark\core\annotation\handler;
 
 use spark\cache\service\CacheableServiceBeanProxy;
 use spark\cache\service\CacheService;
+use spark\common\Optional;
 use spark\core\annotation\Cache;
 use spark\core\annotation\handler\AnnotationHandler;
+use spark\core\library\Annotations;
 use spark\utils\Collections;
 use spark\utils\Functions;
 use spark\utils\Objects;
 use spark\utils\Predicates;
 use spark\utils\ReflectionUtils;
+use spark\utils\StringFunctions;
 use spark\utils\StringUtils;
 
 /**
@@ -33,12 +36,11 @@ class ComponentAnnotationHandler extends AnnotationHandler {
     }
 
     public function handleClassAnnotations($annotations = array(), $class, \ReflectionClass $classReflection) {
-        $defined = $this->annotationNames;
-        $annotation = Collections::builder($annotations)
-            ->filter(Predicates::compute($this->getClassName(), Predicates::contains($defined)))
-            ->findFirst();
+        $annotation = $this->getAnnotation($annotations, $this->annotationNames);
 
-        if ($annotation->isPresent()) {
+        $profile = $this->getAnnotation($annotations, array(Annotations::PROFILE));
+
+        if ($annotation->isPresent() && $this->isProperProfile($profile)) {
             $className = $classReflection->getName();
             $beanName = $this->getBeanName($annotation->get(), $className);
 
@@ -78,6 +80,33 @@ class ComponentAnnotationHandler extends AnnotationHandler {
             return $bean;
         }
 
+    }
+
+    /**
+     * @param $annotations
+     * @param $defined
+     * @return \spark\common\Optional
+     */
+    private function getAnnotation($annotations, $defined) {
+        return Collections::builder($annotations)
+            ->filter(Predicates::compute($this->getClassName(), Predicates::contains($defined)))
+            ->findFirst();
+    }
+
+    /**
+     * @param $profile Optional
+     * @return bool
+     */
+    private function isProperProfile($profile) {
+        $profileName = $this->getConfig()->getProperty("app.profile");
+
+        $annotationProfileName = $profile->map(Functions::field("name"))
+            ->orElse(null);
+
+        return
+            StringUtils::isBlank($profileName)
+            || StringUtils::isBlank($annotationProfileName)
+            || StringUtils::equals($profileName, $annotationProfileName);
     }
 
 }
