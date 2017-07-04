@@ -103,9 +103,7 @@ class ComponentAnnotationHandler extends AnnotationHandler {
         $annotationProfileName = $profile->map(Functions::field("name"))
             ->orElse(null);
 
-        return
-            StringUtils::isBlank($profileName)
-            || StringUtils::isBlank($annotationProfileName)
+        return StringUtils::isBlank($annotationProfileName)
             || StringUtils::equals($profileName, $annotationProfileName);
     }
 

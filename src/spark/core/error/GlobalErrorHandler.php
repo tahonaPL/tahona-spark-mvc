@@ -9,6 +9,7 @@
 namespace spark\core\error;
 
 
+use ErrorException;
 use spark\Container;
 use spark\core\annotation\Inject;
 use spark\core\provider\BeanProvider;
@@ -61,17 +62,16 @@ class GlobalErrorHandler {
 
         $error = error_get_last();
 
-        if ($error !== NULL) {
+        if (error_reporting() == 0) {
+            return;
+        }
+
+        if (error_reporting() && Objects::isNotNull($error)) {
             $severity = $error["type"];
             $filename = $error["file"];
             $lineno = $error["line"];
             $message = $error["message"];
-        }
 
-        if (error_reporting() == 0) {
-            return;
-        }
-        if (error_reporting()) {
             $exc = new \ErrorException($message, 0, $severity, $filename, $lineno);
 
             $invoke = $this->getHandler();
@@ -84,7 +84,7 @@ class GlobalErrorHandler {
     public function setup($resolvers=array()) {
         $this->exceptionResolvers = $resolvers;
         set_exception_handler(array($this, self::EXCEPTION_HANDLER));
-//        set_error_handler(array($this, self::FATAL_HANDLER));
+        set_error_handler(array($this, self::FATAL_HANDLER));
     }
 
     private function getHandler() {
