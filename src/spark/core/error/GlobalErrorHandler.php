@@ -24,6 +24,7 @@ class GlobalErrorHandler {
 
     const NAME = "globalErrorHandler";
     const EXCEPTION_HANDLER = "handleException";
+    const ERROR_HANDLER = "handleError";
     const FATAL_HANDLER = "handleFatal";
 
     /**
@@ -52,14 +53,13 @@ class GlobalErrorHandler {
         }
         if (error_reporting()) {
             $invoke = $this->getHandler();
-
             $invoke($exception);
             return;
         }
     }
 
-    public function handleFatal($severity, $message, $filename, $lineno) {
 
+    public function handleError($severity, $message, $filename, $lineno) {
         $error = error_get_last();
 
         if (error_reporting() == 0) {
@@ -67,24 +67,23 @@ class GlobalErrorHandler {
         }
 
         if (error_reporting() && Objects::isNotNull($error)) {
-            $severity = $error["type"];
-            $filename = $error["file"];
-            $lineno = $error["line"];
-            $message = $error["message"];
-
-            $exc = new \ErrorException($message, 0, $severity, $filename, $lineno);
-
-            $invoke = $this->getHandler();
-            $invoke($exc);
-            return $exc;
+            return $this->handleErrorAction($error);
 
         }
     }
 
-    public function setup($resolvers=array()) {
+    function handleFatal() {
+        $error = error_get_last();
+        if ($error["type"] == E_ERROR && error_reporting() && Objects::isNotNull($error)) {
+            return $this->handleErrorAction($error);
+        }
+    }
+
+    public function setup($resolvers = array()) {
         $this->exceptionResolvers = $resolvers;
         set_exception_handler(array($this, self::EXCEPTION_HANDLER));
-        set_error_handler(array($this, self::FATAL_HANDLER));
+        set_error_handler(array($this, self::ERROR_HANDLER));
+        register_shutdown_function(array($this, self::FATAL_HANDLER));
     }
 
     private function getHandler() {
@@ -116,5 +115,17 @@ class GlobalErrorHandler {
         };
     }
 
+    private function handleErrorAction($error) {
+        $severity = $error["type"];
+        $filename = $error["file"];
+        $lineno = $error["line"];
+        $message = $error["message"];
 
-} 
+        $exc = new \ErrorException($message, 0, $severity, $filename, $lineno);
+        $invoke = $this->getHandler();
+        $invoke($exc);
+        return $exc;
+    }
+
+
+}
