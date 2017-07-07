@@ -150,9 +150,9 @@ class Container {
 
     private function buildBeanAnnotation($bean) {
 
-        $newBeanDefinitions = $this->createBeans($bean);
+        $buildBeanDefinitions = $this->createBuildAnnotationBeans($bean);
 
-        Collections::builder($newBeanDefinitions)
+        Collections::builder($buildBeanDefinitions)
             ->each(function($def)  {
                 /** @var BeanDefinition $def */
                 $this->beanContainer[$def->getName()] = $def;
@@ -160,12 +160,17 @@ class Container {
 
         //Then - Update their relations
         /** @var BeanDefinition $beanDef */
-        foreach ($newBeanDefinitions as $beanDef) {
+        foreach ($buildBeanDefinitions as $beanDef) {
             $this->updateRelations($beanDef->getName());
 
             $newBean = $beanDef->getBean();
-            $this->injectTo($newBean);
-            $this->buildBeanAnnotation($newBean);
+            $waitingList = $this->injectTo($newBean);
+
+            if (Collections::isEmpty($waitingList)) {
+                $this->buildBeanAnnotation($newBean);
+            } else {
+                $this->waitingList[$beanDef->getName()] = $waitingList;
+            }
         }
 
         $this->invokePostConstruct($bean);
@@ -332,7 +337,7 @@ class Container {
      * @param $bean
      * @return array - bean definitions
      */
-    private function createBeans($bean) {
+    private function createBuildAnnotationBeans($bean) {
         $buildedBeans = array();
         //First - Build  all subBeans...
         ReflectionUtils::handleMethodAnnotation($bean, "spark\\core\\annotation\\Bean",

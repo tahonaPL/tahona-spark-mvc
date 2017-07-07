@@ -146,7 +146,7 @@ class Engine {
             $beanLoader = new BeanLoader($initAnnotationProcessors, $this->config);
             $beanLoader->addFromPath($src, array("proxy"));
             $beanLoader->addLib("spark\\core\\CoreConfig");
-            $beanLoader->addPersistanceLib();
+//            $beanLoader->addPersistanceLib();
             $beanLoader->addSecurity();
             $beanLoader->process();
 

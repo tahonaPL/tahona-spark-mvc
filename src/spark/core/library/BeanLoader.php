@@ -94,12 +94,7 @@ class BeanLoader {
             }));
 
             $this->annotationProcessor->addHandler(new \spark\persistence\annotation\handler\EnableDataRepositoryAnnotationHandler());
-
-            $this->addPostLoadLib(new PostLoadDefinition("spark\\tools\\mail\\MailerConfig", function () {
-                return $this->config->getProperty("spark.mailer.enabled", false);
-            }));
-
-            $this->annotationProcessor->addHandler(new \spark\tools\mail\annotation\handler\EnableMailerAnnotationHandler());
+;
         }
     }
 
@@ -112,6 +107,12 @@ class BeanLoader {
 
             $this->annotationProcessor->addHandler(new \spark\security\annotation\handler\EnableSecurityAnnotationHandler());
             $this->annotationProcessor->addPostHandler(new \spark\security\annotation\handler\AuthorizeAnnotationHandler());
+
+            $this->addPostLoadLib(new PostLoadDefinition("spark\\tools\\mail\\MailerConfig", function () {
+                return $this->config->getProperty("spark.mailer.enabled", false);
+            }));
+
+            $this->annotationProcessor->addHandler(new \spark\tools\mail\annotation\handler\EnableMailerAnnotationHandler());
         }
     }
 

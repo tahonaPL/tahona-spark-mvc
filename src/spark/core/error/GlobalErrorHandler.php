@@ -47,11 +47,11 @@ class GlobalErrorHandler {
      * @throws \Exception
      */
     public function handleException($exception) {
+        $errorReporting = error_reporting();
 
-        if (error_reporting() == 0) {
+        if ($errorReporting == 0) {
             return;
-        }
-        if (error_reporting()) {
+        } else if ($errorReporting) {
             $invoke = $this->getHandler();
             $invoke($exception);
             return;
@@ -61,18 +61,17 @@ class GlobalErrorHandler {
 
     public function handleError($severity, $message, $filename, $lineno) {
         $error = error_get_last();
+        $errorReporting = error_reporting();
 
-        if (error_reporting() == 0) {
+        if ($errorReporting == 0) {
             return;
-        }
-
-        if (error_reporting() && Objects::isNotNull($error)) {
+        } else if ($errorReporting && Objects::isNotNull($error)) {
             return $this->handleErrorAction($error);
 
         }
     }
 
-    function handleFatal() {
+    public function handleFatal() {
         $error = error_get_last();
         if ($error["type"] == E_ERROR && error_reporting() && Objects::isNotNull($error)) {
             return $this->handleErrorAction($error);
