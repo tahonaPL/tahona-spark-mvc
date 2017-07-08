@@ -37,7 +37,7 @@ class CacheAnnotationHandler extends AnnotationHandler {
 
         if (Collections::isNotEmpty($cacheAnnotation)) {
 
-            $cacheService = $this->getSecurity();
+            $cacheService = $this->getCacheService();
             foreach ($cacheAnnotation as $annotation) {
                 $cacheService->addDefinition(
                     $class,
@@ -61,7 +61,7 @@ class CacheAnnotationHandler extends AnnotationHandler {
      * @return CacheService
      * @throws \Exception
      */
-    private function getSecurity() {
+    private function getCacheService() {
         /** @var CacheService $securityManager */
         if (Objects::isNull($this->cacheService)) {
             $this->cacheService = $this->getContainer()->get(CacheService::NAME);

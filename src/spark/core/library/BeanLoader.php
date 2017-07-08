@@ -12,7 +12,9 @@ namespace spark\core\library;
 use ReflectionClass;
 use spark\Config;
 use spark\core\annotation\Configuration;
+use spark\core\annotation\handler\AnnotationHandler;
 use spark\core\processor\InitAnnotationProcessors;
+use spark\utils\Asserts;
 use spark\utils\Collections;
 use spark\utils\Dev;
 use spark\utils\FileUtils;
@@ -35,30 +37,31 @@ class BeanLoader {
      * @var Config
      */
     private $config;
+    private $container;
 
     /**
      * BeanLoader constructor.
-     * @param $classesInSrc
+     * @param $annotationProcessor
+     * @param Config $config
      */
-    public function __construct($annotationProcessor, Config $config) {
+    public function __construct($annotationProcessor, Config $config, $container) {
         $this->annotationProcessor = $annotationProcessor;
 
         $this->classesInSrc = array();
         $this->postLoad = array();
 
         $this->config = $config;
+        $this->container = $container;
     }
 
     /**
      * @param $classPath
      * @param $classesInPath
      */
-    public function addLib($classPath) {
-        $class_exists = class_exists($classPath);
+    public function addClass($classPath) {
+        $this->checkClassExist($classPath);
 
-        if ($class_exists) {
-            $this->classesInSrc[$classPath] = $classPath;
-        }
+        $this->classesInSrc[$classPath] = $classPath;
     }
 
     /**
@@ -68,70 +71,44 @@ class BeanLoader {
      * @param PostLoadDefinition $definition
      */
     public function addPostLoadLib(PostLoadDefinition $definition) {
-        $class_exists = class_exists($definition->getClass());
+        $classPath = $definition->getClass();
+        $this->checkClassExist($classPath);
 
-        if ($class_exists) {
-            $this->postLoad[$definition->getClass()] = $definition;
-        }
+        $this->postLoad[$definition->getClass()] = $definition;
     }
 
     public function addFromPath($src, $excludeDir = array()) {
         $this->classesInSrc = Collections::builder(FileUtils::getAllClassesInPath($src))
             ->filter(function ($cls) use ($excludeDir) {
-                return !Collections::builder($excludeDir)->anyMatch(function($x) use ($cls){
-                    return StringUtils::startsWith($cls,$x);
+                return !Collections::builder($excludeDir)->anyMatch(function ($x) use ($cls) {
+                    return StringUtils::startsWith($cls, $x);
                 });
             })
             ->get();
     }
 
-    public function addPersistanceLib() {
-        $configClass = "spark\\persistence\\PersistenceConfig";
-
-        if (class_exists($configClass)) {
-            $this->addPostLoadLib(new PostLoadDefinition($configClass, function () {
-                return $this->config->getProperty("spark.data.repository.enabled", false);
-            }));
-
-            $this->annotationProcessor->addHandler(new \spark\persistence\annotation\handler\EnableDataRepositoryAnnotationHandler());
-;
-        }
-    }
-
-    public function addSecurity() {
-        $classPath = "spark\\security\\SecurityConfig";
-        $class_exists = class_exists($classPath);
-
-        if ($class_exists) {
-            $this->addLib($classPath);
-
-            $this->annotationProcessor->addHandler(new \spark\security\annotation\handler\EnableSecurityAnnotationHandler());
-            $this->annotationProcessor->addPostHandler(new \spark\security\annotation\handler\AuthorizeAnnotationHandler());
-
-            $this->addPostLoadLib(new PostLoadDefinition("spark\\tools\\mail\\MailerConfig", function () {
-                return $this->config->getProperty("spark.mailer.enabled", false);
-            }));
-
-            $this->annotationProcessor->addHandler(new \spark\tools\mail\annotation\handler\EnableMailerAnnotationHandler());
-        }
-    }
-
+    /**
+     *  Function that process all bean ins application with Spark basics annotation handlers
+     */
     public function process() {
         foreach ($this->classesInSrc as $class) {
             //project beans
             $this->annotationProcessor->processAnnotations($class);
         }
-
-        //spark beans
-        /** @var PostLoadDefinition $postLoadDefinition */
-        foreach ($this->postLoad as $postLoadDefinition) {
-            if ($postLoadDefinition->canLoad()) {
-                $this->annotationProcessor->processAnnotations($postLoadDefinition->getClass());
-            }
-        }
     }
 
-    public function  postProcess(){
+    /**
+     *  Function that process all bean with user custom Annotation Handlers after bean initialization.
+     *  Has limited functionality, for creation new beans and auto inject (Inject annotation)
+     *  ,but for other else it works fine.
+     */
+    public function postProcess() {
+        $handlers = $this->container->getByType(AnnotationHandler::class);
+        Collections::builder($handlers)
+            ->each(function ($h) {
+                $this->annotationProcessor->addPostHandler($h);
+            });
+
         foreach ($this->classesInSrc as $class) {
             //project beans
             $this->annotationProcessor->processPostAnnotations($class);
@@ -144,6 +121,15 @@ class BeanLoader {
                 $this->annotationProcessor->processPostAnnotations($postLoadDefinition->getClass());
             }
         }
+        $this->annotationProcessor->clear();
+    }
+
+    /**
+     * @param $classPath
+     * @throws \spark\common\IllegalArgumentException
+     */
+    private function checkClassExist($classPath) {
+        Asserts::checkArgument(class_exists($classPath), "Class doesn't exist : (" . $classPath . ")");
     }
 
 }

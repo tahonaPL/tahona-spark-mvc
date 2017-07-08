@@ -195,7 +195,7 @@ class Container {
             }
         }
 
-        //Build Normal
+        //Build all @Build beans without wainting list  and update others waiting relations.
         $excludeBuildNamesList = Collections::getKeys($this->waitingList);
 
         foreach ($this->beanContainer as $serviceName => $definition) {
@@ -253,7 +253,7 @@ class Container {
     }
 
 
-    public function getBeanName(\ReflectionProperty $property, $annotation) {
+    private function getBeanName(\ReflectionProperty $property, $annotation) {
         if (StringUtils::isNotBlank($annotation->name)) {
             return $annotation->name;
         } else {

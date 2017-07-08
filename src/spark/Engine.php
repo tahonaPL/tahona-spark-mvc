@@ -143,11 +143,9 @@ class Engine {
 
             $initAnnotationProcessors = new InitAnnotationProcessors($this->route, $this->config, $this->container);
 
-            $beanLoader = new BeanLoader($initAnnotationProcessors, $this->config);
+            $beanLoader = new BeanLoader($initAnnotationProcessors, $this->config, $this->container);
             $beanLoader->addFromPath($src, array("proxy"));
-            $beanLoader->addLib("spark\\core\\CoreConfig");
-//            $beanLoader->addPersistanceLib();
-            $beanLoader->addSecurity();
+            $beanLoader->addClass("spark\core\CoreConfig");
             $beanLoader->process();
 
             $this->addBaseServices();
@@ -155,8 +153,9 @@ class Engine {
             $this->container->registerObj($this->container);
             $this->container->setConfig($this->config);
             $this->container->initServices();
-            $this->afterAllBean();
             $beanLoader->postProcess();
+
+            $this->afterAllBean();
 
             $this->interceptors = $this->container->getByType(HandlerInterceptor::CLASS_NAME);
             $this->exceptionResolvers = $this->container->getByType(ExceptionResolver::CLASS_NAME);

@@ -13,6 +13,7 @@ use Doctrine\Common\Annotations\AnnotationReader;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionProperty;
+use spark\Container;
 use spark\core\annotation\handler\AnnotationHandler;
 use spark\core\annotation\handler\CacheAnnotationHandler;
 use spark\core\annotation\handler\ComponentAnnotationHandler;
@@ -32,6 +33,9 @@ class InitAnnotationProcessors extends AnnotationHandler {
     private $postHandlers;
     private $routing;
     private $config;
+    /**
+     * @var Container
+     */
     private $container;
     /**
      * @var AnnotationReader
@@ -134,6 +138,16 @@ class InitAnnotationProcessors extends AnnotationHandler {
             foreach ($handlers as $handler) {
                 $handler->handleFieldAnnotations($methodAnnotations, $class, $property);
             }
+        }
+    }
+
+    public function clear() {
+        /** @var AnnotationHandler $handler */
+        foreach ($this->handlers as $handler) {
+            $handler->clear();
+        }
+        foreach ($this->postHandlers as $handler) {
+            $handler->clear();;
         }
     }
 

@@ -11,6 +11,7 @@ Framework is designed to work with APCu cache.
 ### Quick Start###
 
 app/public/index.php
+
 ```php
 error_reporting(E_ALL);
 
@@ -18,7 +19,13 @@ define("__ROOT__", __DIR__ . "/../../");
 define("__VENDOR__", "../../vendor");
 
 require __VENDOR__ . "/autoload.php";
+```
 
+Note:
+If you will use doctrine db framework add here line - "AnnotationRegistry::registerLoader('class_exists');"
+
+Framework setup:
+```php
 $profileName ="someNameProfile";
 $engine = new Engine("przemek_config", $profileName, __ROOT__ . "app");
 $engine->run();
@@ -99,48 +106,88 @@ once more is by requestin localhost:80?reset (GET parameter "reset").
 ### @Annotations ###
 The heart of Spark Framework.
 
-* @Component
-* @Service,@Repository,@Configuration
-* @PostConstruct -
+* @Component,@Service,@Repository,@Configuration - do the same thing, but purpose is the key.
+* @Bean
+* @PostConstruct
 * @Inject
+* @Bean
 
-### FluentData ###
-FluentData
-
-### Parametry ###
+### Application Parameters ###
 $this->config
 
-Paramerty:
+Base parameters:
 app.path - ścieżka do katalogu /app
 src.path - ścieżka do katalogu /app/src
 
-### Multiple DataBase connection ###
-
-Handle multiple connections.
+to fetch parameters:
+```php
+ $appPath = $this-config->getProperty("app.path");
 ```
- @RepositoryData(managerName="dataSource", managerName="entityManager") //default
- @RepositoryData(managerName="dataSourceSuper", managerName="exodusManager")
 
+update or set Params
+```php
+ $this-config->getProperty("customModule.some.property.", "/my/new/path");
 ```
+
+### Custom module loading ###
+If you create common module to use in other project remember to create beans by @Bean annotation.
+It will be easier to add new module in one go.
+
+In some your app configuration add others OtherModuleConfig.
 
 ```php
+/**
+* @Bean
+*/
+public function otherBeanConfiguration () {
+    return new OtherModuleConfig();
+}
+```
+All @Bean annotation in OtherModuleConfig will be created and inject to your classes.
+
+### Multiple DataBase connection (example) ###
+
+Handle multiple connections.
+To create Doctrine's EntityManager you can use simple EntityManagerFactory.
+
+```php
+
     /**
-     * @Bean
+     * @Inject()
+     * @var EntityManagerFactory
      */
-    public function dataSource() {
+    private $entityManagerFactory;
+
+
+    /**
+    * @Bean()
+    */
+    public function entityManager() {
+        return $this->entityManagerFactory->createEntityManager($this->getDataSource());
+    }
+
+    /**
+    * @Bean()
+    */
+    public function superEntityManager() {
+        return $this->entityManagerFactory->createEntityManager($this->getDataSourceSuper());
+    }
+
+    public function getDataSource() {
         $dbConfig = new DataSource();
-        $dbConfig->setDbname("tahona");
+        $dbConfig->setDbname("my-db");
         $dbConfig->setHost("127.0.0.1");
         $dbConfig->setUsername("root");
         $dbConfig->setPassword("test");
+        $dbConfig->setPackages([
+            "com/myapp/user/domain" //path to doctrine entity
+        ]);
         return $dbConfig;
     }
-    /**
-     * @Bean
-     */
-    public function dataSourceSuper() {
+
+    public function getDataSourceSuper() {
         $dbConfig = new DataSource();
-        $dbConfig->setDbname("house");
+        $dbConfig->setDbname("super");
         $dbConfig->setHost("127.0.0.1");
         $dbConfig->setUsername("root");
         $dbConfig->setPassword("test");
@@ -148,10 +195,15 @@ Handle multiple connections.
     }
 ```
 
-Note: for override injection use @OverrideInject annotation
+Note: for using CrudDao with other enityManager than basic use @OverrideInject annotation
 
-```
-@OverrideInject(oldName="entityManager", newName="houseManager")
+```php
+/**
+* @OverrideInject(oldName="entityManager", newName="houseManager")
+*/
+class MySuperDao extends CrudDao {
+}
+
 ```
 ### Internalization ###
 
@@ -293,7 +345,7 @@ class ExampleCommand implements Command {
 in console execute:
 
 ```
-php app/public/index.php command=example:exampleCommand
+php app/public/index.php command=example:exampleCommand profile=production
 ```
 
 
@@ -309,9 +361,11 @@ finish!
 In Bean class add @Cache annotation
 
 ```php
-@Cache(name="cache", key="user {0}.id", time=10)
+/**
+ * @Cache(name="cache", key="user {0}.id", time=10)
+ */
 public function getLeaderByCompany($company){
-    return ...someDao->getByCompanyId($company->getId())
+    return $this->someDao->getByCompanyId($company->getId())
 }
 
 ```
@@ -346,14 +400,6 @@ class SomeDevelopmentConfig(){
 ```
 
 In this case SomeDevelopmentConfig won't be added to container and bean declared in it (@Bean) as well.
-
-
-# Command Use
-
-```
-php app/public/index.php command=example:exampleCommand profile=production
-```
-
 
 
 ### Installation - Composer - Speed up###

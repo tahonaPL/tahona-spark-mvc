@@ -10,6 +10,7 @@ namespace spark\core;
 
 use spark\core\annotation\Bean;
 use spark\core\annotation\Configuration;
+use spark\core\annotation\PostConstruct;
 use spark\core\routing\RoutingDefinitionConverter;
 
 /**
@@ -17,11 +18,19 @@ use spark\core\routing\RoutingDefinitionConverter;
  */
 class CoreConfig {
 
+
+    /**
+     * @PostConstruct()
+     */
+    public function init () {
+
+    }
+
     /**
      * @Bean
      * @return RoutingDefinitionConverter
      */
-    private function routingDefinitionConverter() {
+    public function routingDefinitionConverter() {
         return new RoutingDefinitionConverter();
     }
 

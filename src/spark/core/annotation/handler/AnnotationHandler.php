@@ -13,6 +13,7 @@ use ReflectionClass;
 use ReflectionMethod;
 use ReflectionProperty;
 use spark\Config;
+use spark\core\annotation\Inject;
 use spark\Routing;
 use spark\routing\RoutingInfo;
 use spark\Container;
@@ -20,16 +21,19 @@ use spark\Container;
 abstract class AnnotationHandler {
 
     /**
+     * @Inject()
      * @var Container
      */
     private $container;
 
     /**
+     * @Inject()
      * @var Routing
      */
     private $routing;
 
     /**
+     * @Inject()
      * @var Config
      */
     private $config;
@@ -86,6 +90,12 @@ abstract class AnnotationHandler {
      */
     public function setConfig(&$config) {
         $this->config = $config;
+    }
+
+    public function clear() {
+        $this->routing = null;
+        $this->container = null;
+        $this->config = null;
     }
 
 
