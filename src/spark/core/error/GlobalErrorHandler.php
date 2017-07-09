@@ -40,6 +40,12 @@ class GlobalErrorHandler {
         $this->engine = $engine;
     }
 
+    public function setup($resolvers = array()) {
+        $this->exceptionResolvers = $resolvers;
+        set_exception_handler(array($this, self::EXCEPTION_HANDLER));
+        set_error_handler(array($this, self::ERROR_HANDLER));
+//        register_shutdown_function(array($this, self::FATAL_HANDLER));
+    }
 
     /**
      *
@@ -53,7 +59,11 @@ class GlobalErrorHandler {
             return;
         } else if ($errorReporting) {
             $invoke = $this->getHandler();
-            $invoke($exception);
+            $err = $invoke($exception);
+
+            if (Objects::isNotNull($err)) {
+                throw $err;
+            }
             return;
         }
     }
@@ -66,24 +76,23 @@ class GlobalErrorHandler {
         if ($errorReporting == 0) {
             return;
         } else if ($errorReporting && Objects::isNotNull($error)) {
-            return $this->handleErrorAction($error);
-
+            $errorException = $this->handleErrorAction($error);
+            $this->handleException($errorException);
         }
     }
+
 
     public function handleFatal() {
         $error = error_get_last();
+
         if ($error["type"] == E_ERROR && error_reporting() && Objects::isNotNull($error)) {
-            return $this->handleErrorAction($error);
+            $errorException = $this->handleErrorAction($error);
+
+            $this->handleException($errorException);
+            return;
         }
     }
 
-    public function setup($resolvers = array()) {
-        $this->exceptionResolvers = $resolvers;
-        set_exception_handler(array($this, self::EXCEPTION_HANDLER));
-        set_error_handler(array($this, self::ERROR_HANDLER));
-        register_shutdown_function(array($this, self::FATAL_HANDLER));
-    }
 
     private function getHandler() {
         return function ($error) {
@@ -103,14 +112,14 @@ class GlobalErrorHandler {
                     $this->engine->updateRequest($request);
                     $this->engine->handleViewModel($request, $viewModel);
 
-                    return;
+                    return null;
                 }
             }
 
             //Default behavior
             /** @var ErrorException $error */
             ResponseHelper::setCode(HttpCode::$INTERNAL_SERVER_ERROR);
-            throw new \Exception($error->getMessage(), $error->getCode(), $error);
+            return new \Exception($error->getMessage(), $error->getCode(), $error);
         };
     }
 
@@ -120,11 +129,9 @@ class GlobalErrorHandler {
         $lineno = $error["line"];
         $message = $error["message"];
 
-        $exc = new \ErrorException($message, 0, $severity, $filename, $lineno);
-        $invoke = $this->getHandler();
-        $invoke($exc);
-        return $exc;
+        return new \ErrorException($message, 0, $severity, $filename, $lineno);
     }
+
 
 
 }
