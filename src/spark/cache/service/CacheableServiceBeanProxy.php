@@ -32,6 +32,7 @@ class CacheableServiceBeanProxy implements BeanProxy {
      */
     public function __construct($bean) {
         $this->bean = $bean;
+        $this->className = Objects::getClassName($this->bean);
     }
 
     function __call($methodName, $arguments) {
@@ -84,9 +85,6 @@ class CacheableServiceBeanProxy implements BeanProxy {
      * @return string
      */
     private function getClassName() {
-        if (StringUtils::isBlank($this->className)) {
-            $this->className = Objects::getClassName($this->bean);
-        }
         return $this->className;
     }
 

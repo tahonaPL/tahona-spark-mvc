@@ -381,5 +381,13 @@ final class Collections {
         return $accessor;
     }
 
+    /**
+     * @param array $array
+     * @return Optional
+     */
+    public static function first($array = array()) {
+        return self::findFirst($array, Predicates::notNull());
+    }
+
 
 }
