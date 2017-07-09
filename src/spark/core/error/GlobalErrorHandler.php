@@ -87,7 +87,6 @@ class GlobalErrorHandler {
 
         if ($error["type"] == E_ERROR && error_reporting() && Objects::isNotNull($error)) {
             $errorException = $this->handleErrorAction($error);
-
             $this->handleException($errorException);
             return;
         }
