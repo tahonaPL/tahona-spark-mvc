@@ -12,6 +12,7 @@ namespace spark\seo;
 use spark\utils\Asserts;
 use spark\utils\Collections;
 use spark\utils\Objects;
+use spark\utils\StringFunctions;
 use spark\utils\StringUtils;
 
 
@@ -21,8 +22,9 @@ class SeoUrlFactory {
 
     public static function getSeo($parts = array()) {
         $params = Collections::builder($parts)
-            ->map(StringUtils::mapReplace(StringUtils::SPACE, "-"))
-            ->map(StringUtils::mapTrim())
+            ->map(StringFunctions::trim())
+            ->map(StringFunctions::replace(StringUtils::SPACE, "-"))
+            ->map(StringFunctions::lowercase())
             ->map(StringUtils::mapEscapeSpecialChar())
             ->get();
 

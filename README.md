@@ -402,6 +402,31 @@ class SomeDevelopmentConfig(){
 In this case SomeDevelopmentConfig won't be added to container and bean declared in it (@Bean) as well.
 
 
+### Error handling - example ###
+
+```php
+class NotFoundErrorHandler extends ExceptionResolver {
+
+    public function doResolveException($ex) {
+        if ($ex instanceof RouteNotFoundException || $ex instanceof EntityNotFoundException) {
+            ResponseHelper::setCode(HttpCode::$NOT_FOUND);
+
+            $viewModel = new ViewModel();
+            $viewModel->setViewName("/house/web/error/notFound");
+            return $viewModel;
+        }
+        return null;
+    }
+
+    public function getOrder() {
+        return 400;
+    }
+}
+```
+
+where error handler with order equal 0 , will be first to invoke.
+If you return *Viewmodel* the handling will stop and the view will be return as response.
+
 ### Installation - Composer - Speed up###
 
 

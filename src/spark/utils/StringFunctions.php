@@ -52,4 +52,10 @@ class StringFunctions {
             return StringUtils::trim($x);
         };
     }
+
+    public static function lowercase() {
+        return function($x) {
+            return StringUtils::lowerCase($x);
+        };
+    }
 }
