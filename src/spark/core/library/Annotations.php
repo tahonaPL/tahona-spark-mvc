@@ -21,6 +21,7 @@ class Annotations {
     const INJECT = "spark\\core\\annotation\\Inject";
     const OVERRIDE_INJECT = "spark\\core\\annotation\\OverrideInject";
     const PROFILE = "spark\\core\\annotation\\Profile";
+    const BEAN = "spark\\core\\annotation\\Bean";
 
     public static function getScopeByClass($className) {
         return Optional::ofNullable(ReflectionUtils::getClassAnnotations($className, self::SCOPE))

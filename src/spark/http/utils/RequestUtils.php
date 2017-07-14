@@ -177,7 +177,9 @@ class RequestUtils {
     }
 
     public static function getHeaders() {
-        return getallheaders();
+        return array();
+
+        //return getallheaders();
     }
 
     public static function getBody() {

@@ -396,6 +396,7 @@ class Engine {
 
     private function clearCacheIfResetParam() {
         $resetParam = $this->config->getProperty(EnableApcuAnnotationHandler::APCU_CACHE_RESET);
+
         if (isset($_GET[$resetParam])) {
             $this->beanCache->clearAll();
         }

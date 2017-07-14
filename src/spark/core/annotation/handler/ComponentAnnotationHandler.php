@@ -38,9 +38,7 @@ class ComponentAnnotationHandler extends AnnotationHandler {
     public function handleClassAnnotations($annotations = array(), $class, \ReflectionClass $classReflection) {
         $annotation = $this->getAnnotation($annotations, $this->annotationNames);
 
-        $profile = $this->getAnnotation($annotations, array(Annotations::PROFILE));
-
-        if ($annotation->isPresent() && $this->isProperProfile($profile)) {
+        if ($annotation->isPresent()) {
             $className = $classReflection->getName();
             $beanName = $this->getBeanName($annotation->get(), $className);
 
@@ -91,20 +89,6 @@ class ComponentAnnotationHandler extends AnnotationHandler {
         return Collections::builder($annotations)
             ->filter(Predicates::compute($this->getClassName(), Predicates::contains($defined)))
             ->findFirst();
-    }
-
-    /**
-     * @param $profile Optional
-     * @return bool
-     */
-    private function isProperProfile($profile) {
-        $profileName = $this->getConfig()->getProperty("app.profile");
-
-        $annotationProfileName = $profile->map(Functions::field("name"))
-            ->orElse(null);
-
-        return StringUtils::isBlank($annotationProfileName)
-            || StringUtils::equals($profileName, $annotationProfileName);
     }
 
 }

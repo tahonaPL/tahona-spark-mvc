@@ -31,7 +31,7 @@ class Request {
     private $cachedGetParams;
 
     function __construct() {
-        $this->headers = new HeadersWrapper(getallheaders());
+        $this->headers = new HeadersWrapper(RequestUtils::getHeaders());
     }
 
     public function getMethodName() {

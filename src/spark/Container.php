@@ -340,7 +340,7 @@ class Container {
     private function createBuildAnnotationBeans($bean) {
         $buildedBeans = array();
         //First - Build  all subBeans...
-        ReflectionUtils::handleMethodAnnotation($bean, "spark\\core\\annotation\\Bean",
+        ReflectionUtils::handleMethodAnnotation($bean, Annotations::BEAN,
             function ($bean, \ReflectionMethod $method, $annotation) use (&$buildedBeans) {
                 if (StringUtils::isNotBlank($annotation->name)) {
                     $name = $annotation->name;

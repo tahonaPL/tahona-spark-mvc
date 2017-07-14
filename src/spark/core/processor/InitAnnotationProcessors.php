@@ -13,6 +13,7 @@ use Doctrine\Common\Annotations\AnnotationReader;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionProperty;
+use spark\common\Optional;
 use spark\Container;
 use spark\core\annotation\handler\AnnotationHandler;
 use spark\core\annotation\handler\CacheAnnotationHandler;
@@ -24,8 +25,13 @@ use spark\core\annotation\handler\EnableMailerAnnotationHandler;
 use spark\core\annotation\handler\PathAnnotationHandler;
 use spark\core\annotation\handler\SmartyViewConfigurationAnnotationHandler;
 use spark\core\annotation\SmartyViewConfiguration;
+use spark\core\library\Annotations;
 use spark\utils\Collections;
+use spark\utils\Functions;
+use spark\utils\Objects;
+use spark\utils\Predicates;
 use spark\utils\ReflectionUtils;
+use spark\utils\StringUtils;
 
 class InitAnnotationProcessors extends AnnotationHandler {
 
@@ -93,14 +99,12 @@ class InitAnnotationProcessors extends AnnotationHandler {
     }
 
     public function processAnnotations($class) {
-        $handlers = $this->handlers;
-        $this->processAnnotationsForHandlers($class, $handlers);
+        $this->processAnnotationsForHandlers($class, $this->handlers);
     }
 
     public function processPostAnnotations($class) {
-        $handlers = $this->postHandlers;
-        if (Collections::isNotEmpty($handlers)) {
-            $this->processAnnotationsForHandlers($class, $handlers);
+        if (Collections::isNotEmpty($this->postHandlers)) {
+            $this->processAnnotationsForHandlers($class, $this->postHandlers);
         }
     }
 
@@ -110,35 +114,38 @@ class InitAnnotationProcessors extends AnnotationHandler {
      * @param $handlers
      */
     private function processAnnotationsForHandlers($class, $handlers) {
+
         $reflectionObject = new ReflectionClass($class);
-
-        //Class
         $classAnnotations = $this->annotationReader->getClassAnnotations($reflectionObject);
-        /** @var AnnotationHandler $handler */
-        foreach ($handlers as $handler) {
-            $handler->handleClassAnnotations($classAnnotations, $class, $reflectionObject);
-        }
 
-        //Methods
-        $reflectionMethods = $reflectionObject->getMethods();
-        foreach ($reflectionMethods as $method) {
-            $methodAnnotations = $this->annotationReader->getMethodAnnotations($method);
+        if ($this->hasValidProfile($classAnnotations)) {
             /** @var AnnotationHandler $handler */
             foreach ($handlers as $handler) {
-                $handler->handleMethodAnnotations($methodAnnotations, $class, $method);
+                $handler->handleClassAnnotations($classAnnotations, $class, $reflectionObject);
+            }
+
+            //Methods
+            $reflectionMethods = $reflectionObject->getMethods();
+            foreach ($reflectionMethods as $method) {
+                $methodAnnotations = $this->annotationReader->getMethodAnnotations($method);
+                /** @var AnnotationHandler $handler */
+                foreach ($handlers as $handler) {
+                    $handler->handleMethodAnnotations($methodAnnotations, $class, $method);
+                }
+            }
+
+            //Field
+            $reflectionProperties = $reflectionObject->getProperties();
+            foreach ($reflectionProperties as $property) {
+                $methodAnnotations = $this->annotationReader->getPropertyAnnotations($property);
+
+                /** @var AnnotationHandler $handler */
+                foreach ($handlers as $handler) {
+                    $handler->handleFieldAnnotations($methodAnnotations, $class, $property);
+                }
             }
         }
 
-        //Field
-        $reflectionProperties = $reflectionObject->getProperties();
-        foreach ($reflectionProperties as $property) {
-            $methodAnnotations = $this->annotationReader->getPropertyAnnotations($property);
-
-            /** @var AnnotationHandler $handler */
-            foreach ($handlers as $handler) {
-                $handler->handleFieldAnnotations($methodAnnotations, $class, $property);
-            }
-        }
     }
 
     public function clear() {
@@ -149,6 +156,45 @@ class InitAnnotationProcessors extends AnnotationHandler {
         foreach ($this->postHandlers as $handler) {
             $handler->clear();;
         }
+    }
+
+    private function hasValidProfile($classAnnotations) {
+        if (Collections::isNotEmpty($classAnnotations)) {
+            $profile = $this->getAnnotation($classAnnotations, array(Annotations::PROFILE));
+            return $this->isProperProfile($profile);
+        }
+        return true;
+    }
+
+    /**
+     * @param $annotations
+     * @param $defined
+     * @return \spark\common\Optional
+     */
+    private function getAnnotation($annotations, $defined = array()) {
+        return Collections::builder($annotations)
+            ->filter(Predicates::compute($this->getClassName(), Predicates::contains($defined)))
+            ->findFirst();
+    }
+
+    /**
+     * @param $profile Optional
+     * @return bool
+     */
+    private function isProperProfile($profile) {
+        $profileName = $this->config->getProperty("app.profile");
+
+        $annotationProfileName = $profile->map(Functions::field("name"))
+            ->orElse(null);
+
+        return StringUtils::isBlank($annotationProfileName)
+        || StringUtils::equals($profileName, $annotationProfileName);
+    }
+
+    private function getClassName() {
+        return function ($x) {
+            return Objects::getClassName($x);
+        };
     }
 
 

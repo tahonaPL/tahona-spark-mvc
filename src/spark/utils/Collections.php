@@ -179,6 +179,7 @@ final class Collections {
      * @return FluentIterables
      */
     public static function builder($array = array()) {
+        Asserts::checkArgument(Objects::isArray($array));
         return new FluentIterables($array);
     }
 
