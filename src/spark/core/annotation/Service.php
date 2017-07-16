@@ -9,7 +9,7 @@
 namespace spark\core\annotation;
 
 use Doctrine\Common\Annotations\Annotation\Target;
-use Doctrine\ORM\Mapping;
+
 
 
 /**
@@ -17,7 +17,7 @@ use Doctrine\ORM\Mapping;
  * @Component
  * @Target({"CLASS","ANNOTATION"})
  */
-final class Service implements Mapping\Annotation {
+final class Service {
 
     /** @var string */
     public $name = "";

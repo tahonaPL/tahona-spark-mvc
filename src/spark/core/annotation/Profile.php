@@ -9,7 +9,7 @@
 namespace spark\core\annotation;
 
 use Doctrine\Common\Annotations\Annotation\Target;
-use Doctrine\ORM\Mapping;
+
 
 
 /**
@@ -17,7 +17,7 @@ use Doctrine\ORM\Mapping;
  * @Component
  * @Target({"CLASS"})
  */
-final class Profile implements Mapping\Annotation {
+final class Profile {
 
     /** @var string */
     public $name = "";

@@ -9,14 +9,14 @@
 namespace spark\core\annotation;
 
 use Doctrine\Common\Annotations\Annotation\Target;
-use Doctrine\ORM\Mapping;
+
 
 
 /**
  * @Annotation
  * @Target({"PROPERTY","ANNOTATION"})
  */
-final class Inject implements Mapping\Annotation {
+final class Inject {
 
     /** @var string */
     public $name = "";

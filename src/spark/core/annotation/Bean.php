@@ -7,15 +7,15 @@
  */
 
 namespace spark\core\annotation;
+
 use Doctrine\Common\Annotations\Annotation\Target;
-use Doctrine\ORM\Mapping\Annotation;
 
 
 /**
  * @Annotation
  * @Target({"METHOD"})
  */
-final class Bean implements Annotation {
+final class Bean {
 
     /** @var string */
     public $name = "";

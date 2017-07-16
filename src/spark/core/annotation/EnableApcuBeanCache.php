@@ -9,14 +9,14 @@
 namespace spark\core\annotation;
 
 use Doctrine\Common\Annotations\Annotation\Target;
-use Doctrine\ORM\Mapping;
+
 
 
 /**
  * @Annotation
  * @Target({"CLASS"})
  */
-final class EnableApcuBeanCache implements Mapping\Annotation {
+final class EnableApcuBeanCache {
 
 
     /** @var string */

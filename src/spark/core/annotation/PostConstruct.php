@@ -9,7 +9,7 @@
 namespace spark\core\annotation;
 
 use Doctrine\Common\Annotations\Annotation\Target;
-use Doctrine\ORM\Mapping;
+
 
 
 /**
@@ -17,5 +17,5 @@ use Doctrine\ORM\Mapping;
  * @Component
  * @Target({"METHOD"})
  */
-final class PostConstruct implements Mapping\Annotation {
+final class PostConstruct {
 } 

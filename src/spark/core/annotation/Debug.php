@@ -7,8 +7,8 @@
  */
 
 namespace spark\core\annotation;
+
 use Doctrine\Common\Annotations\Annotation\Target;
-use Doctrine\ORM\Mapping\Annotation;
 
 
 /**
@@ -17,6 +17,6 @@ use Doctrine\ORM\Mapping\Annotation;
  * @Annotation
  * @Target({"CLASS"})
  */
-final class Debug implements Annotation {
+final class Debug {
 
 }

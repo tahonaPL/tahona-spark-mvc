@@ -5,8 +5,8 @@
 PHP framework with autoloading and annotations. All configuration is handled by annotations and beans.
 Framework is designed to work with APCu cache.
 
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+Example project: https://github.com/primosz67/spark-mvc-example
+
 
 ### Quick Start###
 

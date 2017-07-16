@@ -9,14 +9,14 @@
 namespace spark\core\annotation;
 
 use Doctrine\Common\Annotations\Annotation\Target;
-use Doctrine\ORM\Mapping;
+
 
 
 /**
  * @Annotation
  * @Target({"CLASS", "METHOD"})
  */
-final class Path implements Mapping\Annotation {
+final class Path {
 
     /** @var string */
     public $path = "";

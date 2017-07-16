@@ -9,14 +9,13 @@
 namespace spark\core\annotation;
 
 use Doctrine\Common\Annotations\Annotation\Target;
-use Doctrine\ORM\Mapping\Annotation;
 
 
 /**
  * @Annotation
  * @Target({"METHOD"})
  */
-final class Cache implements Annotation {
+final class Cache {
 
     /** @var string */
     public $cache = "cache";

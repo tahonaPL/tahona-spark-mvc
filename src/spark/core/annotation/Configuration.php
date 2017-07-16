@@ -9,7 +9,6 @@
 namespace spark\core\annotation;
 
 use Doctrine\Common\Annotations\Annotation\Target;
-use Doctrine\ORM\Mapping;
 
 
 /**
@@ -17,7 +16,7 @@ use Doctrine\ORM\Mapping;
  * @Component
  * @Target({"CLASS"})
  */
-final class Configuration  implements Mapping\Annotation {
+final class Configuration {
 
     /** @var string */
     public $name = "";
