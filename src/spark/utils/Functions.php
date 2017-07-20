@@ -79,5 +79,14 @@ class Functions {
         };
     }
 
+    /**
+     * @return \Closure
+     */
+    public static function none() {
+        return function($x) {
+
+        };
+    }
+
 
 }

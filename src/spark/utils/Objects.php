@@ -9,8 +9,10 @@
 namespace spark\utils;
 
 
+use ArrayAccess;
 use spark\utils\Asserts;
 use tahona\shop\client\domain\Client;
+use Traversable;
 
 class Objects {
 
@@ -23,14 +25,14 @@ class Objects {
     }
 
     public static function isArray($obj) {
-        return is_array($obj);
+        return is_array($obj) || ($obj instanceof Traversable);
     }
 
     public static function isString($obj) {
         return is_string($obj);
     }
 
-    public static function invokeMethod($obj, $methodName, $args=array()) {
+    public static function invokeMethod($obj, $methodName, $args = array()) {
         return call_user_func_array(array($obj, $methodName), $args);
     }
 
