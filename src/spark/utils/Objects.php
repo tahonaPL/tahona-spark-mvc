@@ -77,5 +77,9 @@ class Objects {
         return is_scalar($obj);
     }
 
+    public static function equals($a, $b) {
+        return $a === $b;
+    }
+
 
 } 
