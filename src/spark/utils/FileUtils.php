@@ -13,41 +13,37 @@ use spark\common\Optional;
 use spark\utils\Asserts;
 use spark\upload\FileObject;
 
-class FileUtils {
+final class FileUtils {
+
+
+    private function __construct() {
+    }
 
     public static function createFolderIfNotExist($dir) {
         $directoryPath = self::getAbsolutePath($dir);
 
-        $isDirExist = self::isExist($directoryPath);
-        if (false == $isDirExist) {
+        $isDirExist = self::isDir($directoryPath);
+        if (!$isDirExist) {
             mkdir($directoryPath);
         }
     }
 
-    /**
-     * Is Directory Exist
-     * @deprecated
-     * @param $directoryPath
-     * @return bool
-     */
-    public static function isExist($directoryPath) {
-        return file_exists($directoryPath) && is_dir($directoryPath);
-    }
-    public static function isFileExist($filePath) {
-        return file_exists($filePath) ;
+
+    public static function exist($filePath):bool {
+        return file_exists($filePath);
     }
 
     public static function moveFileToDir(FileObject $file, $directoryPath) {
         $directoryPath = self::getAbsolutePath($directoryPath);
 
-        $newFilePath = $directoryPath."/".$file->getFileName();
+        $newFilePath = $directoryPath . "/" . $file->getFileName();
         $success = copy($file->getFilePath(), $newFilePath);
 
         if ($success) {
             unlink($file->getFilePath());
             $file->setFilePath($newFilePath);
         } else {
-            throw new MoveFileException("cant move file to :".$directoryPath." check write permission.");
+            throw new MoveFileException("cant move file to :" . $directoryPath . " check write permission.");
         }
     }
 
@@ -55,7 +51,7 @@ class FileUtils {
         $newFilePath = self::getAbsolutePath($fullPath);
 
         //bug with get absolute file path.
-        if (false == self::isExist($newFilePath)) {
+        if (false == self::isDir($newFilePath)) {
             $newFilePath = $fullPath;
         }
 
@@ -65,7 +61,7 @@ class FileUtils {
             unlink($file->getFilePath());
             $file->setFilePath($newFilePath);
         } else {
-            throw new MoveFileException("cant move file to :".$fullPath." check write permission.");
+            throw new MoveFileException("cant move file to :" . $fullPath . " check write permission.");
         }
     }
 
@@ -76,11 +72,11 @@ class FileUtils {
 
             if (strpos($rootAbsolutePath, "\\") > 0) {
                 //windows
-                return $rootAbsolutePath.$dir;
+                return $rootAbsolutePath . $dir;
 
             } else {
                 //linux
-                return realpath($rootAbsolutePath.$dir);
+                return realpath($rootAbsolutePath . $dir);
             }
 
         } else {
@@ -107,20 +103,20 @@ class FileUtils {
         foreach ($scandir as $file) {
             $result[] = $file;
         }
-       return $result;
+        return $result;
     }
 
     public static function getFileList($path) {
         return Collections::builder(self::getFilesInPath($path))
-            ->filter(function($file) use ($path) {
-                return is_file($path."/".$file);
+            ->filter(function ($file) use ($path) {
+                return is_file($path . "/" . $file);
             })->get();
     }
 
     public static function getDirList($path, $exclude = array()) {
         return Collections::builder(self::getFilesInPath($path))
-            ->filter(function($file) use ($path, $exclude){
-                return is_dir($path."/".$file) && !Collections::isIn($file, $exclude);
+            ->filter(function ($file) use ($path, $exclude) {
+                return is_dir($path . "/" . $file) && !Collections::isIn($file, $exclude);
             })->get();
     }
 
@@ -138,7 +134,7 @@ class FileUtils {
 
         $fileNames = FileUtils::getFilesInPath($dir);
 
-        foreach($fileNames as $fileName){
+        foreach ($fileNames as $fileName) {
             $filePath = $dir . "/" . $fileName;
             if (is_dir($filePath)) {
                 $subFiles = Collections::builder(self::getAllClassesInPath($filePath))
@@ -148,7 +144,7 @@ class FileUtils {
 
                 Collections::addAll($result, $subFiles);
 
-            } else if (StringUtils::contains($fileName,".php")){
+            } else if (StringUtils::contains($fileName, ".php")) {
                 $result[] = self::toClassName($fileName);
             }
         }
@@ -164,8 +160,14 @@ class FileUtils {
         return StringUtils::replace(StringUtils::replace($fileName, '/', '\\'), ".php", "");
     }
 
-    public static function isDirExist($dir) {
+    public static function isDir($dir):bool {
         return is_dir($dir);
     }
+
+
+    public static function isFile($filePath):bool {
+        return is_file($filePath);
+    }
+
 
 }

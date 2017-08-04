@@ -180,8 +180,8 @@ class UrlUtils {
      */
     private static function removeLastCharacterIfNeeded($suffixUrlPart) {
         $suffix = $suffixUrlPart;
-        $lastChar = StringUtils::sub($suffix, -1, 1);
-        return $lastChar === "/" ? StringUtils::sub($suffix, 0, strlen($suffix) - 1) : $suffix;
+        $lastChar = StringUtils::subString($suffix, -1, 1);
+        return $lastChar === "/" ? StringUtils::subString($suffix, 0, strlen($suffix) - 1) : $suffix;
     }
 
 }

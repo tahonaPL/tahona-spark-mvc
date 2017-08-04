@@ -1,22 +1,14 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: primosz67
- * Date: 27.11.14
- * Time: 00:27
- */
 
 namespace spark\utils;
 
 
 class StringUtils {
 
-
-    const SPACE = " ";
+    const SPACE = ' ';
 
     public static function startsWith($text, $prefix) {
-        $strpos = strpos($text, $prefix);
-        return $strpos === 0;
+        return strpos($text, $prefix) === 0;
     }
 
     public static function contains($text, $search, $ignoreCase = false) {
@@ -25,43 +17,20 @@ class StringUtils {
             $search = strtolower($search);
         }
 
-        $strpos = strpos($text, $search);
-        return $strpos !== false;
-    }
-
-    /**
-     * @deprecated
-     * @param $indexFrom
-     * @param $indexTo
-     * @param $string
-     * @return string
-     */
-    public static function substr($indexFrom, $indexTo, $string) {
-        return substr($string, $indexFrom, $indexTo);
+        return strpos($text, $search) >= 0;
     }
 
 
-    public static function subString($string, $indexFrom, $length = null) {
+    public static function subString(string $string, int $indexFrom, int $length = null) :bool {
         return substr($string, $indexFrom, $length);
     }
 
-    /**
-     * @deprecated
-     * @param $string
-     * @param $indexFrom
-     * @param null $length
-     * @return string
-     */
-    public static function sub($string, $indexFrom, $length = null) {
-        return substr($string, $indexFrom, $length);
+    public static function isNotBlank($text) :bool {
+        return preg_match('/\S/', $text);
     }
 
-    public static function isNotBlank($text) {
-        return false === self::isBlank($text);
-    }
-
-    public static function isBlank($text) {
-        return empty($text);
+    public static function isBlank($text) :bool {
+        return !self::isNotBlank($text);
     }
 
     /**
@@ -75,21 +44,6 @@ class StringUtils {
         return self::compareIgnoreCase($string1, $string2) === 0;
     }
 
-    /**
-     * (PHP 4, PHP 5)<br/>
-     * Binary safe string comparison
-     * @link http://php.net/manual/en/function.strcmp.php
-     * @param string $str1 <p>
-     * The first string.
-     * </p>
-     * @param string $str2 <p>
-     * The second string.
-     * </p>
-     * @return int &lt; 0 if <i>str1</i> is less than
-     * <i>str2</i>; &gt; 0 if <i>str1</i>
-     * is greater than <i>str2</i>, and 0 if they are
-     * equal.
-     */
     public static function compareIgnoreCase($string1, $string2) {
         return strcmp(strtolower(trim($string1)), strtolower(trim($string2)));
     }
@@ -109,18 +63,15 @@ class StringUtils {
      * @param $string2
      * @return bool
      */
-    public static function equals($string1, $string2) {
+    public static function equals($string1, $string2):bool {
         return $string1 === $string2;
     }
 
-    public static function join($joiner, $stringArray = array(), $missEmpty = false) {
+    public static function join($joiner, $stringArray = array(), $missEmpty = false) :string {
         if ($missEmpty) {
             $stringArray = array_filter($stringArray);
-
-            return join($joiner, $stringArray);
-        } else {
-            return join($joiner, $stringArray);
         }
+        return implode($joiner, $stringArray);
     }
 
     /**
@@ -191,7 +142,7 @@ class StringUtils {
     }
 
     public static function predEquals($string) {
-        return function($x) use ($string) {
+        return function ($x) use ($string) {
             return StringUtils::equals($x, $string);
         };
     }
