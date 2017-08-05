@@ -9,7 +9,7 @@ class PropertyHelper {
     private $properties = array();
 
     public function __construct($array = null) {
-        if (false == is_null($array)) {
+        if (!is_null($array)) {
             $this->addAll($array);
         }
     }
