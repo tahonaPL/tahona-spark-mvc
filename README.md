@@ -5,10 +5,26 @@
 PHP framework with autoloading and annotations. All configuration is handled by annotations and beans.
 Framework is designed to work with APCu cache.
 
-Example project: https://github.com/primosz67/spark-mvc-example
 
 
-### Quick Start###
+#### How it works  ####
+Framework automatically load beans from app/src path it just need to be annotated with one annotation of: **@Component, @Service, @Configuration or @Repository**.
+
+Bean injection can be achieved with **@Inject** annotation.
+
+Initialization is done on the first request. The second request execute Controllers  action, that has  already injected beans in it.
+
+Request execution time is very small because it's time of user code execution only.
+
+
+Thanks to this,  for real production code we got **20ms-40ms** per request for dynamic data.
+
+
+### Quick Start ###
+
+For quick start donwload example project: https://github.com/primosz67/spark-mvc-example
+
+### Index php - explained ###
 
 app/public/index.php
 
@@ -52,6 +68,7 @@ app/src/MyAppController.php
 ```php
 class MyAppController extends Controller {
 
+
     /**
      * @Path("/index")
      */
@@ -81,6 +98,67 @@ class MyAppController extends Controller {
 ```
 
 Go to localhost/get or localhost/index;
+
+### Injection ###
+
+#####1. Define bean for autoload.
+
+```php
+
+/**
+* @Service()
+*/
+class UserService {
+    //...some methods
+}
+```
+Note: for enabled apcu @EnableApcuBeanCache("reset") to autoload injection call http://website?reset
+
+
+#####2. Define other beans and inject out bean.
+```php
+
+/**
+* @Component()
+*/
+class AddUserHandler {
+
+    /**
+    * @Inject()
+    * var UserService
+    */
+    private $userService;
+
+     /**
+     * @PostConstruct()
+     */
+     public function init() {
+        $this->userService->doSomething();
+     }
+}
+```
+
+#####3.Inject in controller
+
+```php
+class UserController extends Controller {
+
+    /**
+    * @Inject()
+    * var UserService
+    */
+    private $userService;
+
+    /**
+     * @Path("/newView")
+     */
+     public function showNewViewAction() {
+        return new ViewModel(array(
+            "users"=>$this->userService->getAllUsers()
+        ));
+     }
+}
+```
 
 ### View ###
 
@@ -358,7 +436,13 @@ object(...)
 finish!
 ```
 ### Built-in cache service ###
-In Bean class add @Cache annotation
+
+Great thing for caching DB request or loading files data.
+Annotation can be used with different cache.
+Even custom cache bean that implement spark/cache/Cache
+
+##### How To #####
+In Bean class add @Cache annotation.
 
 ```php
 /**
@@ -370,9 +454,9 @@ public function getLeaderByCompany($company){
 
 ```
 
-- cache name is, a name of bean that implement spark\cache\Cache interface.
+- "name" is a name of bean that implement spark\cache\Cache interface.
 - ApcCache needed for application is added as default name="cache"
-- "time" parameters is in minutes (10 minutes)
+- "time" - optional parameter that is in minutes(10 minutes)
 - "key" parameter is for distinguish cached values
 
 
@@ -434,6 +518,20 @@ If you return *Viewmodel* the handling will stop and the view will be return as 
 composer dump-autoload -a
 ```
 
+
+### Performance - Some numbers ###
+
+**Tested Case**: Real project with small database. 50 requests parallel.
+
+* **Apcu**: only apcu installed, but with Smarty template rendering for each request (Development mode).
+* **Apcu and Smarty**: apcu installed, and smarty with production setup.
+* **Apcu, Smarty, @Cache**: request to database are cached with @Cache annotation. It can give big improvement to performance when there is more calls to DB.
+
+|Mode| Request time (per request)|
+|----| ------------- |
+|Apcu| ~630ms|
+|Smarty and Apcu | ~40ms  |
+|Apcu, Smarty, @Cache | **~25ms** |
 
 ### Installation - Composer ###
 
