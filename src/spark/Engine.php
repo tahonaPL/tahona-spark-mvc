@@ -289,7 +289,7 @@ class Engine {
     }
 
     private function hasAllreadyCachedData() {
-        return $this->apcuExtensionLoaded && $this->beanCache->has($this->getCacheKey(self::CONTAINER_CACHE_KEY));
+        return $this->apcuExtensionLoaded && $this->beanCache->get($this->getCacheKey(self::CONTAINER_CACHE_KEY));
     }
 
     /**

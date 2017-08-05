@@ -13,6 +13,7 @@ interface Cache {
 
     public function put($key, $object);
     public function get($key);
+    public function has($key);
 
 
 }

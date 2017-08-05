@@ -3,6 +3,7 @@
 
 use spark\cache\BeanCache;
 use spark\utils\Asserts;
+use spark\utils\Objects;
 
 class MemCacheAdapter implements BeanCache {
 
@@ -29,5 +30,9 @@ class MemCacheAdapter implements BeanCache {
 
     public function clearAll() {
         return $this->cache->flush();
+    }
+
+    public function has($key) {
+        return Objects::isNotNull($this->get($key));
     }
 }

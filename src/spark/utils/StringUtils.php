@@ -32,7 +32,7 @@ final class StringUtils {
     }
 
     public static function isNotBlank($text) :bool {
-        return Objects::isNotNull($text) && (bool)preg_match('/\S/', (string) $text);
+        return Objects::isString($text) && (bool)preg_match('/\S/', (string)$text);
     }
 
     public static function isBlank($text) :bool {
@@ -78,7 +78,7 @@ final class StringUtils {
      * @param $delimiter
      * @return array
      */
-    public static function split($string, $delimiter = null) {
+    public static function split(string $string, $delimiter = null){
         if (Objects::isNull($delimiter)) {
             return str_split($string);
         }
