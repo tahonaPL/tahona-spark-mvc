@@ -16,17 +16,19 @@ final class StringUtils {
         return strpos($text, $prefix) === 0;
     }
 
-    public static function contains($text, $search, $ignoreCase = false) {
+    public static function contains($text, $search, $ignoreCase = false) : bool {
         if ($ignoreCase) {
             $text = strtolower($text);
             $search = strtolower($search);
         }
 
-        return strpos($text, $search) >= 0;
+        $pos = strpos($text, $search);
+        return $pos > 0 || $pos === 0;
     }
 
-    public static function substring(string $string, int $indexFrom, int $length = null) :bool {
-        return substr($string, $indexFrom, $length);
+    public static function substring(string $string, int $indexFrom, int $length = null) {
+        $substr = substr($string, $indexFrom, $length);
+        return Objects::isString($substr) ? $string : null;
     }
 
     public static function isNotBlank($text) :bool {
