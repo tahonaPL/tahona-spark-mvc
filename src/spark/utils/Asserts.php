@@ -36,7 +36,7 @@ class Asserts {
      * @throws \spark\common\IllegalArgumentException
      */
     public static function isArray($object, $message = "Object is not an array") {
-        if (is_null($object) || false === is_array($object)) {
+        if (is_null($object) || !is_array($object)) {
             throw new IllegalArgumentException($message);
         }
     }
@@ -47,19 +47,19 @@ class Asserts {
      * @throws \spark\common\IllegalArgumentException
      */
     public static function checkArray($object, $message = "Object is not an array") {
-        if (is_null($object) || false === is_array($object)) {
+        if (is_null($object) || !is_array($object)) {
             throw new IllegalArgumentException($message);
         }
     }
 
     public static function checkArgument($bool, $message = "Invalid argument") {
-        if (false === $bool) {
+        if (!$bool) {
             throw new IllegalArgumentException($message);
         }
     }
 
     public static function checkState($bool, $message = 'Invaid state (should be "true")') {
-        if (false === $bool) {
+        if (!$bool) {
             throw new IllegalStateException($message);
         }
     }

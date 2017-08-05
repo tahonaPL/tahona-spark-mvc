@@ -40,7 +40,7 @@ class PathAnnotationHandler extends AnnotationHandler {
 
     public function handleClassAnnotations($annotations = array(), $class, ReflectionClass $classReflection) {
         $this->annotations[$class] = Collections::builder($annotations)
-            ->filter(Predicates::compute($this->getClassName(), StringUtils::predEquals($this->annotationName)))
+            ->filter(Predicates::compute($this->getClassName(), Predicates::equals($this->annotationName)))
             ->get();
     }
 

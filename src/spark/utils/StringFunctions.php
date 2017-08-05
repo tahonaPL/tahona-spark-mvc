@@ -48,14 +48,33 @@ class StringFunctions {
     }
 
     public static function trim() {
-        return function($x) {
+        return function ($x) {
             return StringUtils::trim($x);
         };
     }
 
     public static function lowercase() {
-        return function($x) {
+        return function ($x) {
             return StringUtils::lowerCase($x);
+        };
+    }
+
+    public static function escapeSpecialChars() {
+        return function ($v) {
+            return StringUtils::escapeSpecialChar($v);
+        };
+    }
+
+    public static function substring($indexFrom, $length) {
+        return function ($v) use ($indexFrom, $length) {
+            return StringUtils::substring($v, $indexFrom, $length);
+        };
+    }
+
+
+    public static function capitalize() {
+        return function ($s) {
+            return StringUtils::capitalize($s);
         };
     }
 }

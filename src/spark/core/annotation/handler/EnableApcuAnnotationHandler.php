@@ -32,7 +32,7 @@ class EnableApcuAnnotationHandler extends AnnotationHandler {
     public function handleClassAnnotations($annotations = array(), $class, \ReflectionClass $classReflection) {
 
         $annotation = Collections::builder($annotations)
-            ->findFirst(Predicates::compute($this->getClassName(), StringUtils::predEquals($this->annotationName)));
+            ->findFirst(Predicates::compute($this->getClassName(), Predicates::equals($this->annotationName)));
 
         if ($annotation->isPresent()) {
             /** @var EnableApcuBeanCache $param */

@@ -25,7 +25,7 @@ class SeoUrlFactory {
             ->map(StringFunctions::trim())
             ->map(StringFunctions::replace(StringUtils::SPACE, "-"))
             ->map(StringFunctions::lowercase())
-            ->map(StringUtils::mapEscapeSpecialChar())
+            ->map(StringFunctions::escapeSpecialChars())
             ->get();
 
         return StringUtils::join("/", $params);

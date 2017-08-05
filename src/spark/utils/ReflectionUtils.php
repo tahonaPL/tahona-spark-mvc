@@ -11,6 +11,7 @@ namespace spark\utils;
 
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Annotations\AnnotationRegistry;
+use spark\core\annotation\Bean;
 use spark\utils\Collections;
 use spark\utils\Objects;
 
@@ -125,7 +126,6 @@ class ReflectionUtils {
 
     /**
      *
-     * @Bean
      * @param $fullClassName
      * @param $annotationName
      * @return array Annotations

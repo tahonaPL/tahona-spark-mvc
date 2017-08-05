@@ -85,10 +85,11 @@ class UrlUtils {
      * @return mixed
      */
     private static function removeHttpTags($host) {
+
         return Optional::ofNullable($host)
-            ->map(StringUtils::mapReplace("http://", ""))
-            ->map(StringUtils::mapReplace("https://", ""))
-            ->map(StringUtils::mapReplace("//", "/"))
+            ->map(StringFunctions::replace("http://", ""))
+            ->map(StringFunctions::replace("https://", ""))
+            ->map(StringFunctions::replace("//", "/"))
             ->getOrNull();
     }
 
@@ -180,8 +181,8 @@ class UrlUtils {
      */
     private static function removeLastCharacterIfNeeded($suffixUrlPart) {
         $suffix = $suffixUrlPart;
-        $lastChar = StringUtils::subString($suffix, -1, 1);
-        return $lastChar === "/" ? StringUtils::subString($suffix, 0, strlen($suffix) - 1) : $suffix;
+        $lastChar = StringUtils::substring($suffix, -1, 1);
+        return $lastChar === "/" ? StringUtils::substring($suffix, 0, strlen($suffix) - 1) : $suffix;
     }
 
 }

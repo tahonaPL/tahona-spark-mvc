@@ -117,7 +117,7 @@ class SmartyViewHandler extends ViewHandler {
      */
     private function removePrefix($viewPath) {
         if (StringUtils::startsWith($viewPath, "/")) {
-            $viewPath = StringUtils::subString($viewPath, 1, StringUtils::length($viewPath));
+            $viewPath = StringUtils::substring($viewPath, 1, StringUtils::length($viewPath));
             return $viewPath;
         }
         return $viewPath;

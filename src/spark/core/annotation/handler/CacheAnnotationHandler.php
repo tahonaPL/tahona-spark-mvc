@@ -76,7 +76,7 @@ class CacheAnnotationHandler extends AnnotationHandler {
      */
     private function getAnnotations($annotations) {
         $authorizeAnnotations = Collections::builder($annotations)
-            ->filter(Predicates::compute($this->getClassName(), StringUtils::predEquals($this->annotationName)))
+            ->filter(Predicates::compute($this->getClassName(), Predicates::equals($this->annotationName)))
             ->get();
         return $authorizeAnnotations;
     }
