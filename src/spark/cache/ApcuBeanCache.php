@@ -24,9 +24,6 @@ class ApcuBeanCache implements BeanCache {
         return apcu_fetch($key);
     }
 
-    public function has($key) {
-        return apcu_exists($key);
-    }
 
     public function clearAll() {
         apcu_clear_cache();

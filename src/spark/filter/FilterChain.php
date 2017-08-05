@@ -23,13 +23,13 @@ class FilterChain {
      */
     private $filters;
 
-    function __construct($filter = null, \Iterator $filters) {
+    public function __construct($filter = null, \Iterator $filters) {
         $this->filters = $filters;
         $this->filter = $filter;
 
     }
 
-    function doFilter(Request $request) {
+    public function doFilter(Request $request) {
         if (Objects::isNotNull($this->filter)) {
             $this->filters->next();
             $filter = $this->filters->current();

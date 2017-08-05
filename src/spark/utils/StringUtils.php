@@ -32,7 +32,7 @@ final class StringUtils {
     }
 
     public static function isNotBlank($text) :bool {
-        return Objects::isNotNull($text) && (bool)preg_match('/\S/', $text);
+        return Objects::isNotNull($text) && (bool)preg_match('/\S/', (string) $text);
     }
 
     public static function isBlank($text) :bool {
@@ -47,8 +47,8 @@ final class StringUtils {
         return strcmp(strtolower(trim($string1)), strtolower(trim($string2)));
     }
 
-    public static function escapeSpecialChar($string): boolean {
-        return (boolean)preg_replace('/[^A-Za-z0-9\-]/', '', $string);
+    public static function escapeSpecialChar($string): bool {
+        return (bool)preg_replace('/[^A-Za-z0-9\-]/', '', $string);
     }
 
     public static function replace($text, $searchText, $replacement) {

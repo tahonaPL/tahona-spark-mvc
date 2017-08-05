@@ -1,10 +1,12 @@
 <?php
+declare(strict_types=1);
 /**
  * Created by PhpStorm.
  * User: primosz67
  * Date: 21.12.14
  * Time: 23:46
  */
+
 
 namespace spark\utils;
 
@@ -16,19 +18,19 @@ use Traversable;
 
 class Objects {
 
-    public static function isNotNull($obj) {
-        return isset($obj) && false === is_null($obj);
+    public static function isNotNull($obj) :bool {
+        return isset($obj) && !is_null($obj);
     }
 
-    public static function isNull($obj) {
-        return is_null($obj) || false === isset($obj);
+    public static function isNull($obj) :bool {
+        return is_null($obj) || !isset($obj);
     }
 
-    public static function isArray($obj) {
+    public static function isArray($obj) :bool {
         return is_array($obj) || ($obj instanceof Traversable);
     }
 
-    public static function isString($obj) {
+    public static function isString($obj) :bool {
         return is_string($obj);
     }
 
@@ -73,11 +75,11 @@ class Objects {
             ->getList();
     }
 
-    public static function isPrimitive($obj) {
+    public static function isPrimitive($obj) :bool {
         return is_scalar($obj);
     }
 
-    public static function equals($a, $b) {
+    public static function equals($a, $b) :bool {
         return $a === $b;
     }
 

@@ -9,6 +9,7 @@
 namespace spark\utils;
 
 
+use spark\common\IllegalStateException;
 use spark\common\Optional;
 use spark\utils\Asserts;
 use spark\upload\FileObject;
@@ -61,7 +62,7 @@ final class FileUtils {
             unlink($file->getFilePath());
             $file->setFilePath($newFilePath);
         } else {
-            throw new MoveFileException("cant move file to :" . $fullPath . " check write permission.");
+            throw new IllegalStateException("cant move file to :" . $fullPath . " check write permission.");
         }
     }
 

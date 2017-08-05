@@ -16,21 +16,11 @@ class MathUtils {
     }
 
     public static function div($a, $b) {
-        if (empty($a) || empty($b) || $b == 0 || $a == 0) {
+        if (empty($a) || empty($b)) {
             return 0;
         }
 
         return $a / $b;
-    }
-
-    public static function mapSumFunction(\Closure $func) {
-        return function ($objects = array()) use ($func) {
-            $sum = 0;
-            foreach ($objects as $obj) {
-                $sum += $func($obj);
-            }
-            return $sum;
-        };
     }
 
     public static function isNumeric($value) {

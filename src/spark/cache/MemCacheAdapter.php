@@ -6,19 +6,15 @@ use spark\utils\Asserts;
 
 class MemCacheAdapter implements BeanCache {
 
-
     /**
      * @var Memcache
      */
     private $cache;
 
-    public function __construct() {
+    public function __construct($host, $port) {
         $this->cache = new Memcached();
-        $this->init();
-    }
-
-    public function init() {
         $success = $this->cache->connect("127.0.0.1", "11211");
+
         Asserts::checkState($success, "Can't connect to memcached server");
     }
 
@@ -30,11 +26,8 @@ class MemCacheAdapter implements BeanCache {
         return $this->cache->get($key);
     }
 
-    public function has($key) {
-        // TODO: Implement has() method.
-    }
 
     public function clearAll() {
-//        return $this->cache->del
+        return $this->cache->flush();
     }
 }

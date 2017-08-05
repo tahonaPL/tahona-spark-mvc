@@ -44,13 +44,9 @@ use spark\view\smarty\SmartyViewHandler;
 use spark\view\ViewHandlerProvider;
 use spark\view\ViewModel;
 
-/**
- * Description of Engine
- *
- * @author primosz67
- */
 class Engine {
-    private static $ROOT_APP_PATH;
+
+    private static $rootAppPath;
 
     const CONTAINER_CACHE_KEY = "container";
     const ROUTE_CACHE_KEY = "route";
@@ -63,11 +59,6 @@ class Engine {
      */
     private $appName;
     private $apcuExtensionLoaded;
-
-    /**
-     * @var EngineConfig
-     */
-    private $engineConfig;
 
     /**
      * @var Routing
@@ -99,9 +90,8 @@ class Engine {
         $this->profile = $profile;
         $this->apcuExtensionLoaded = extension_loaded("apcu");
 
-        self::$ROOT_APP_PATH = $rootAppPath;
-
-        $this->engineConfig = new EngineConfig($rootAppPath, array());
+        Asserts::notNull($rootAppPath, "Engine configuration: did you forget root project path('s) field: 'root' e.g 'path'");
+        self::$rootAppPath = $rootAppPath;
 
         $this->beanCache = new ApcuBeanCache();
 
@@ -170,7 +160,7 @@ class Engine {
      * @return mixed
      */
     public static function getRootPath() {
-        return self::$ROOT_APP_PATH;
+        return self::$rootAppPath;
     }
 
     public function run() {
@@ -251,7 +241,7 @@ class Engine {
     }
 
     private function addViewHandlersToService() {
-        $smartyViewHandler = new SmartyViewHandler($this->engineConfig->getRootAppPath());
+        $smartyViewHandler = new SmartyViewHandler(self::$rootAppPath);
         $plainViewHandler = new PlainViewHandler();
         $jsonViewHandler = new JsonViewHandler();
 
