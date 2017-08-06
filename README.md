@@ -101,7 +101,7 @@ Go to localhost/get or localhost/index;
 
 ### Injection ###
 
-#####1. Define bean for autoload. #####
+##### 1. Define bean for autoload. #####
 
 ```php
 
@@ -115,7 +115,7 @@ class UserService {
 Note: for enabled apcu @EnableApcuBeanCache("reset") to autoload injection call http://website?reset
 
 
-#####2. Define other beans and inject out bean. #####
+##### 2. Define other beans and inject out bean. #####
 ```php
 
 /**
@@ -138,7 +138,7 @@ class AddUserHandler {
 }
 ```
 
-#####3.Inject in controller #####
+##### 3.Inject in controller #####
 
 ```php
 class UserController extends Controller {
