@@ -112,7 +112,7 @@ class UserService {
     //...some methods
 }
 ```
-Note: for enabled apcu @EnableApcuBeanCache("reset") to autoload injection call http://website?reset
+Note: for enabled apcu @EnableApcuBeanCache("reset") to autoload injection, call http://website?reset
 
 
 ##### 2. Define other beans and inject out bean. #####
