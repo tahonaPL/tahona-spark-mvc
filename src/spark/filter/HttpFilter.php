@@ -15,6 +15,6 @@ use spark\http\Request;
 interface HttpFilter {
     const CLASS_NAME = "spark\\filter\\HttpFilter";
 
-    function doFilter(Request $request, FilterChain $filterChain);
+    public function doFilter(Request $request, FilterChain $filterChain);
 
 } 

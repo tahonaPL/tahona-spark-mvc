@@ -26,9 +26,12 @@ final class StringUtils {
         return $pos > 0 || $pos === 0;
     }
 
-    public static function substring(string $string, int $indexFrom, int $length = null) {
-        $substr = substr($string, $indexFrom, $length);
-        return Objects::isString($substr) ? $string : null;
+    public static function substring(string $string = null, int $indexFrom, int $length = null) {
+        if (Objects::isNotNull($string)) {
+            $substr = substr($string, $indexFrom, $length);
+            return Objects::isString($substr) ? $substr: null;
+        }
+        return null;
     }
 
     public static function isNotBlank($text) :bool {
@@ -78,7 +81,7 @@ final class StringUtils {
      * @param $delimiter
      * @return array
      */
-    public static function split(string $string, $delimiter = null){
+    public static function split(string $string, $delimiter = null) {
         if (Objects::isNull($delimiter)) {
             return str_split($string);
         }
