@@ -50,8 +50,8 @@ final class StringUtils {
         return strcmp(strtolower(trim($string1)), strtolower(trim($string2)));
     }
 
-    public static function escapeSpecialChar($string): bool {
-        return (bool)preg_replace('/[^A-Za-z0-9\-]/', '', $string);
+    public static function escapeSpecialChar($string): string {
+        return preg_replace('/[^A-Za-z0-9\-]/', '', $string);
     }
 
     public static function replace($text, $searchText, $replacement) {
@@ -89,8 +89,11 @@ final class StringUtils {
     }
 
 
-    public static function trim($string) : string {
-        return trim($string);
+    public static function trim(string  $string = null){
+        if (Objects::isNotNull($string)){
+            return trim($string);
+        }
+        return null;
     }
 
     public static function wordWrap($value, $breakCharacter, $length) {
