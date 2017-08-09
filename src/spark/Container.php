@@ -114,23 +114,6 @@ class Container {
         return $this->beanContainer[$name]->getBean();
     }
 
-
-    /**
-     *
-     * @param $type - e.g. Foo\Bar\Something
-     * @return array
-     */
-    public function getByTypeOLD($type) {
-        return Collections::builder($this->beanContainer)
-            ->filter(function ($definition) use ($type) {
-                /** @var BeanDefinition $definition */
-                return $definition->hasType($type);
-            })
-            ->convertToMap(Functions::get(BeanDefinition::D_NAME))
-            ->map(Functions::get(BeanDefinition::D_BEAN))
-            ->get();
-    }
-
     /**
      * @param $type
      * @return array
@@ -388,16 +371,16 @@ class Container {
 
 
     /**
-     * @param $bD
+     * @param $beanDefinition
      */
-    private function addToTypeContainer(BeanDefinition $bD) {
-        $classNames = $bD->getClassNames();
+    private function addToTypeContainer(BeanDefinition $beanDefinition) {
+        $classNames = $beanDefinition->getClassNames();
         foreach ($classNames as $className) {
 
             if (!Collections::hasKey($this->typeMap, $className)) {
                 $this->typeMap[$className] = [];
             }
-            $this->typeMap[$className][$bD->getName()] = $bD->getBean();
+            $this->typeMap[$className][$beanDefinition->getName()] = $beanDefinition->getBean();
         }
     }
 }
