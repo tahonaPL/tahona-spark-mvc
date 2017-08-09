@@ -21,10 +21,11 @@ class Container {
 
     private $config;
     private $beanContainer = array();
+    private $typeMap = array();
 
     private $initialized = false;
-    private $waitingList = array();
 
+    private $waitingList = array();
     const INJECT_ANNOTATION = "spark\core\annotation\Inject";
     const OVERRIDE_INJECT_ANNOTATION = "spark\core\annotation\OverrideInject";
 
@@ -119,7 +120,7 @@ class Container {
      * @param $type - e.g. Foo\Bar\Something
      * @return array
      */
-    public function getByType($type) {
+    public function getByTypeOLD($type) {
         return Collections::builder($this->beanContainer)
             ->filter(function ($definition) use ($type) {
                 /** @var BeanDefinition $definition */
@@ -129,6 +130,19 @@ class Container {
             ->map(Functions::get(BeanDefinition::D_BEAN))
             ->get();
     }
+
+    /**
+     * @param $type
+     * @return array
+     */
+    public function getByType($type) {
+       if (Collections::hasKey($this->typeMap, (string) $type)) {
+           return $this->typeMap[$type];
+       }
+
+        return array();
+    }
+
 
     public final function initServices() {
         if (!$this->initialized) {
@@ -148,8 +162,8 @@ class Container {
         $this->beanContainer = array();
     }
 
-    private function buildBeanAnnotation($bean) {
-
+    private function buildBeanAnnotation(BeanDefinition $def) {
+        $bean = $def->getBean();
         $buildBeanDefinitions = $this->createBuildAnnotationBeans($bean);
 
         Collections::builder($buildBeanDefinitions)
@@ -167,12 +181,13 @@ class Container {
             $waitingList = $this->injectTo($newBean);
 
             if (Collections::isEmpty($waitingList)) {
-                $this->buildBeanAnnotation($newBean);
+                $this->buildBeanAnnotation($beanDef);
             } else {
                 $this->waitingList[$beanDef->getName()] = $waitingList;
             }
         }
 
+        $this->addToTypeContainer($def);
         $this->invokePostConstruct($bean);
     }
 
@@ -200,7 +215,7 @@ class Container {
 
         foreach ($this->beanContainer as $serviceName => $definition) {
             if (!Collections::contains($serviceName, $excludeBuildNamesList)) {
-                $this->buildBeanAnnotation($definition->getBean());
+                $this->buildBeanAnnotation($definition);
             }
         }
 
@@ -247,7 +262,7 @@ class Container {
             }
 
             foreach ($arry as $serviceName => $observerList) {
-                $this->buildBeanAnnotation($this->get($serviceName));
+                $this->buildBeanAnnotation($this->beanContainer[$serviceName]);
             }
         }
     }
@@ -371,4 +386,18 @@ class Container {
         );
     }
 
+
+    /**
+     * @param $bD
+     */
+    private function addToTypeContainer(BeanDefinition $bD) {
+        $classNames = $bD->getClassNames();
+        foreach ($classNames as $className) {
+
+            if (!Collections::hasKey($this->typeMap, $className)) {
+                $this->typeMap[$className] = [];
+            }
+            $this->typeMap[$className][$bD->getName()] = $bD->getBean();
+        }
+    }
 }

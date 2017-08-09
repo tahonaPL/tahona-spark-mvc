@@ -85,6 +85,8 @@ class Engine {
     private $exceptionResolvers;
     private $profile;
 
+    private $hasAllreadyCachedData;
+
     public function __construct($appName, $profile, $rootAppPath) {
         $this->appName = $appName;
         $this->profile = $profile;
@@ -95,8 +97,11 @@ class Engine {
 
         $this->beanCache = new ApcuBeanCache();
 
-        if ($this->hasAllreadyCachedData()) {
-            $this->container = $this->beanCache->get($this->getCacheKey(self::CONTAINER_CACHE_KEY));
+        $container = $this->beanCache->get($this->getCacheKey(self::CONTAINER_CACHE_KEY));
+        $this->hasAllreadyCachedData = $this->apcuExtensionLoaded && $container;
+
+        if ($this->hasAllreadyCachedData) {
+            $this->container = $container;
             $this->route = $this->beanCache->get($this->getCacheKey(self::ROUTE_CACHE_KEY));
             $this->config = $this->beanCache->get($this->getCacheKey(self::CONFIG_CACHE_KEY));
             $this->interceptors = $this->beanCache->get($this->getCacheKey(self::INTERCEPTORS_CACHE_KEY));
@@ -105,7 +110,7 @@ class Engine {
             $this->clearCacheIfResetParam();
         }
 
-        if (!$this->hasAllreadyCachedData()) {
+        if (!$this->hasAllreadyCachedData) {
             if ($this->apcuExtensionLoaded) {
                 $this->beanCache->clearAll();
             }
@@ -288,9 +293,6 @@ class Engine {
         }
     }
 
-    private function hasAllreadyCachedData() {
-        return $this->apcuExtensionLoaded && $this->beanCache->get($this->getCacheKey(self::CONTAINER_CACHE_KEY));
-    }
 
     /**
      * @return string

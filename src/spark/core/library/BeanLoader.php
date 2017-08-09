@@ -11,6 +11,7 @@ namespace spark\core\library;
 
 use ReflectionClass;
 use spark\Config;
+use spark\Container;
 use spark\core\annotation\Configuration;
 use spark\core\annotation\handler\AnnotationHandler;
 use spark\core\processor\InitAnnotationProcessors;
@@ -37,6 +38,10 @@ class BeanLoader {
      * @var Config
      */
     private $config;
+
+    /**
+     * @var Container
+     */
     private $container;
 
     /**

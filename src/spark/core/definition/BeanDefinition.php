@@ -28,7 +28,7 @@ class BeanDefinition {
      * @param $name
      * @param $bean
      */
-    public function __construct($name, &$bean, $classNames) {
+    public function __construct($name, &$bean, array $classNames) {
         $this->name = $name;
         $this->bean = $bean;
 
@@ -50,7 +50,7 @@ class BeanDefinition {
     }
 
     /**
-     * @return void
+     * @return array
      */
     public function getClassNames() {
         return $this->classNames;

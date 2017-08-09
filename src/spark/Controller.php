@@ -46,7 +46,6 @@ class Controller {
 
     public function setContainer(Container $container) {
         $this->container = $container;
-        $this->container->injectTo($this);
     }
 
     protected function getParam($key, $defaultValue = null) {
