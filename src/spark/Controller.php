@@ -44,6 +44,11 @@ class Controller {
         return $this->container->get($name);
     }
 
+
+    public function getByType($type) {
+        return $this->container->getByType($type);
+    }
+
     public function setContainer(Container $container) {
         $this->container = $container;
     }

@@ -380,6 +380,7 @@ class Engine {
 
         if (isset($_GET[$resetParam])) {
             $this->beanCache->clearAll();
+            $this->hasAllreadyCachedData = false;
         }
     }
 
