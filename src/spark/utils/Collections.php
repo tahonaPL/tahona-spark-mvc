@@ -41,7 +41,6 @@ final class Collections {
     }
 
     public static function size($collection) {
-        Asserts::notNull($collection);
         return count($collection);
     }
 

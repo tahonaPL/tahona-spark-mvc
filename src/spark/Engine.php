@@ -328,7 +328,7 @@ class Engine {
     /**
      *
      * @param Request $request
-     * @param $viewModel
+     * @param ViewModel $viewModel
      * @throws ErrorException
      * @throws common\IllegalStateException
      */
@@ -340,7 +340,16 @@ class Engine {
         if (isset($viewModel)) {
             $redirect = $viewModel->getRedirect();
             if (StringUtils::isNotBlank($redirect)) {
-                $request->instantRedirect($redirect);
+                $resolved = $this->route->resolveRoute($redirect, $viewModel->getParams());
+                if (StringUtils::isNotBlank($resolved)) {
+                    $request->instantRedirect($resolved);
+                } else {
+
+                    if (Collections::isNotEmpty($viewModel->getParams())) {
+                        $redirect =  UrlUtils::appendParams($request, $viewModel->getParams());
+                    }
+                    $request->instantRedirect($redirect);
+                }
             }
 
             $this->handleView($viewModel, $request);

@@ -171,6 +171,33 @@ apc/view/some/serious/package/myapp/showNewView.tpl
 
 Keywords action and controller are deleted by default.
 
+#### Smarty built-in path plugins ####
+
+Function path can be used in tpl file (example: index.tpl)
+
+```
+{path path="/user/register"}
+```
+
+Command will resolve to : www.example.com/user/register
+
+```
+{path path="RegisterController@registerAction"}
+```
+
+Command will resolve to : www.example.com/user/register
+* **com.example.RegisterController** - optional Controller class Name
+* **registerAction** - method name in RegisterController
+
+```
+{path path="@removeAction@id:4,type:blogpost"}
+```
+
+Command will resolve to : www.example.com/blogpost/remove/4
+* **{controller}** - current request controller will be used
+* **removeAction** - method name in RegisterController
+* **id:4,type:blogpost** - params will resolve /{type}/remove/{id} to it's final form
+
 ### Apcu Bean Cache ###
 if @EnableApcuBeanCache annotation is added with @Configuration the only way to reset beans and init them
 once more is by requestin localhost:80?reset (GET parameter "reset").

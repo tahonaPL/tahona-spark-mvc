@@ -23,12 +23,12 @@ use spark\utils\UrlUtils;
 
 class Routing {
 
-    const CONTROLLER_NAME = "controller";
-    const METHOD_NAME = "method";
+    const CONTROLLER_NAME      = "controller";
+    const METHOD_NAME          = "method";
     const REQUEST_METHODS_NAME = "requestMethods";
     const REQUEST_HEADERS_NAME = "requestHeaders";
 
-    const ROLES = "roles";
+    const ROLES  = "roles";
     const PARAMS = "params";
     private $routing = array();
     private $parametrizedRouting = array();
@@ -92,7 +92,7 @@ class Routing {
             $routesDefinitions = $this->routing[$urlPath];
 
             $routeDefinition = RoutingUtils::findRouteDefinition($routesDefinitions, false);
-            if (!$routeDefinition->isPresent()){
+            if (!$routeDefinition->isPresent()) {
                 $routeDefinition = RoutingUtils::findRouteDefinition($routesDefinitions);
             }
 
@@ -103,7 +103,9 @@ class Routing {
             $ctx = $this;
 
             $routeDefinition = Collections::builder($this->parametrizedRouting)
-                ->flatMap(function($def){return $def;})
+                ->flatMap(function ($def) {
+                    return $def;
+                })
                 ->findFirst(function ($definition) use ($urlPath, $ctx) {
                     if (RoutingUtils::hasExpressionParams($definition->getPath(), $urlPath, $definition->getParams())) {
                         $optional = RoutingUtils::findRouteDefinition(array($definition));
@@ -117,7 +119,7 @@ class Routing {
 
             $definitionsWithSamePath = $this->parametrizedRouting[$dev->getPath()];
             $size = Collections::size($definitionsWithSamePath);
-            if ($size > 1){
+            if ($size > 1) {
                 $dev = RoutingUtils::findRouteDefinition($definitionsWithSamePath, false)->orElse($dev);
             }
 
@@ -204,9 +206,9 @@ class Routing {
      */
     public function addAll($routing = array()) {
         /** @var RoutingDefinition $def */
-        foreach($routing as $def) {
-            Asserts::checkArgument(false === Collections::hasKey($this->routing, $def->getPath()), "Can't use same path in routing: ".$def->getPath());
-            Asserts::checkArgument(false === Collections::hasKey($this->parametrizedRouting, $def->getPath()), "Can't use same path in routing: ".$def->getPath());
+        foreach ($routing as $def) {
+            Asserts::checkArgument(false === Collections::hasKey($this->routing, $def->getPath()), "Can't use same path in routing: " . $def->getPath());
+            Asserts::checkArgument(false === Collections::hasKey($this->parametrizedRouting, $def->getPath()), "Can't use same path in routing: " . $def->getPath());
 
             $this->addDefinition($def);
         }
@@ -240,5 +242,55 @@ class Routing {
         $urlPath = explode("?", $urlPath); //for params
         $urlPath = $urlPath[0];
         return $urlPath;
+    }
+
+    /**
+     * Very slow
+     */
+    public function resolveRoute($path, $params = array()) {
+
+        if (StringUtils::contains($path, "@")) {
+            $route = StringUtils::split($path, "@");
+            $controllerName = $route[0];
+            $methodName = $route[1];
+
+            if (Collections::size($route) > 2) {
+                $paramsAsString = $route[2];
+                $params = Collections::builder(StringUtils::split($paramsAsString, ","))
+                    ->convertToMap(function ($x) {
+                        $key = StringUtils::split($x, ":");
+                        return $key[0];
+                    })
+                    ->map(function ($x) {
+                        $key = StringUtils::split($x, ":");
+                        return $key[1];
+                    })->get();
+            }
+
+            if (StringUtils::isBlank($controllerName)) {
+                $controllerName = $this->getCurrentDefinition()->getControllerClassName();
+            }
+            $paramsKeys = Collections::getKeys($params);
+
+
+            return Collections::builder()
+                ->addAll($this->getDefinitions())
+                ->flatMap(Functions::getSameObject())
+                ->findFirst(function ($d) use ($controllerName, $methodName, $paramsKeys) {
+                    /* @var RoutingDefinition $d */
+                    return StringUtils::contains($d->getControllerClassName(), $controllerName)
+                    && StringUtils::contains($d->getActionMethod(), $methodName)
+                    && Collections::size($paramsKeys) === Collections::size($d->getParams())
+                    && Collections::containsAll($paramsKeys, $d->getParams());
+                })
+                ->map(function ($d) use ($params) {
+                    $fillParametrizedPath = RoutingUtils::fillParametrizedPath($d->getPath(), $params);
+//                    var_dump($d, $fillParametrizedPath, $params);exit;
+                    return $fillParametrizedPath;
+                })
+                ->orElse(null);
+        }
+
+        return null;
     }
 }

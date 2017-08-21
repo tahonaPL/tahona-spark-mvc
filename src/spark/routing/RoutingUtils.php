@@ -149,4 +149,17 @@ class RoutingUtils {
             ->get();
     }
 
+    public static function fillParametrizedPath($path, $params = array()) {
+        if (Collections::isEmpty($params)) {
+            return $path;
+        }
+
+        $newPath = $path;
+        foreach ($params as $key => $value) {
+            $newPath = StringUtils::replace($newPath, "{" . $key . "}", $value);
+        }
+
+        return $newPath;
+    }
+
 } 

@@ -12,6 +12,7 @@ namespace spark\view\smarty;
 use spark\core\annotation\Inject;
 use spark\core\annotation\PostConstruct;
 use spark\core\provider\BeanProvider;
+use spark\Routing;
 use spark\seo\SeoUrlFactory;
 use spark\seo\WithSeoUrl;
 use spark\core\lang\LangMessageResource;
@@ -23,6 +24,10 @@ class SmartyPlugins {
     const NAME = "smartyPlugins";
 
     const SEO_OBJECT = "seoObject";
+
+    /**
+     * Smarty plugins
+     */
     private $definedPlugins;
     /**
      * @Inject
@@ -30,13 +35,17 @@ class SmartyPlugins {
      */
     private $langMessageResource;
 
-
     /**
      * @Inject()
      * @var BeanProvider
      */
     private $beanProvider;
 
+    /**
+     * @Inject
+     * @var Routing
+     */
+    private $routing;
 
     /**
      * @PostConstruct()
@@ -44,15 +53,14 @@ class SmartyPlugins {
     private function init() {
         $this->definedPlugins = $this->beanProvider->getByType(SmartyPlugin::class);
 
-        $this->beanProvider = null; //dangereous to have thsi
+        $this->beanProvider = null; //dangereous to have this
     }
 
 
     public function path($params, $smarty) {
-        $path = $params["path"];
+        $path = $this->getPath($params);
         $path .= $this->handleSeo($params, $path);
         $path1 = UrlUtils::getPath($path);
-
 
         return $path1;
     }
@@ -93,6 +101,20 @@ class SmartyPlugins {
      */
     public function getDefinedPlugins() {
         return $this->definedPlugins;
+    }
+
+    /**
+     * @param $params
+     * @return mixed
+     */
+    private function getPath($params) {
+        $path = $params["path"];
+        $newPath = $this->routing->resolveRoute($path, Collections::getValueOrDefault($params, "params", array()));
+
+        if (StringUtils::isNotBlank($newPath)) {
+            return $newPath;
+        }
+        return $path;
     }
 
 } 
