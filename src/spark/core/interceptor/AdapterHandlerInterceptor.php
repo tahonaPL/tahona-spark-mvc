@@ -10,6 +10,7 @@ namespace spark\core\interceptor;
 
 
 use spark\http\Request;
+use spark\http\Response;
 use spark\view\ViewModel;
 
 class AdapterHandlerInterceptor implements HandlerInterceptor {
@@ -18,7 +19,7 @@ class AdapterHandlerInterceptor implements HandlerInterceptor {
         return true;
     }
 
-    public function postHandle(Request $request, ViewModel$viewModel) {
+    public function postHandle(Request $request, Response $response) {
         //do nothing
     }
 }

@@ -14,6 +14,7 @@ use spark\Config;
 use spark\core\annotation\Inject;
 use spark\core\provider\BeanProvider;
 use spark\Container;
+use spark\http\Response;
 use spark\utils\Asserts;
 use spark\utils\Collections;
 use spark\utils\Objects;
@@ -36,22 +37,21 @@ class ViewHandlerProvider {
     private $config;
 
 
-    public function handleView($viewModel, $request) {
+    public function handleView(Response $response, $request) {
         /** @var $viewHandler ViewHandler */
-        if (Objects::getClassName($viewModel) === ViewModel::CLASS_NAME) {
+        if ($response instanceof ViewModel) {
             $viewHandler = $this->beanProvider->getBean("defaultViewHandler");
-            $viewHandler->handleView($viewModel, $request);
+            $viewHandler->handleView($response, $request);
         } else {
+            $viewHandler = $this->getProvider($response, $request);
+            Asserts::notNull($viewHandler, "ViewHandler not found for response type: ".Objects::getClassName($response));
 
-            $viewHandler = $this->getProvider($viewModel, $request);
-            Asserts::notNull($viewHandler, "ViewHandler not found for viewModelType: ".Objects::getClassName($viewModel));
-
-            $viewHandler->handleView($viewModel, $request);
+            $viewHandler->handleView($response, $request);
         }
 
     }
 
-    private function getProvider(ViewModel $viewModel, $request) {
+    private function getProvider(Response $viewModel, $request) {
         $handlers = $this->beanProvider->getByType(ViewHandler::CLASS_NAME);
 
         /** @var $handler ViewHandler */

@@ -1,5 +1,5 @@
 <?php
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace spark;
 
@@ -12,8 +12,6 @@ use spark\core\annotation\handler\EnableApcuAnnotationHandler;
 use spark\core\command\Command;
 use spark\core\command\input\InputInterface;
 use spark\core\command\output\OutputInterface;
-use spark\core\engine\EngineConfig;
-use spark\core\engine\EngineFactory;
 use spark\core\error\ExceptionResolver;
 use spark\core\error\GlobalErrorHandler;
 use spark\core\interceptor\HandlerInterceptor;
@@ -22,23 +20,25 @@ use spark\core\lang\LangResourcePath;
 use spark\core\library\BeanLoader;
 use spark\core\processor\InitAnnotationProcessors;
 use spark\core\provider\BeanProvider;
-use spark\core\utils\ConfigUtils;
 use spark\core\utils\SystemUtils;
 use spark\filter\FilterChain;
 use spark\filter\HttpFilter;
 use spark\http\Request;
 use spark\http\RequestProvider;
+use spark\http\Response;
 use spark\http\utils\RequestUtils;
 use spark\routing\RoutingInfo;
 use spark\utils\Asserts;
 use spark\utils\BooleanUtils;
 use spark\utils\Collections;
 use spark\utils\Functions;
+use spark\utils\Objects;
 use spark\utils\Predicates;
 use spark\utils\StringUtils;
 use spark\utils\UrlUtils;
 use spark\view\json\JsonViewHandler;
 use spark\view\plain\PlainViewHandler;
+use spark\view\redirect\RedirectViewHandler;
 use spark\view\smarty\SmartyPlugins;
 use spark\view\smarty\SmartyViewHandler;
 use spark\view\ViewHandlerProvider;
@@ -48,10 +48,10 @@ class Engine {
 
     private static $rootAppPath;
 
-    const CONTAINER_CACHE_KEY = "container";
-    const ROUTE_CACHE_KEY = "route";
-    const CONFIG_CACHE_KEY = "config";
-    const INTERCEPTORS_CACHE_KEY = "interceptors";
+    const CONTAINER_CACHE_KEY      = "container";
+    const ROUTE_CACHE_KEY          = "route";
+    const CONFIG_CACHE_KEY         = "config";
+    const INTERCEPTORS_CACHE_KEY   = "interceptors";
     const ERROR_HANDLERS_CACHE_KEY = "exceptionResolvers";
 
     /**
@@ -249,6 +249,7 @@ class Engine {
         $smartyViewHandler = new SmartyViewHandler(self::$rootAppPath);
         $plainViewHandler = new PlainViewHandler();
         $jsonViewHandler = new JsonViewHandler();
+        $redirectViewHandler = new RedirectViewHandler();
 
         $provider = new ViewHandlerProvider();
         $this->container->register(ViewHandlerProvider::NAME, $provider);
@@ -256,6 +257,7 @@ class Engine {
         $this->container->register(SmartyViewHandler::NAME, $smartyViewHandler);
         $this->container->register(PlainViewHandler::NAME, $plainViewHandler);
         $this->container->register(JsonViewHandler::NAME, $jsonViewHandler);
+        $this->container->register(RedirectViewHandler::NAME, $redirectViewHandler);
     }
 
     /**
@@ -278,6 +280,9 @@ class Engine {
      */
     private function handleView($viewModel, $request) {
         $handler = $this->container->get(ViewHandlerProvider::NAME);
+
+        Asserts::notNull($handler, "No handler found for response objcet" . Objects::getClassName($viewModel));
+
         /** @var $handler ViewHandlerProvider */
         $handler->handleView($viewModel, $request);
     }
@@ -317,10 +322,10 @@ class Engine {
         }
     }
 
-    private function postHandleIntercetors(Request $request, ViewModel $viewModel) {
+    private function postHandleIntercetors(Request $request, Response $response) {
         /** @var HandlerInterceptor $interceptor */
         foreach ($this->interceptors as $interceptor) {
-            $interceptor->postHandle($request, $viewModel);
+            $interceptor->postHandle($request, $response);
         }
 
     }
@@ -333,25 +338,11 @@ class Engine {
      * @throws common\IllegalStateException
      */
     public function handleViewModel(Request $request, $viewModel) {
-        Asserts::checkState($viewModel instanceof ViewModel, "Wrong viewModel type. Returned type from controller needs to be instance of ViewModel.");
+        Asserts::checkState($viewModel instanceof Response, "Wrong controller action response type. Returned type from controller needs to be instance of Response.");
 
         $this->postHandleIntercetors($request, $viewModel);
 
         if (isset($viewModel)) {
-            $redirect = $viewModel->getRedirect();
-            if (StringUtils::isNotBlank($redirect)) {
-                $resolved = $this->route->resolveRoute($redirect, $viewModel->getParams());
-                if (StringUtils::isNotBlank($resolved)) {
-                    $request->instantRedirect($resolved);
-                } else {
-
-                    if (Collections::isNotEmpty($viewModel->getParams())) {
-                        $redirect =  UrlUtils::appendParams($request, $viewModel->getParams());
-                    }
-                    $request->instantRedirect($redirect);
-                }
-            }
-
             $this->handleView($viewModel, $request);
         } else {
             throw new ErrorException("ViewModel not found. Did you initiated ViewModel? ");
@@ -399,5 +390,6 @@ class Engine {
         }
         return $this->profile;
     }
+
 
 }

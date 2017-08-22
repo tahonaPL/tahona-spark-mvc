@@ -16,8 +16,8 @@ abstract class ViewHandler {
 
     const CLASS_NAME = "spark\\view\\ViewHandler";
 
-    abstract public function isView(ViewModel $viewModel);
+    abstract public function isView($viewModel);
 
-    abstract public function handleView(ViewModel $viewModel, Request $request);
+    abstract public function handleView($viewModel, Request $request);
 
 }

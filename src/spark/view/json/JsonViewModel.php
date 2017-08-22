@@ -9,11 +9,12 @@
 namespace spark\view\json;
 
 
+use spark\core\service\PropertyHelper;
 use spark\http\HttpCode;
 use spark\http\ResponseHelper;
-use spark\view\ViewModel;
+use spark\http\Response;
 
-class JsonViewModel extends ViewModel {
+class JsonViewModel extends PropertyHelper implements Response {
     public function __construct($array = null) {
         parent::__construct($array);
         ResponseHelper::setCode(HttpCode::$OK);

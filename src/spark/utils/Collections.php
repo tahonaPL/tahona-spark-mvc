@@ -377,8 +377,7 @@ final class Collections {
     }
 
     public static function subList($accessor, $fromIndex, $toIndex) {
-        array_splice($accessor,$fromIndex, $toIndex);
-        return $accessor;
+        return array_slice($accessor,$fromIndex, $toIndex);
     }
 
     /**

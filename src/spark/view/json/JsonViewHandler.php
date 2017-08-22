@@ -19,11 +19,11 @@ class JsonViewHandler extends ViewHandler {
 
     const NAME = "jsonViewHandler";
 
-    public function isView(ViewModel $viewModel) {
+    public function isView($viewModel) {
         return $viewModel instanceof JsonViewModel;
     }
 
-    public function handleView(ViewModel $viewModel, Request $request) {
+    public function handleView($viewModel, Request $request) {
         ResponseHelper::setContentType(ContentType::$APPLICATION_JSON);
         echo json_encode($viewModel->getParams(), JSON_NUMERIC_CHECK );
         exit;

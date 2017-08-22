@@ -3,17 +3,17 @@
 namespace spark\view;
 
 use spark\core\service\PropertyHelper;
+use spark\http\Response;
 use spark\utils\UrlUtils;
+use spark\view\redirect\RedirectViewModel;
 
 /**
  * Description of ViewModel
  *
  * @author primosz67
  */
-class ViewModel extends PropertyHelper {
+class ViewModel extends PropertyHelper implements Response {
 
-    const CLASS_NAME = "spark\\view\\ViewModel";
-    private $redirect;
     private $viewName;
 
     /**
@@ -29,16 +29,6 @@ class ViewModel extends PropertyHelper {
         return $this->viewName;
     }
 
-    /**
-     * @param mixed $redirect
-     */
-    public function setRedirect($redirect) {
-        $this->redirect = $redirect;
-    }
-
-    public function getRedirect() {
-        return $this->redirect;
-    }
 
     /**
      * @deprecated
@@ -47,15 +37,9 @@ class ViewModel extends PropertyHelper {
      * @return ViewModel
      */
     public static function createRedirectView($url, $arr = array()) {
-        $viewModel = new ViewModel();
-        $viewModel->addAll($arr);
-        $viewModel->setRedirect($url);
-        return $viewModel;
+        return new RedirectViewModel($arr);
     }
 
-    public function isRedirect() {
-        return false == empty($this->redirect);
-    }
 
     public static function createWithView($viewName) {
         $viewModel = new ViewModel();

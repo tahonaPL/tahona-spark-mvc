@@ -231,7 +231,7 @@ to fetch parameters:
 
 update or set Params
 ```php
- $this-config->getProperty("customModule.some.property.", "/my/new/path");
+ $this-config->setProperty("customModule.some.property.", "/my/new/path");
 ```
 
 ### Custom module loading ###

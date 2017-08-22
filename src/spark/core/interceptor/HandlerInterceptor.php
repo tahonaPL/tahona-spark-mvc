@@ -10,6 +10,7 @@ namespace spark\core\interceptor;
 
 
 use spark\http\Request;
+use spark\http\Response;
 use spark\view\ViewModel;
 
 interface HandlerInterceptor {
@@ -26,10 +27,10 @@ interface HandlerInterceptor {
 
     /**
      * @param Request $request
-     * @param $viewModel
+     * @param $response
      *
      */
-    public function postHandle(Request $request, ViewModel $viewModel);
+    public function postHandle(Request $request, Response $response);
 
 
 }

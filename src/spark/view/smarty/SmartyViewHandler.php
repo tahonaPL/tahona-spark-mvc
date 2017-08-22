@@ -42,15 +42,15 @@ class SmartyViewHandler extends ViewHandler {
      */
     private $config;
 
-    function __construct($rootAppPath) {
+    public function __construct($rootAppPath) {
         $this->rootAppPath = $rootAppPath;
     }
 
-    public function isView(ViewModel $viewModel) {
-        return Objects::getClassName($viewModel) === ViewModel::CLASS_NAME;
+    public function isView($viewModel) {
+        return $viewModel instanceof ViewModel;
     }
 
-    public function handleView(ViewModel $viewModel, Request $request) {
+    public function handleView($viewModel, Request $request) {
         $smarty = $this->init();
 
         $smarty->setCacheId($this->config->getProperty(self::CACHE_ID, "TAHONA_ROCKS") . "" . $request->getLang());

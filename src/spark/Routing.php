@@ -272,7 +272,6 @@ class Routing {
             }
             $paramsKeys = Collections::getKeys($params);
 
-
             return Collections::builder()
                 ->addAll($this->getDefinitions())
                 ->flatMap(Functions::getSameObject())

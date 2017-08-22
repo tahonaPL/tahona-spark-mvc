@@ -17,11 +17,11 @@ class PlainViewHandler extends ViewHandler {
 
     const NAME = "plainViewHandler";
 
-    public function isView(ViewModel $viewModel) {
+    public function isView($viewModel) {
         return $viewModel instanceof PlainViewModel;
     }
 
-    public function handleView(ViewModel $viewModel, Request $request) {
+    public function handleView($viewModel, Request $request) {
         if ($viewModel instanceof PlainViewModel) {
             echo $viewModel->getContent();
         }

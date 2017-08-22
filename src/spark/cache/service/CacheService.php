@@ -62,7 +62,6 @@ class CacheService {
                 $this->localCache[$key] = $cachedResults;
             }
 
-
             if (Objects::isNotNull($cachedResults) && $cachedResults && $this->isNotExpired($definition, $cachedResults)) {
 //                echo DateUtils::format($cachedResults->getCreateDate(), "Y-m-d H:i:s");
                 return $cachedResults->getResults();
@@ -86,11 +85,11 @@ class CacheService {
             $accessor = StringUtils::split($val, ".");
             $size = Collections::size($accessor);
 
-            $obj = $accessor[0];
-            $obj = Collections::getValueOrDefault($arguments, $obj, $obj);
-            if ($size >= 2) {
-                $subList = Collections::subList($accessor, 1, $size);
+            $objIndex = $accessor[0];
+            $obj = Collections::getValueOrDefault($arguments, $objIndex, $objIndex);
 
+            if ($size >= 2) {
+                $subList = Collections::subList($accessor, 1, $size-1);
                 foreach ($subList as $property) {
                     $obj = Objects::invokeGetMethod($obj, $property);
                 }
