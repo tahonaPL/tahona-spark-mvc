@@ -9,6 +9,7 @@
 namespace spark\view\smarty;
 
 
+use PHPUnit\Runner\Exception;
 use spark\core\annotation\Inject;
 use spark\core\annotation\PostConstruct;
 use spark\core\provider\BeanProvider;

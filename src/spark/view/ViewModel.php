@@ -37,7 +37,7 @@ class ViewModel extends PropertyHelper implements Response {
      * @return ViewModel
      */
     public static function createRedirectView($url, $arr = array()) {
-        return new RedirectViewModel($arr);
+        return new RedirectViewModel($url, $arr);
     }
 
 

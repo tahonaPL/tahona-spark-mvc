@@ -2,6 +2,7 @@
 
 namespace spark;
 
+use PHPUnit\Runner\Exception;
 use spark\common\collection\FluentIterables;
 use spark\common\IllegalStateException;
 use spark\common\Optional;
@@ -248,8 +249,8 @@ class Routing {
      * Very slow
      */
     public function resolveRoute($path, $params = array()) {
-
         if (StringUtils::contains($path, "@")) {
+
             $route = StringUtils::split($path, "@");
             $controllerName = $route[0];
             $methodName = $route[1];
