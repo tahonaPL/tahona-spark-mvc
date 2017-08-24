@@ -10,6 +10,8 @@ namespace spark\view\smarty;
 
 use spark\Config;
 use spark\core\annotation\Inject;
+use spark\core\lang\LangKeyProvider;
+use spark\core\provider\BeanProvider;
 use spark\http\Request;
 use spark\utils\Objects;
 use spark\utils\StringUtils;
@@ -19,14 +21,14 @@ use spark\view\ViewModel;
 
 class SmartyViewHandler extends ViewHandler {
 
-    const NAME = "smartyViewHandler";
-    const CACHE_ID = "spark.smarty.view.cache.id";
-    const COMPILE_CHECK = "view.cache.compile_check";
-    const CACHE_ENABLED = "view.cache.enable";
+    const NAME            = "smartyViewHandler";
+    const CACHE_ID        = "spark.smarty.view.cache.id";
+    const COMPILE_CHECK   = "view.cache.compile_check";
+    const CACHE_ENABLED   = "view.cache.enable";
     const CACHE_LIFE_TIME = "view.cache.life_time";
-    const DEBUGGING = "view.cache.debugging";
+    const DEBUGGING       = "view.cache.debugging";
     const ERROR_REPORTING = "view.cache.error.reporting";
-    const FORCE_COMPILE = "view.cache.force.compile";
+    const FORCE_COMPILE   = "view.cache.force.compile";
 
     private $rootAppPath;
     private $smarty;
@@ -42,6 +44,13 @@ class SmartyViewHandler extends ViewHandler {
      */
     private $config;
 
+    /**
+     * @Inject
+     * @var BeanProvider
+     */
+    private $beanProvider;
+
+
     public function __construct($rootAppPath) {
         $this->rootAppPath = $rootAppPath;
     }
@@ -53,7 +62,7 @@ class SmartyViewHandler extends ViewHandler {
     public function handleView($viewModel, Request $request) {
         $smarty = $this->init();
 
-        $smarty->setCacheId($this->config->getProperty(self::CACHE_ID, "TAHONA_ROCKS") . "" . $request->getLang());
+        $smarty->setCacheId($this->config->getProperty(self::CACHE_ID, "TAHONA_ROCKS") . "" . $this->getLang());
 
         foreach ($viewModel->getParams() as $key => $value) {
             $smarty->assign($key, $value, true);
@@ -91,7 +100,7 @@ class SmartyViewHandler extends ViewHandler {
 
             $definedPlugins = $this->smartyPlugins->getDefinedPlugins();
             /** @var SmartyPlugin $plugin */
-            foreach($definedPlugins as $plugin) {
+            foreach ($definedPlugins as $plugin) {
                 $smarty->registerPlugin("function", $plugin->getTag(), array($plugin, "execute"));
             }
 
@@ -120,5 +129,14 @@ class SmartyViewHandler extends ViewHandler {
             return StringUtils::substring($viewPath, 1, StringUtils::length($viewPath));
         }
         return $viewPath;
+    }
+
+    /**
+     * @return string
+     */
+    private function getLang() {
+        /** @var LangKeyProvider $langKeyProvider */
+        $langKeyProvider = $this->beanProvider->getBean(LangKeyProvider::NAME);
+        return $langKeyProvider->getLang();
     }
 }

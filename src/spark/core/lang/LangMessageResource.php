@@ -9,11 +9,14 @@
 namespace spark\core\lang;
 
 
+use spark\common\Optional;
 use spark\Config;
 use spark\core\annotation\Inject;
 use spark\core\annotation\PostConstruct;
+use spark\core\provider\BeanProvider;
 use spark\core\resource\ResourcePath;
 use spark\http\RequestProvider;
+use spark\utils\Functions;
 use spark\utils\UrlUtils;
 use spark\upload\FileObject;
 use spark\utils\Collections;
@@ -27,20 +30,21 @@ class LangMessageResource {
 
     /**
      * @Inject
-     * @var RequestProvider
-     */
-    private $requestProvider;
-    /**
-     * @Inject
      * @var Config
      */
     private $config;
+
+    /**
+     * @Inject()
+     * @var BeanProvider
+     */
+    private $beanProvider;
 
     private $messages = array();
 
     private $filePath;
 
-    function __construct($filePath = array()) {
+    public function __construct($filePath = array()) {
         $this->filePath = $filePath;
     }
 
@@ -55,7 +59,7 @@ class LangMessageResource {
      * @param $code
      */
     public function get($code, $params = array()) {
-        if ( false === $this->hasCode($code)) {
+        if (!$this->hasCode($code)) {
             return $this->messageErrorCode($code);
         } else {
             return $this->handleMessage($code, $params);
@@ -68,8 +72,7 @@ class LangMessageResource {
      * @return string
      */
     private function handleMessage($code, $params) {
-        $request = $this->requestProvider->getRequest();
-        $message = $this->messages[$request->getLang()][$code];
+        $message = $this->messages[$this->getLang()][$code];
 
         if (Objects::isNull($message)) {
             $optionalLang = Collections::builder()
@@ -82,14 +85,14 @@ class LangMessageResource {
 
 
             if ($optionalLang->isPresent()) {
-                $message =  $this->messages[$optionalLang->get()][$code];
+                $message = $this->messages[$optionalLang->get()][$code];
             } else {
                 $message = $this->messageErrorCode($code);
             }
         }
 
         if (Collections::isNotEmpty($params)) {
-            foreach($params as $k => $v) {
+            foreach ($params as $k => $v) {
                 $replaceTag = StringUtils::join("", array("{", $k, "}"));
                 $message = StringUtils::replace($message, $replaceTag, $v);
             }
@@ -117,21 +120,37 @@ class LangMessageResource {
      * @return string
      */
     private function messageErrorCode($code) {
-        return "!".$code."!";
+        return "!" . $code . "!";
     }
 
-    public function addResources($resourcePaths=array()) {
+    public function addResources($resourcePaths = array()) {
         /** @var LangResourcePath $resourcePath */
-        foreach ($resourcePaths as $key => $resourcePath) {
+        foreach ($resourcePaths as $resourcePath) {
             $paths = $resourcePath->getPaths();
 
             foreach ($paths as $key => $pathArr) {
-                foreach ($pathArr as  $path) {
+                foreach ($pathArr as $path) {
                     $elements = parse_ini_file($this->config->getProperty("src.path") . "" . $path);
                     Collections::addAllOrReplace($this->messages[$key], $elements);
                 }
             }
         }
+    }
+
+    private function getLang() {
+        /** @var LangKeyProvider $langKeyProvider */
+        $langKeyProvider = $this->beanProvider->getBean(LangKeyProvider::NAME);
+
+        return Optional::of($langKeyProvider)
+            ->map(Functions::get(LangKeyProvider::D_LANG))
+            ->orElse($this->getFirstResourceKey());
+    }
+
+    private function getFirstResourceKey() {
+        $keys = Collections::getKeys($this->messages);
+
+        return Collections::builder($keys)
+            ->findFirst()->getOrNull();
     }
 
 } 

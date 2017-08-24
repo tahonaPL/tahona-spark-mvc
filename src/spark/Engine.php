@@ -15,6 +15,8 @@ use spark\core\command\output\OutputInterface;
 use spark\core\error\ExceptionResolver;
 use spark\core\error\GlobalErrorHandler;
 use spark\core\interceptor\HandlerInterceptor;
+use spark\core\lang\CookieLangKeyProvider;
+use spark\core\lang\LangKeyProvider;
 use spark\core\lang\LangMessageResource;
 use spark\core\lang\LangResourcePath;
 use spark\core\library\BeanLoader;
@@ -226,6 +228,8 @@ class Engine {
         $this->container->registerObj(new CacheProvider());
         $this->container->registerObj(new CacheService());
         $this->container->register(LangMessageResource::NAME, new LangMessageResource(array()));
+        $this->container->register(LangKeyProvider::NAME, new CookieLangKeyProvider("lang"));
+
         $this->container->register(SmartyPlugins::NAME, new SmartyPlugins());
         $this->container->register(RequestProvider::NAME, new RequestProvider());
         $this->container->register(RoutingInfo::NAME, new RoutingInfo($this->route));

@@ -161,7 +161,7 @@ class FluentIterables {
     }
 
     /**
-     * Reorganizate indexes
+     * Return array with reorganize indexes. keys: 0, 1, 2 ...
      * @return array
      */
     public function getList() {

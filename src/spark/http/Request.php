@@ -156,10 +156,6 @@ class Request {
         return $this->namespace;
     }
 
-    public function getLang() {
-        return Collections::getValueOrDefault($_COOKIE, "lang", "pl");
-    }
-
     private function getParamOrNull($name) {
         if (isset($this->urlParams[$name])) {
             return $this->urlParams[$name];
