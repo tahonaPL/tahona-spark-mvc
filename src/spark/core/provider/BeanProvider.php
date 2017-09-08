@@ -29,6 +29,9 @@ class BeanProvider {
     public function getBean($string) {
         return $this->container->get($string);
     }
+    public function hasBean($string) {
+        return $this->container->hasBean($string);
+    }
 
     public function getByType($className) {
         return $this->container->getByType($className);

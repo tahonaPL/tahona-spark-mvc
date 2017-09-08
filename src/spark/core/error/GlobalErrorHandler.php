@@ -108,7 +108,7 @@ class GlobalErrorHandler {
                 $viewModel = $resolver->doResolveException($error);
                 if (Objects::isNotNull($viewModel)) {
                     $request = new Request();
-                    $this->engine->updateRequest($request);
+                    $this->engine->updateRequestProvider($request);
                     $this->engine->handleViewModel($request, $viewModel);
 
                     return null;

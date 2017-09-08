@@ -7,6 +7,7 @@ namespace spark\utils;
 final class StringUtils {
 
     const SPACE = ' ';
+    const EMPTY = ' ';
 
 
     private function __construct() {

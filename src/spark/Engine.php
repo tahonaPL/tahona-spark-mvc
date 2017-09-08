@@ -14,6 +14,9 @@ use spark\core\command\input\InputInterface;
 use spark\core\command\output\OutputInterface;
 use spark\core\error\ExceptionResolver;
 use spark\core\error\GlobalErrorHandler;
+use spark\core\filler\BeanFiller;
+use spark\core\filler\Filler;
+use spark\core\filler\RequestFiller;
 use spark\core\interceptor\HandlerInterceptor;
 use spark\core\lang\CookieLangKeyProvider;
 use spark\core\lang\LangKeyProvider;
@@ -22,6 +25,7 @@ use spark\core\lang\LangResourcePath;
 use spark\core\library\BeanLoader;
 use spark\core\processor\InitAnnotationProcessors;
 use spark\core\provider\BeanProvider;
+use spark\core\routing\RoutingDefinition;
 use spark\core\utils\SystemUtils;
 use spark\filter\FilterChain;
 use spark\filter\HttpFilter;
@@ -29,6 +33,7 @@ use spark\http\Request;
 use spark\http\RequestProvider;
 use spark\http\Response;
 use spark\http\utils\RequestUtils;
+use spark\core\routing\RequestData;
 use spark\routing\RoutingInfo;
 use spark\utils\Asserts;
 use spark\utils\BooleanUtils;
@@ -196,24 +201,27 @@ class Engine {
         $this->devToolsInit();
 
         $registeredHostPath = $this->getRegisteredHostPath();
-        $request = $this->route->createRequest($urlName, $registeredHostPath);
+        $requestData = $this->route->createRequest($registeredHostPath);
 
-        $this->updateRequest($request);
+        $this->updateRequestProvider($requestData);
 
         //Interceptor
-        $this->preHandleInterceptor($request);
-        $this->filter($request);
+        $this->preHandleInterceptor($requestData);
+        $this->filter($requestData);
 
         //Controller
-        $controllerName = $request->getControllerClassName();
+        $controllerName = $requestData->getControllerClassName();
 
         /** @var $controller Controller */
         $controller = $this->container->get($controllerName);
-        $controller->init($request, $responseParams);
-        $controller->setContainer($this->container);
+
+        if ($controller instanceof Controller) {
+            $controller->init($requestData, $responseParams);
+            $controller->setContainer($this->container);
+        }
 
         //ACTION->VIEW
-        $this->handleAction($request, $controller);
+        $this->handleAction($requestData, $controller);
     }
 
     private function devToolsInit() {
@@ -237,6 +245,9 @@ class Engine {
         $this->container->registerObj($this->config);
         $this->container->registerObj($this->route);
         $this->container->registerObj(new GlobalErrorHandler($this));
+
+        $this->container->registerObj(new RequestFiller());
+        $this->container->registerObj(new BeanFiller());
 
         $this->addViewHandlersToService();
     }
@@ -269,11 +280,13 @@ class Engine {
      * @param $controller
      * @throws ErrorException
      */
-    private function handleAction(Request $request, $controller) {
+    private function handleAction(RequestData $request, $controller) {
 
         /** @var $viewModel ViewModel */
         $methodName = $request->getMethodName();
-        $viewModel = $controller->$methodName();
+        $params = $this->getParams($request->getRouteDefinition());
+
+        $viewModel = Objects::invokeMethod($controller, $methodName, $params);
 
         $this->handleViewModel($request, $viewModel);
     }
@@ -358,7 +371,7 @@ class Engine {
      * @param $request
      * @throws \Exception
      */
-    public function updateRequest($request) {
+    public function updateRequestProvider($request) {
         /** @var RequestProvider $requestProvider */
         $requestProvider = $this->container->get(RequestProvider::NAME);
         $requestProvider->setRequest($request);
@@ -393,6 +406,30 @@ class Engine {
             return SystemUtils::getProfile();
         }
         return $this->profile;
+    }
+
+    private function getParams(RoutingDefinition $rf) {
+        $params = array();
+        $parameters = $rf->getActionMethodParameters();
+        if (Collections::isNotEmpty($parameters)) {
+            $fillers = $this->container->getByType(Filler::class);
+
+            foreach ($parameters as $paramName => $type) {
+                $params[] = $this->getFillerValue($fillers, $paramName, $type);
+            }
+        }
+        return $params;
+    }
+
+    private function getFillerValue($fillers, $paramName, $type) {
+        /** @var Filler $filler */
+        foreach($fillers as $filler) {
+            $value = $filler->getValue($paramName, $type);
+            if (Objects::isNotNull($value)) {
+                return $value;
+            }
+        }
+        return null;
     }
 
 

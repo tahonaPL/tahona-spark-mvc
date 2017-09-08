@@ -12,6 +12,7 @@ namespace spark\view\redirect;
 use spark\core\annotation\Inject;
 use spark\http\Request;
 use spark\Routing;
+use spark\core\routing\RequestData;
 use spark\utils\Collections;
 use spark\utils\StringUtils;
 use spark\utils\UrlUtils;
@@ -34,9 +35,9 @@ class RedirectViewHandler extends ViewHandler {
 
     /**
      * @param RedirectViewModel $viewModel
-     * @param Request $request
+     * @param Request|RequestData $request
      */
-    public function handleView($viewModel, Request $request) {
+    public function handleView($viewModel, RequestData $request) {
         if ($this->isView($viewModel)) {
 
             $redirect = $viewModel->getUrl();

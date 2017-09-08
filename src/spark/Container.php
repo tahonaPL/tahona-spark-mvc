@@ -108,10 +108,12 @@ class Container {
     }
 
     public function get($name) {
-        if (false == isset($this->beanContainer[$name])) {
-            throw new Exception("No bean with name: " . $name);
-        }
+        Asserts::checkState($this->hasBean($name), "No bean with name: " . $name);
         return $this->beanContainer[$name]->getBean();
+    }
+
+    public function hasBean($name) {
+        return isset($this->beanContainer[$name]);
     }
 
     /**

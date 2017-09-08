@@ -40,7 +40,7 @@ class Objects {
 
     public static function invokeGetMethod($obj, $propertyName) {
         $getMethod = $propertyName;
-        if (false == StringUtils::startsWith($propertyName, "get")) {
+        if (!StringUtils::startsWith($propertyName, "get")) {
             $getMethod = "get" . ucfirst($propertyName);
         }
         return $obj->$getMethod();

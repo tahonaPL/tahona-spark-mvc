@@ -388,5 +388,9 @@ final class Collections {
         return self::findFirst($array, Predicates::notNull());
     }
 
+    public static function partition($array = array(), $size) {
+        return array_chunk($array, $size, true);
+    }
+
 
 }

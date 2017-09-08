@@ -18,12 +18,14 @@ use spark\Container;
 use spark\core\annotation\handler\AnnotationHandler;
 use spark\core\annotation\handler\CacheAnnotationHandler;
 use spark\core\annotation\handler\ComponentAnnotationHandler;
+use spark\core\annotation\handler\ControllerAnnotationHandler;
 use spark\core\annotation\handler\ControllerClassHandler;
 use spark\core\annotation\handler\DebugAnnotationHandler;
 use spark\core\annotation\handler\EnableApcuAnnotationHandler;
 use spark\core\annotation\handler\EnableMailerAnnotationHandler;
 use spark\core\annotation\handler\PathAnnotationHandler;
 use spark\core\annotation\handler\SmartyViewConfigurationAnnotationHandler;
+use spark\core\annotation\RestController;
 use spark\core\annotation\SmartyViewConfiguration;
 use spark\core\library\Annotations;
 use spark\utils\Collections;
@@ -55,7 +57,8 @@ class InitAnnotationProcessors extends AnnotationHandler {
             new PathAnnotationHandler(),
             new SmartyViewConfigurationAnnotationHandler(),
             new DebugAnnotationHandler(),
-            new ControllerClassHandler()
+            new ControllerClassHandler(),
+            new ControllerAnnotationHandler(),
         );
 
         $this->postHandlers = array(

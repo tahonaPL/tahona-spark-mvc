@@ -4,6 +4,7 @@ namespace spark\view\utils;
 
 
 use spark\http\Request;
+use spark\core\routing\RequestData;
 use spark\utils\Objects;
 use spark\utils\StringUtils;
 
@@ -14,13 +15,13 @@ class ViewUrlUtils {
      *
      * @param  $request
      */
-    public static function createFullViewPath(Request $request) {
+    public static function createFullViewPath(RequestData $request) {
         return StringUtils::join("/", array(
             self::createViewPathWithViewName($request)
         ));
     }
 
-    public static function createViewPathWithViewName(Request $request, $viewName = null) {
+    public static function createViewPathWithViewName(RequestData $request, $viewName = null) {
         $viewName = Objects::isNull($viewName) ? $request->getMethodName() : $viewName;
 
         return StringUtils::join("/", array(

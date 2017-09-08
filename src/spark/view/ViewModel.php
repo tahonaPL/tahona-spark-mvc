@@ -40,7 +40,6 @@ class ViewModel extends PropertyHelper implements Response {
         return new RedirectViewModel($url, $arr);
     }
 
-
     public static function createWithView($viewName) {
         $viewModel = new ViewModel();
         $viewModel->setViewName($viewName);

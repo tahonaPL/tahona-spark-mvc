@@ -18,8 +18,8 @@ use spark\utils\StringFunctions;
 class RoutingDefinition {
 
     const D_CONTROLLER_CLASS_NAME = "controllerClassName";
-    const D_ACTION_METHOD = "actionMethod";
-    const D_PATH = "path";
+    const D_ACTION_METHOD         = "actionMethod";
+    const D_PATH                  = "path";
 
     private $id;
 
@@ -29,6 +29,7 @@ class RoutingDefinition {
     private $requestMethods;
     private $requestHeaders;
     private $params;
+    private $actionMethodParameters;
 
     /**
      * RoutingDefinition constructor.
@@ -36,6 +37,7 @@ class RoutingDefinition {
      */
     public function __construct() {
         $this->id = uniqid("routing");
+        $this->actionMethodParameters = array();
     }
 
     /**
@@ -44,7 +46,6 @@ class RoutingDefinition {
     public function getId() {
         return $this->id;
     }
-
 
 
     /**
@@ -132,5 +133,13 @@ class RoutingDefinition {
 
     public function getParams() {
         return $this->params;
+    }
+
+    public function setActionMethodParameters($actionMethodParameters) {
+        $this->actionMethodParameters = $actionMethodParameters;
+    }
+
+    public function getActionMethodParameters() {
+        return $this->actionMethodParameters;
     }
 }

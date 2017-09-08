@@ -46,4 +46,8 @@ class ViewHelper {
         $viewModel = new ViewModel();
         return $viewModel->setViewName(ViewUrlUtils::createViewPathWithViewName($controller->getRequest(), $viewName));
     }
+
+    public static function create() {
+        return new ViewModel();
+    }
 }

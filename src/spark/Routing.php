@@ -11,6 +11,7 @@ use spark\core\routing\RoutingDefinition;
 use spark\core\routing\exception\RoutingException;
 use spark\http\Request;
 use spark\http\utils\RequestUtils;
+use spark\core\routing\RequestData;
 use spark\routing\RoutingUtils;
 use spark\utils\Asserts;
 use spark\utils\Collections;
@@ -56,17 +57,16 @@ class Routing {
     }
 
     /**
-     * @param $urlPath
      * @param string $registeredHostPath
-     * @return Request
-     * @throws RouteNotFoundException
+     * @return RequestData
      */
-    public function createRequest($urlPath, $registeredHostPath = "") {
+    public function createRequest($registeredHostPath = ""):RequestData {
         $urlPath = $this->getPath();
 
         $routeDefinition = $this->getDefinition($urlPath);
 
-        $request = new \spark\http\Request();
+        $request = new RequestData();
+        $request->setRouteDefinition($routeDefinition);
         $request->setHostPath($registeredHostPath);
         $request->setMethodName($routeDefinition->getActionMethod());
         $request->setControllerClassName($routeDefinition->getControllerClassName());
@@ -246,9 +246,13 @@ class Routing {
     }
 
     /**
-     * Very slow
+     * FIXME: Very slow resolve all methods in pre compile
+     *
+     * @param $path
+     * @param array $params
+     * @return string|null
      */
-    public function resolveRoute($path, $params = array()) {
+    public function resolveRoute($path, array $params = array()):string {
         if (StringUtils::contains($path, "@")) {
 
             $route = StringUtils::split($path, "@");
@@ -288,9 +292,9 @@ class Routing {
 //                    var_dump($d, $fillParametrizedPath, $params);exit;
                     return $fillParametrizedPath;
                 })
-                ->orElse(null);
+                ->orElse(StringUtils::EMPTY);
         }
 
-        return null;
+        return StringUtils::EMPTY;
     }
 }

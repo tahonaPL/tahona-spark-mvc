@@ -13,6 +13,7 @@ use spark\core\annotation\Component;
 use spark\core\routing\RoutingDefinition;
 use spark\routing\RoutingUtils;
 use spark\utils\Collections;
+use spark\utils\Functions;
 
 
 class RoutingDefinitionFactory {
@@ -28,16 +29,16 @@ class RoutingDefinitionFactory {
         $routingDefinition->setControllerClassName($reflectionClass->getName());
         $routingDefinition->setActionMethod($methodReflection->getName());
 
+        $routingDefinition->setActionMethodParameters($this->getMethodParmeters($methodReflection));
+
         $routingDefinition->setRequestHeaders($requestHeaders);
         $routingDefinition->setRequestMethods($requestMethods);
 
         if (RoutingUtils::hasExpression($path)) {
             $routingDefinition->setParams(RoutingUtils::getParametrizedUrlKeys($path));
         }
+
         return $routingDefinition;
-//                    $routingDefinition->setRoles($)
-
-
     }
 
     public function createDefinitionForMethod(\ReflectionMethod $methodReflection, $methodAnnotation) {
@@ -55,5 +56,26 @@ class RoutingDefinitionFactory {
             $routingDefinition->setParams(RoutingUtils::getParametrizedUrlKeys($methodAnnotation->path));
         }
         return $routingDefinition;
+    }
+
+    /**
+     * @param \ReflectionMethod $methodReflection
+     * @return array
+     */
+    private function getMethodParmeters(\ReflectionMethod $methodReflection) {
+        $methodParameters = [];
+        if ($methodReflection->getNumberOfParameters() > 0) {
+            $parameters = $methodReflection->getParameters();
+            $methodParameters = Collections::builder()
+                ->addAll($parameters)
+                ->convertToMap(Functions::field("name"))
+                ->map(function ($param) {
+                    $cls = $param->getClass();
+                    return $cls->name;
+                })
+                ->get();
+            return $methodParameters;
+        }
+        return $methodParameters;
     }
 }

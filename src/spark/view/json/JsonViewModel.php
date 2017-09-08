@@ -17,6 +17,5 @@ use spark\http\Response;
 class JsonViewModel extends PropertyHelper implements Response {
     public function __construct($array = null) {
         parent::__construct($array);
-        ResponseHelper::setCode(HttpCode::$OK);
     }
 } 

@@ -13,6 +13,7 @@ use spark\core\annotation\Inject;
 use spark\core\lang\LangKeyProvider;
 use spark\core\provider\BeanProvider;
 use spark\http\Request;
+use spark\core\routing\RequestData;
 use spark\utils\Objects;
 use spark\utils\StringUtils;
 use spark\view\utils\ViewUrlUtils;
@@ -59,11 +60,12 @@ class SmartyViewHandler extends ViewHandler {
         return $viewModel instanceof ViewModel;
     }
 
-    public function handleView($viewModel, Request $request) {
+    public function handleView($viewModel, RequestData $request) {
         $smarty = $this->init();
 
         $smarty->setCacheId($this->config->getProperty(self::CACHE_ID, "TAHONA_ROCKS") . "" . $this->getLang());
 
+        /** @var ViewModel $viewModel */
         foreach ($viewModel->getParams() as $key => $value) {
             $smarty->assign($key, $value, true);
         }

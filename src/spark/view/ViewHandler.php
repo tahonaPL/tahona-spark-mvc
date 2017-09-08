@@ -9,8 +9,7 @@
 namespace spark\view;
 
 
-use spark\http\Request;
-use spark\view\ViewModel;
+use spark\core\routing\RequestData;
 
 abstract class ViewHandler {
 
@@ -18,6 +17,6 @@ abstract class ViewHandler {
 
     abstract public function isView($viewModel);
 
-    abstract public function handleView($viewModel, Request $request);
+    abstract public function handleView($viewModel, RequestData $request);
 
 }

@@ -9,6 +9,7 @@
 namespace spark\http;
 
 
+use spark\core\routing\RequestData;
 use spark\http\Request;
 
 class RequestProvider {
@@ -16,7 +17,7 @@ class RequestProvider {
     const NAME = "requestProvider";
 
     /**
-     * @var Request
+     * @var RequestData
      */
     private $request;
 
@@ -33,6 +34,7 @@ class RequestProvider {
     public function getRequest() {
         return $this->request;
     }
+
 
 
 

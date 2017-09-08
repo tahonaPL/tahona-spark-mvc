@@ -10,6 +10,7 @@ namespace spark\view\plain;
 
 
 use spark\http\Request;
+use spark\core\routing\RequestData;
 use spark\view\ViewHandler;
 use spark\view\ViewModel;
 
@@ -21,7 +22,7 @@ class PlainViewHandler extends ViewHandler {
         return $viewModel instanceof PlainViewModel;
     }
 
-    public function handleView($viewModel, Request $request) {
+    public function handleView($viewModel, RequestData $request) {
         if ($viewModel instanceof PlainViewModel) {
             echo $viewModel->getContent();
         }

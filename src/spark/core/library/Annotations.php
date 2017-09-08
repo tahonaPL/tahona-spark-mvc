@@ -10,6 +10,7 @@ namespace spark\core\library;
 
 
 use spark\common\Optional;
+use spark\core\annotation\Cache;
 use spark\utils\Collections;
 use spark\utils\Functions;
 use spark\utils\Objects;
@@ -17,11 +18,14 @@ use spark\utils\ReflectionUtils;
 
 class Annotations {
 
-    const SCOPE = "spark\\core\\annotation\\Scope";
-    const INJECT = "spark\\core\\annotation\\Inject";
+    const SCOPE           = "spark\\core\\annotation\\Scope";
+    const INJECT          = "spark\\core\\annotation\\Inject";
     const OVERRIDE_INJECT = "spark\\core\\annotation\\OverrideInject";
-    const PROFILE = "spark\\core\\annotation\\Profile";
-    const BEAN = "spark\\core\\annotation\\Bean";
+    const PROFILE         = "spark\\core\\annotation\\Profile";
+    const BEAN            = "spark\\core\\annotation\\Bean";
+    const CONTROLLER      = "spark\\core\\annotation\\Controller";
+    const REST_CONTROLLER = "spark\\core\\annotation\\RestController";
+    const CACHE           = "spark\\core\\annotation\\Cache";
 
     public static function getScopeByClass($className) {
         return Optional::ofNullable(ReflectionUtils::getClassAnnotations($className, self::SCOPE))
@@ -43,5 +47,15 @@ class Annotations {
         return Collections::builder(ReflectionUtils::getClassAnnotations($className, self::OVERRIDE_INJECT))
             ->convertToMap(Functions::field("oldName"))
             ->get();
+    }
+
+    public static function hasCacheAnnotations($class) {
+        $cacheDefinition = [];
+        ReflectionUtils::handleMethodAnnotation($class, Annotations::CACHE, function ($class, $reflectionProperty, $annotation) use (&$cacheDefinition) {
+            /** @var Cache $annotation */
+            /** @var \ReflectionMethod $reflectionProperty */
+            $cacheDefinition[$reflectionProperty->getName()] = $annotation;
+        });
+        return Collections::isNotEmpty($cacheDefinition);
     }
 }

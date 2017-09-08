@@ -54,16 +54,18 @@ class SmartyPlugins {
     private function init() {
         $this->definedPlugins = $this->beanProvider->getByType(SmartyPlugin::class);
 
-        $this->beanProvider = null; //dangereous to have this
+        $this->beanProvider = null; //dangerous to have this
     }
 
 
     public function path($params, $smarty) {
         $path = $this->getPath($params);
-        $path .= $this->handleSeo($params, $path);
-        $path1 = UrlUtils::getPath($path);
 
-        return $path1;
+//
+//        $path .= $this->handleSeo($params, $path);
+//        $path1 = UrlUtils::getPath($path);
+
+        return $path;
     }
 
     public function invoke($params, $smarty) {

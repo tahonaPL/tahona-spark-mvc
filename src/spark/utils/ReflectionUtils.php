@@ -80,15 +80,24 @@ class ReflectionUtils {
 
     public static function handleMethodAnnotation($bean, $annotationName, \Closure $handler) {
         Asserts::notNull($bean);
+
         $annotationReader = self::getReaderInstance();
 
-        $reflectionObject = new \ReflectionObject($bean);
-        $reflectionMethods = $reflectionObject->getMethods();
+
+        if (Objects::isString($bean)) {
+            $cls = new \ReflectionClass($bean);
+            $reflectionMethods = $cls->getMethods();
+            $cls = $cls->getParentClass();
+
+        } else {
+            $reflectionObject = new \ReflectionObject($bean);
+            $reflectionMethods = $reflectionObject->getMethods();
+            $cls = $reflectionObject->getParentClass();
+        }
 
         $fluentIterables = Collections::builder()
             ->addAll($reflectionMethods);
 
-        $cls = $reflectionObject->getParentClass();
 
         while ($cls != null) {
             $fluentIterables->addAll($cls->getMethods());
