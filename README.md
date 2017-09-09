@@ -79,7 +79,7 @@ class MyAppController {
      * @Path("/index", method="GET")
      */
     public function indexAction(Request $request) {
-        return new PlainViewModel("Hello World"",);
+        return new PlainViewModel("Hello World");
     }
 
    /**
@@ -92,7 +92,6 @@ class MyAppController {
     }
 }
 ```
-
 
 Go to localhost/get or localhost/index;
 
@@ -116,6 +115,7 @@ class MyRestController {
         return new SomeResultDto();
     }
 }
+```
 
 Note: All methods in RestController will resolve to JSON.
 
