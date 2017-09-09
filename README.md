@@ -64,7 +64,67 @@ It's for development environment and should be deleted for production.
 
 
 ### Controller ###
+
+##### 1. Standard Controller with annotation controller #####
+
 app/src/MyAppController.php
+
+```php
+/**
+* @Controller
+*/
+class MyAppController {
+
+    /**
+     * @Path("/index", method="GET")
+     */
+    public function indexAction(Request $request) {
+        return new PlainViewModel("Hello World"",);
+    }
+
+   /**
+     * @Path("/save", method="POST")
+     */
+    public function saveAction(SomeForm $form, Request $req, $beanName) {
+        return new JsonViewModel(array(
+            "user"=>"TODO"
+        ));
+    }
+}
+```
+
+
+Go to localhost/get or localhost/index;
+
+* Request is injected to method by Type
+* SomeForm is filled by "POST" form params using "spark-form" module.
+* $beanName - framework can inject any bean or service needed for action by name or type.
+
+
+##### 2. Rest Controller #####
+
+```php
+/**
+* @RestController
+*/
+class MyRestController {
+
+    /**
+     * @Path("/index")
+     */
+    public function indexAction(Request $request) {
+        return new SomeResultDto();
+    }
+}
+
+Note: All methods in RestController will resolve to JSON.
+
+SomeResultDto - will resolve to json.
+
+##### 3. Old method of creating Controller #####
+
+app/src/MyAppController.php
+
 ```php
 class MyAppController extends Controller {
 
@@ -98,6 +158,8 @@ class MyAppController extends Controller {
 ```
 
 Go to localhost/get or localhost/index;
+
+##### 2. Define bean for autoload. #####
 
 ### Injection ###
 
@@ -159,6 +221,26 @@ class UserController extends Controller {
      }
 }
 ```
+##### 4.Inject in action  method of controller #####
+
+```php
+
+/**
+* @Controller
+*/
+class UserController {
+
+    /**
+     * @Path("/newView")
+     */
+     public function showNewViewAction(Request $request, UserService $userService ) {
+        return new ViewModel(array(
+            "users"=>$userService->getAllUsers()
+        ));
+     }
+}
+
+
 
 ### View ###
 

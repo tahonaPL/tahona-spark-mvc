@@ -214,7 +214,7 @@ class Engine {
 
         //Interceptor
         $this->preHandleInterceptor($requestData);
-        $this->filter($requestData);
+        $this->executeFilter($requestData);
 
         //Controller
         $controllerName = $requestData->getControllerClassName();
@@ -292,9 +292,9 @@ class Engine {
 
         /** @var $viewModel ViewModel */
         $methodName = $request->getMethodName();
-        $params = $this->getParams($request->getRouteDefinition());
+        $methodFillersParams = $this->executeFillers($request->getRouteDefinition());
 
-        $viewModel = Objects::invokeMethod($controller, $methodName, $params);
+        $viewModel = Objects::invokeMethod($controller, $methodName, $methodFillersParams);
 
         $this->handleViewModel($request, $viewModel);
     }
@@ -313,7 +313,7 @@ class Engine {
     }
 
 
-    private function filter(Request $request) {
+    private function executeFilter(Request $request) {
         $filters = $this->container->getByType(HttpFilter::CLASS_NAME);
 
         if (Collections::isNotEmpty($filters)) {
@@ -416,9 +416,10 @@ class Engine {
         return $this->profile;
     }
 
-    private function getParams(RoutingDefinition $rf) {
+    private function executeFillers(RoutingDefinition $rf) {
         $params = array();
         $parameters = $rf->getActionMethodParameters();
+
         if (Collections::isNotEmpty($parameters)) {
             foreach ($parameters as $paramName => $type) {
                 $params[] = $this->getFillerValue($this->fillers, $paramName, $type);
