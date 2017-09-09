@@ -13,6 +13,7 @@ use ErrorException;
 use spark\Container;
 use spark\core\annotation\Inject;
 use spark\core\provider\BeanProvider;
+use spark\core\routing\RequestData;
 use spark\Engine;
 use spark\http\HttpCode;
 use spark\http\Request;
@@ -107,7 +108,7 @@ class GlobalErrorHandler {
                 /** @var ExceptionResolver $resolver */
                 $viewModel = $resolver->doResolveException($error);
                 if (Objects::isNotNull($viewModel)) {
-                    $request = new Request();
+                    $request = new RequestData();
                     $this->engine->updateRequestProvider($request);
                     $this->engine->handleViewModel($request, $viewModel);
 
