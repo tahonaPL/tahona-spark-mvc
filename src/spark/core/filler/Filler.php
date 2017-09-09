@@ -5,4 +5,5 @@ interface Filler {
 
     public function getValue($name, $type);
 
+    public function getOrder();
 }

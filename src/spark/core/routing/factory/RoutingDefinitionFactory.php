@@ -14,6 +14,7 @@ use spark\core\routing\RoutingDefinition;
 use spark\routing\RoutingUtils;
 use spark\utils\Collections;
 use spark\utils\Functions;
+use spark\utils\Objects;
 
 
 class RoutingDefinitionFactory {
@@ -70,8 +71,10 @@ class RoutingDefinitionFactory {
                 ->addAll($parameters)
                 ->convertToMap(Functions::field("name"))
                 ->map(function ($param) {
-                    $cls = $param->getClass();
-                    return $cls->name;
+                    return $param->getClass();
+                })
+                ->map(function ($cls) {
+                    return Objects::isNotNull($cls)?$cls->name:null;
                 })
                 ->get();
             return $methodParameters;

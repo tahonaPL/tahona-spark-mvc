@@ -17,6 +17,7 @@ use spark\core\error\GlobalErrorHandler;
 use spark\core\filler\BeanFiller;
 use spark\core\filler\Filler;
 use spark\core\filler\RequestFiller;
+use spark\core\filler\SessionFiller;
 use spark\core\interceptor\HandlerInterceptor;
 use spark\core\lang\CookieLangKeyProvider;
 use spark\core\lang\LangKeyProvider;
@@ -90,6 +91,7 @@ class Engine {
 
     private $interceptors;
     private $exceptionResolvers;
+    private $fillers;
     private $profile;
 
     private $hasAllreadyCachedData;
@@ -150,6 +152,11 @@ class Engine {
 
             $this->interceptors = $this->container->getByType(HandlerInterceptor::CLASS_NAME);
             $this->exceptionResolvers = $this->container->getByType(ExceptionResolver::CLASS_NAME);
+            $this->fillers = $fillers = Collections::builder($this->container->getByType(Filler::class))
+                    ->sort(function ($x,$y) {
+                        return $x->getOrder()- $y->getOrder();
+                    })
+                    ->get();
 
             if ($this->isApcuCacheEnabled()) {
                 $this->beanCache->put($this->getCacheKey(self::CONFIG_CACHE_KEY), $this->config);
@@ -247,6 +254,7 @@ class Engine {
         $this->container->registerObj(new GlobalErrorHandler($this));
 
         $this->container->registerObj(new RequestFiller());
+        $this->container->registerObj(new SessionFiller());
         $this->container->registerObj(new BeanFiller());
 
         $this->addViewHandlersToService();
@@ -412,10 +420,8 @@ class Engine {
         $params = array();
         $parameters = $rf->getActionMethodParameters();
         if (Collections::isNotEmpty($parameters)) {
-            $fillers = $this->container->getByType(Filler::class);
-
             foreach ($parameters as $paramName => $type) {
-                $params[] = $this->getFillerValue($fillers, $paramName, $type);
+                $params[] = $this->getFillerValue($this->fillers, $paramName, $type);
             }
         }
         return $params;

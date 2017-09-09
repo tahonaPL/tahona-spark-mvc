@@ -5,11 +5,9 @@ namespace spark\http;
 
 interface Request {
 
-
     public function isPost();
 
     public function getPostData();
-
 
     public function getParam($name, $default = null);
 
@@ -23,7 +21,7 @@ interface Request {
 
     public function getAllParams();
 
-    public function getCookie($key, $def = null);
+    public function getCookie($key, $default = null);
 
     public function getBody();
 

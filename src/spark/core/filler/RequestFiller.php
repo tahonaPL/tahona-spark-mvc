@@ -16,9 +16,13 @@ class RequestFiller implements Filler {
 
 
     public function getValue($name, $type) {
-        if ($type === Request::class) {
+        if ($name === "request" || $type === Request::class) {
             return $this->requestProvider->getRequest();
         }
         return null;
+    }
+
+    public function getOrder() {
+        return 100;
     }
 }

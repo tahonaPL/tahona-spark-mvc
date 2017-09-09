@@ -35,4 +35,8 @@ class BeanFiller implements Filler {
         }
         return $v;
     }
+
+    public function getOrder() {
+        return 120;
+    }
 }
