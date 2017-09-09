@@ -1,9 +1,10 @@
 <?php
 namespace spark\core\filler;
 
-interface Filler {
+use spark\common\type\Orderable;
+
+interface Filler extends Orderable {
 
     public function getValue($name, $type);
 
-    public function getOrder();
 }

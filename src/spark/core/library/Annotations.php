@@ -28,7 +28,7 @@ class Annotations {
     const CACHE           = "spark\\core\\annotation\\Cache";
 
     public static function getScopeByClass($className) {
-        return Optional::ofNullable(ReflectionUtils::getClassAnnotations($className, self::SCOPE))
+        return Optional::ofNullable(ReflectionUtils::getClassAnnotation($className, self::SCOPE))
             ->map(Functions::field("value"))
             ->getOrNull();
     }
@@ -44,7 +44,7 @@ class Annotations {
      * @return array
      */
     public static function getOverrideInjections($className) {
-        return Collections::builder(ReflectionUtils::getClassAnnotations($className, self::OVERRIDE_INJECT))
+        return Collections::builder(ReflectionUtils::getClassAnnotation($className, self::OVERRIDE_INJECT))
             ->convertToMap(Functions::field("oldName"))
             ->get();
     }

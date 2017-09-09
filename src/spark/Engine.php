@@ -23,6 +23,7 @@ use spark\core\lang\CookieLangKeyProvider;
 use spark\core\lang\LangKeyProvider;
 use spark\core\lang\LangMessageResource;
 use spark\core\lang\LangResourcePath;
+use spark\core\library\Annotations;
 use spark\core\library\BeanLoader;
 use spark\core\processor\InitAnnotationProcessors;
 use spark\core\provider\BeanProvider;
@@ -40,11 +41,13 @@ use spark\utils\Asserts;
 use spark\utils\BooleanUtils;
 use spark\utils\Collections;
 use spark\utils\Functions;
+use spark\utils\JsonUtils;
 use spark\utils\Objects;
 use spark\utils\Predicates;
 use spark\utils\StringUtils;
 use spark\utils\UrlUtils;
 use spark\view\json\JsonViewHandler;
+use spark\view\json\JsonViewModel;
 use spark\view\plain\PlainViewHandler;
 use spark\view\redirect\RedirectViewHandler;
 use spark\view\smarty\SmartyPlugins;
@@ -91,7 +94,6 @@ class Engine {
 
     private $interceptors;
     private $exceptionResolvers;
-    private $fillers;
     private $profile;
 
     private $hasAllreadyCachedData;
@@ -152,11 +154,6 @@ class Engine {
 
             $this->interceptors = $this->container->getByType(HandlerInterceptor::CLASS_NAME);
             $this->exceptionResolvers = $this->container->getByType(ExceptionResolver::CLASS_NAME);
-            $this->fillers = $fillers = Collections::builder($this->container->getByType(Filler::class))
-                    ->sort(function ($x,$y) {
-                        return $x->getOrder()- $y->getOrder();
-                    })
-                    ->get();
 
             if ($this->isApcuCacheEnabled()) {
                 $this->beanCache->put($this->getCacheKey(self::CONFIG_CACHE_KEY), $this->config);
@@ -284,19 +281,24 @@ class Engine {
     }
 
     /**
-     * @param Request $request
+     * @param Request $requestData
      * @param $controller
      * @throws ErrorException
      */
-    private function handleAction(RequestData $request, $controller) {
+    private function handleAction(RequestData $requestData, $controller) {
 
         /** @var $viewModel ViewModel */
-        $methodName = $request->getMethodName();
-        $methodFillersParams = $this->executeFillers($request->getRouteDefinition());
+        $methodName = $requestData->getMethodName();
+        $routeDef = $requestData->getRouteDefinition();
+        $methodFillersParams = $this->executeFillers($routeDef);
 
         $viewModel = Objects::invokeMethod($controller, $methodName, $methodFillersParams);
 
-        $this->handleViewModel($request, $viewModel);
+        if ($this->isRestController($routeDef)) {
+            $viewModel= new JsonViewModel($viewModel);
+        }
+
+        $this->handleViewModel($requestData, $viewModel);
     }
 
     /**
@@ -420,9 +422,11 @@ class Engine {
         $params = array();
         $parameters = $rf->getActionMethodParameters();
 
+        $filers = $this->container->getByType(Filler::class);
+
         if (Collections::isNotEmpty($parameters)) {
             foreach ($parameters as $paramName => $type) {
-                $params[] = $this->getFillerValue($this->fillers, $paramName, $type);
+                $params[] = $this->getFillerValue($filers, $paramName, $type);
             }
         }
         return $params;
@@ -437,6 +441,23 @@ class Engine {
             }
         }
         return null;
+    }
+
+    /**
+     * @param $routeDef
+     * @return bool
+     */
+    private function isRestController(RoutingDefinition $routeDef) {
+        $controllerAnnotations = $routeDef->getControllerAnnotations();
+
+        $restControllerAnnotation = Collections::builder()
+            ->addAll($controllerAnnotations)
+            ->findFirst(function ($ann) {
+                return Objects::getClassName($ann) === Annotations::REST_CONTROLLER;
+            });
+
+        $isPresent = $restControllerAnnotation->isPresent();
+        return $isPresent;
     }
 
 

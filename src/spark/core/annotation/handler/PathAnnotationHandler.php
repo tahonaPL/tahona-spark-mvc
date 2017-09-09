@@ -63,9 +63,7 @@ class PathAnnotationHandler extends AnnotationHandler {
                     $this->getRouting()->addDefinition($routingDefinition);
                 }
             }
-
         } else {
-
             /** @var Path $ann */
             foreach ($methodAnnotations as $methodAnnotation) {
                 $routingDefinition = $routingDefinitionFactory->createDefinitionForMethod($methodReflection, $methodAnnotation);

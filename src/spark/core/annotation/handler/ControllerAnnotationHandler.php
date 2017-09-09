@@ -38,7 +38,6 @@ class ControllerAnnotationHandler extends AnnotationHandler {
         }
     }
 
-
     private function getCreateBean($class) {
         $bean = new $class;
 

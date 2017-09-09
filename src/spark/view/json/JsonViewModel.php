@@ -13,9 +13,21 @@ use spark\core\service\PropertyHelper;
 use spark\http\HttpCode;
 use spark\http\ResponseHelper;
 use spark\http\Response;
+use spark\utils\Objects;
 
-class JsonViewModel extends PropertyHelper implements Response {
-    public function __construct($array = null) {
-        parent::__construct($array);
+class JsonViewModel implements Response {
+
+    private $obj;
+
+    public function __construct($obj = null) {
+        $this->obj = $obj;
     }
+
+    /**
+     * @return null
+     */
+    public function getObj() {
+        return $this->obj;
+    }
+
 } 

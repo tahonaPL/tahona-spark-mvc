@@ -165,11 +165,23 @@ class FluentIterables {
      * @return array
      */
     public function getList() {
-        $array = array();
+        $collection = array();
         foreach($this->collection as $v){
-            $array[]=$v;
+            $collection[]=$v;
         }
-        return $array;
+        return $collection;
+    }
+
+    public function entries() {
+        return Collections::builder($this->toEntries($this->collection));
+    }
+
+    private function toEntries($collection) {
+        $entries = [];
+        foreach($collection as $k=> $v) {
+            $entries[] = new Entry($k, $v);
+        }
+        return $entries;
     }
 
 

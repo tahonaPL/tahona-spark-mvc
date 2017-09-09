@@ -16,13 +16,11 @@ use spark\utils\StringUtils;
 
 class AnnotationHandlerHelper {
 
-
     public static function getAnnotation($annotations, $defined) {
         return Collections::builder($annotations)
             ->filter(Predicates::compute(self::getClassName(), Predicates::contains($defined)))
             ->findFirst();
     }
-
 
     private static function getClassName() {
         return function ($x) {

@@ -30,6 +30,7 @@ class RoutingDefinition {
     private $requestHeaders;
     private $params;
     private $actionMethodParameters;
+    private $controllerAnnotations;
 
     /**
      * RoutingDefinition constructor.
@@ -142,4 +143,17 @@ class RoutingDefinition {
     public function getActionMethodParameters() {
         return $this->actionMethodParameters;
     }
+
+    public function setControllerAnnotations($controllerAnnotations) {
+        $this->controllerAnnotations = $controllerAnnotations;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getControllerAnnotations() {
+        return $this->controllerAnnotations;
+    }
+
+
 }

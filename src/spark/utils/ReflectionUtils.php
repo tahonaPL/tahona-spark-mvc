@@ -139,12 +139,20 @@ class ReflectionUtils {
      * @param $annotationName
      * @return array Annotations
      */
-    public static function getClassAnnotations($fullClassName, $annotationName) {
-        $annotationReader = self::getReaderInstance();
-        $reflectionObject = new \ReflectionClass($fullClassName);
-        return Collections::builder($annotationReader->getClassAnnotations($reflectionObject))
+    public static function getClassAnnotation($fullClassName, $annotationName) {
+        return Collections::builder(self::getClassAnnotations($fullClassName))
             ->filter(Functions::hasClassName($annotationName))
             ->get();
+    }
+
+    /**
+     * @param $fullClassName
+     * @return array
+     */
+    public static function getClassAnnotations($fullClassName) {
+        $annotationReader = self::getReaderInstance();
+        $reflectionObject = new \ReflectionClass($fullClassName);
+        return $annotationReader->getClassAnnotations($reflectionObject);
     }
 
 }

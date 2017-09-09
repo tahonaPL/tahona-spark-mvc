@@ -45,7 +45,7 @@ class BeanDefinition {
     /**
      * @return mixed
      */
-    public function getBean() {
+    public function &getBean() {
         return $this->bean;
     }
 

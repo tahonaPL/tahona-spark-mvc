@@ -3,11 +3,14 @@
 namespace spark;
 
 use Exception;
+use spark\common\collection\Entry;
 use spark\common\IllegalArgumentException;
 use spark\common\IllegalStateException;
+use spark\common\type\Orderable;
 use spark\core\definition\BeanDefinition;
 use spark\core\definition\BeanProxy;
 use spark\core\definition\ToInjectObserver;
+use spark\core\filler\Filler;
 use spark\core\library\Annotations;
 use spark\core\service\ServiceHelper;
 use spark\utils\Asserts;
@@ -26,7 +29,7 @@ class Container {
     private $initialized = false;
 
     private $waitingList = array();
-    const INJECT_ANNOTATION = "spark\core\annotation\Inject";
+    const INJECT_ANNOTATION          = "spark\core\annotation\Inject";
     const OVERRIDE_INJECT_ANNOTATION = "spark\core\annotation\OverrideInject";
 
     public function registerObj($obj) {
@@ -121,9 +124,9 @@ class Container {
      * @return array
      */
     public function getByType($type) {
-       if (Collections::hasKey($this->typeMap, (string) $type)) {
-           return $this->typeMap[$type];
-       }
+        if (Collections::hasKey($this->typeMap, (string)$type)) {
+            return $this->typeMap[$type];
+        }
 
         return array();
     }
@@ -152,7 +155,7 @@ class Container {
         $buildBeanDefinitions = $this->createBuildAnnotationBeans($bean);
 
         Collections::builder($buildBeanDefinitions)
-            ->each(function($def)  {
+            ->each(function ($def) {
                 /** @var BeanDefinition $def */
                 $this->beanContainer[$def->getName()] = $def;
             });
@@ -213,6 +216,9 @@ class Container {
             echo $message;
             throw  new IllegalStateException("Can't match beans");
         }
+
+        $this->sortOrderableTypes();
+
     }
 
     /**
@@ -294,7 +300,7 @@ class Container {
             foreach ($beansToUpdate as $observer) {
                 $targetBean = $observer->getBean();
 
-                $overrideInjections = Collections::builder(ReflectionUtils::getClassAnnotations(Objects::getClassName($targetBean), self::OVERRIDE_INJECT_ANNOTATION))
+                $overrideInjections = Collections::builder(ReflectionUtils::getClassAnnotation(Objects::getClassName($targetBean), self::OVERRIDE_INJECT_ANNOTATION))
                     ->convertToMap(Functions::field("oldName"))
                     ->get();
 
@@ -383,6 +389,30 @@ class Container {
                 $this->typeMap[$className] = [];
             }
             $this->typeMap[$className][$beanDefinition->getName()] = $beanDefinition->getBean();
+        }
+    }
+
+    /**
+     *
+     */
+    private function sortOrderableTypes() {
+        foreach ($this->typeMap as $className => $beans) {
+
+            if (Collections::first($beans)->get() instanceof Orderable) {
+
+                $this->typeMap[$className] = Collections::builder($beans)
+                    ->entries()
+                    ->sort(function ($x, $y) {
+                        return $x->getValue()->getOrder() - $y->getValue()->getOrder();
+                    })
+                    ->convertToMap(function ($entry) {
+                        return $entry->getKey();
+                    })
+                    ->map(function ($entry) {
+                        return $entry->getValue();
+                    })
+                    ->get();
+            }
         }
     }
 }

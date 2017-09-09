@@ -15,22 +15,29 @@ use spark\routing\RoutingUtils;
 use spark\utils\Collections;
 use spark\utils\Functions;
 use spark\utils\Objects;
+use spark\utils\ReflectionUtils;
 
 
 class RoutingDefinitionFactory {
 
     public function createDefinition(\ReflectionMethod $methodReflection, $classPathAnnotation, $methodAnnotation) {
+
         $reflectionClass = $methodReflection->getDeclaringClass();
+        $controllerAnnotations = ReflectionUtils::getClassAnnotations($reflectionClass->getName());
+
         $path = $classPathAnnotation->path . $methodAnnotation->path;
         $requestHeaders = Collections::merge($classPathAnnotation->header, $methodAnnotation->header);
         $requestMethods = Collections::merge($classPathAnnotation->method, $methodAnnotation->method);
 
         $routingDefinition = new RoutingDefinition();
         $routingDefinition->setPath($path);
+
         $routingDefinition->setControllerClassName($reflectionClass->getName());
+        $routingDefinition->setControllerAnnotations($controllerAnnotations);
+
         $routingDefinition->setActionMethod($methodReflection->getName());
 
-        $routingDefinition->setActionMethodParameters($this->getMethodParmeters($methodReflection));
+        $routingDefinition->setActionMethodParameters($this->getMethodParameters($methodReflection));
 
         $routingDefinition->setRequestHeaders($requestHeaders);
         $routingDefinition->setRequestMethods($requestMethods);
@@ -44,10 +51,12 @@ class RoutingDefinitionFactory {
 
     public function createDefinitionForMethod(\ReflectionMethod $methodReflection, $methodAnnotation) {
         $reflectionClass = $methodReflection->getDeclaringClass();
+        $controllerAnnotations = ReflectionUtils::getClassAnnotations($reflectionClass->getName());
 
         $routingDefinition = new RoutingDefinition();
         $routingDefinition->setPath($methodAnnotation->path);
         $routingDefinition->setControllerClassName($reflectionClass->getName());
+        $routingDefinition->setControllerAnnotations($controllerAnnotations);
         $routingDefinition->setActionMethod($methodReflection->getName());
 
         $routingDefinition->setRequestHeaders($methodAnnotation->header);
@@ -63,7 +72,7 @@ class RoutingDefinitionFactory {
      * @param \ReflectionMethod $methodReflection
      * @return array
      */
-    private function getMethodParmeters(\ReflectionMethod $methodReflection) {
+    private function getMethodParameters(\ReflectionMethod $methodReflection) {
         $methodParameters = [];
         if ($methodReflection->getNumberOfParameters() > 0) {
             $parameters = $methodReflection->getParameters();

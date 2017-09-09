@@ -14,6 +14,7 @@ use spark\http\HttpCode;
 use spark\http\ResponseHelper;
 use spark\http\Request;
 use spark\core\routing\RequestData;
+use spark\utils\JsonUtils;
 use spark\view\ViewHandler;
 use spark\view\ViewModel;
 
@@ -28,7 +29,9 @@ class JsonViewHandler extends ViewHandler {
     public function handleView($viewModel, RequestData $request) {
         ResponseHelper::setCode(HttpCode::$OK);
         ResponseHelper::setContentType(ContentType::$APPLICATION_JSON);
-        echo json_encode($viewModel->getParams(), JSON_NUMERIC_CHECK );
+
+        echo JsonUtils::toJson($viewModel->getObj());
+//        echo json_encode(, JSON_NUMERIC_CHECK );
         exit;
     }
 }
