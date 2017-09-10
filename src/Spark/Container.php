@@ -29,8 +29,8 @@ class Container {
     private $initialized = false;
 
     private $waitingList = array();
-    const INJECT_ANNOTATION          = "spark\core\annotation\Inject";
-    const OVERRIDE_INJECT_ANNOTATION = "spark\core\annotation\OverrideInject";
+    const INJECT_ANNOTATION          = "Spark\core\annotation\Inject";
+    const OVERRIDE_INJECT_ANNOTATION = "Spark\core\annotation\OverrideInject";
 
     public function registerObj($obj) {
         $this->register(lcfirst(Objects::getSimpleClassName($obj)), $obj);
@@ -369,7 +369,7 @@ class Container {
      * @param $bean
      */
     private function invokePostConstruct($bean) {
-        ReflectionUtils::handleMethodAnnotation($bean, "spark\\core\\annotation\\PostConstruct",
+        ReflectionUtils::handleMethodAnnotation($bean, "Spark\\core\\annotation\\PostConstruct",
             function ($bean, \ReflectionMethod $method, $annotation) {
                 $method->setAccessible(true);
                 $method->invoke($bean);

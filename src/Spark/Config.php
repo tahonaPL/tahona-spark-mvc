@@ -13,7 +13,7 @@ use Spark\Utils\StringUtils;
  * App configuration as basic property provider with cache.
  *
  * Class Config
- * @package spark
+ * @package Spark
  */
 class Config {
 

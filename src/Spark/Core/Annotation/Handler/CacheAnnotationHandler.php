@@ -27,7 +27,7 @@ class CacheAnnotationHandler extends AnnotationHandler {
     private $cacheService;
 
     public function __construct() {
-        $this->annotationName = "spark\\core\\annotation\\Cache";
+        $this->annotationName = "Spark\\core\\annotation\\Cache";
     }
 
 

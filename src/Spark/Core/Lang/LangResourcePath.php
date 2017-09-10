@@ -14,5 +14,5 @@ use Spark\Core\Resource\ResourcePath;
 
 class LangResourcePath extends ResourcePath {
 
-    const CLASS_NAME = "spark\\core\\lang\\LangResourcePath";
+    const CLASS_NAME = "Spark\\core\\lang\\LangResourcePath";
 }

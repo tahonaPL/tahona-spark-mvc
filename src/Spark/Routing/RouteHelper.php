@@ -48,7 +48,7 @@ use Spark\Utils\StringUtils;
  *
  *
  *
- * @package spark\routing
+ * @package Spark\routing
  */
 class RouteHelper {
 

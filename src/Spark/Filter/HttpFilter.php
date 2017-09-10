@@ -13,7 +13,7 @@ use Spark\Http\Request;
 
 
 interface HttpFilter {
-    const CLASS_NAME = "spark\\filter\\HttpFilter";
+    const CLASS_NAME = "Spark\\filter\\HttpFilter";
 
     public function doFilter(Request $request, FilterChain $filterChain);
 

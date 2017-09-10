@@ -13,7 +13,7 @@ use Spark\Common\Type\Orderable;
 
 abstract class ExceptionResolver implements Orderable {
 
-    const CLASS_NAME = "spark\\core\\error\\ExceptionResolver";
+    const CLASS_NAME = "Spark\\core\\error\\ExceptionResolver";
 
     abstract public function doResolveException($ex);
 

@@ -14,7 +14,7 @@ use Spark\Http\Response;
 use Spark\View\ViewModel;
 
 interface HandlerInterceptor {
-    const CLASS_NAME = "spark\\core\\interceptor\\HandlerInterceptor";
+    const CLASS_NAME = "Spark\\core\\interceptor\\HandlerInterceptor";
 
     /**
      *

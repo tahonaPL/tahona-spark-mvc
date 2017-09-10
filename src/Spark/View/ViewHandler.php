@@ -13,7 +13,7 @@ use Spark\Core\Routing\RequestData;
 
 abstract class ViewHandler {
 
-    const CLASS_NAME = "spark\\view\\ViewHandler";
+    const CLASS_NAME = "Spark\\view\\ViewHandler";
 
     abstract public function isView($viewModel);
 

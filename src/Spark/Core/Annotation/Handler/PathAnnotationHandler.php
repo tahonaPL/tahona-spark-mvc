@@ -30,7 +30,7 @@ class PathAnnotationHandler extends AnnotationHandler {
 
     private $annotations;
 
-    const PATH_ANNOTATION = "spark\\core\\annotation\\Path";
+    const PATH_ANNOTATION = "Spark\\core\\annotation\\Path";
 
     public function __construct() {
         $this->annotationName = self::PATH_ANNOTATION;

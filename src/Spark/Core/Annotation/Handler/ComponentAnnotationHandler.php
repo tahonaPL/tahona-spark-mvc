@@ -28,10 +28,10 @@ class ComponentAnnotationHandler extends AnnotationHandler {
 
     public function __construct() {
         $this->annotationNames = array(
-            "spark\\core\\annotation\\Component",
-            "spark\\core\\annotation\\Configuration",
-            "spark\\core\\annotation\\Service",
-            "spark\\core\\annotation\\Repository"
+            "Spark\\core\\annotation\\Component",
+            "Spark\\core\\annotation\\Configuration",
+            "Spark\\core\\annotation\\Service",
+            "Spark\\core\\annotation\\Repository"
         );
     }
 
@@ -66,7 +66,7 @@ class ComponentAnnotationHandler extends AnnotationHandler {
         $bean = new $class;
 
         $cacheDefinition = array();
-        ReflectionUtils::handleMethodAnnotation($bean, "spark\core\annotation\Cache", function ($bean, $reflectionProperty, $annotation) use (&$cacheDefinition) {
+        ReflectionUtils::handleMethodAnnotation($bean, "Spark\core\annotation\Cache", function ($bean, $reflectionProperty, $annotation) use (&$cacheDefinition) {
             /** @var Cache $annotation */
             /** @var \ReflectionMethod $reflectionProperty */
             $cacheDefinition[$reflectionProperty->getName()] = $annotation;

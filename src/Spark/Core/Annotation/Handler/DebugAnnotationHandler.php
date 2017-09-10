@@ -23,7 +23,7 @@ class DebugAnnotationHandler extends AnnotationHandler {
 
     public function __construct() {
         $this->annotationNames =
-            "spark\\core\\annotation\\Debug";
+            "Spark\\core\\annotation\\Debug";
     }
 
     /**

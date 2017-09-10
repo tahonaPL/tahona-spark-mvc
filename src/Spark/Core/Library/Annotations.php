@@ -18,14 +18,14 @@ use Spark\Utils\ReflectionUtils;
 
 class Annotations {
 
-    const SCOPE           = "spark\\core\\annotation\\Scope";
-    const INJECT          = "spark\\core\\annotation\\Inject";
-    const OVERRIDE_INJECT = "spark\\core\\annotation\\OverrideInject";
-    const PROFILE         = "spark\\core\\annotation\\Profile";
-    const BEAN            = "spark\\core\\annotation\\Bean";
-    const CONTROLLER      = "spark\\core\\annotation\\Controller";
-    const REST_CONTROLLER = "spark\\core\\annotation\\RestController";
-    const CACHE           = "spark\\core\\annotation\\Cache";
+    const SCOPE           = "Spark\\core\\annotation\\Scope";
+    const INJECT          = "Spark\\core\\annotation\\Inject";
+    const OVERRIDE_INJECT = "Spark\\core\\annotation\\OverrideInject";
+    const PROFILE         = "Spark\\core\\annotation\\Profile";
+    const BEAN            = "Spark\\core\\annotation\\Bean";
+    const CONTROLLER      = "Spark\\core\\annotation\\Controller";
+    const REST_CONTROLLER = "Spark\\core\\annotation\\RestController";
+    const CACHE           = "Spark\\core\\annotation\\Cache";
 
     public static function getScopeByClass($className) {
         return Optional::ofNullable(ReflectionUtils::getClassAnnotation($className, self::SCOPE))

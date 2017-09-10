@@ -19,14 +19,14 @@ use Spark\Utils\StringUtils;
  */
 class EnableApcuAnnotationHandler extends AnnotationHandler {
 
-    const APCU_CACHE_ENABLED = "spark.apcu.cache.enabled";
-    const APCU_CACHE_PREFIX = "spark.apcu.cache.prefix";
-    const APCU_CACHE_RESET = "spark.apcu.cache.reset";
+    const APCU_CACHE_ENABLED = "Spark.apcu.cache.enabled";
+    const APCU_CACHE_PREFIX = "Spark.apcu.cache.prefix";
+    const APCU_CACHE_RESET = "Spark.apcu.cache.reset";
 
     private $annotationName;
 
     public function __construct() {
-        $this->annotationName = "spark\\core\\annotation\\EnableApcuBeanCache";
+        $this->annotationName = "Spark\\core\\annotation\\EnableApcuBeanCache";
     }
 
     public function handleClassAnnotations($annotations = array(), $class, \ReflectionClass $classReflection) {

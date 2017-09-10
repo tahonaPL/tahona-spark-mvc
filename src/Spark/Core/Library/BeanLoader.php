@@ -119,7 +119,7 @@ class BeanLoader {
             $this->annotationProcessor->processPostAnnotations($class);
         }
 
-        //spark beans
+        //Spark beans
         /** @var PostLoadDefinition $postLoadDefinition */
         foreach ($this->postLoad as $postLoadDefinition) {
             if ($postLoadDefinition->canLoad()) {

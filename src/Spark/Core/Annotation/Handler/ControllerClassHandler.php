@@ -14,7 +14,7 @@ class ControllerClassHandler extends AnnotationHandler {
     private $controllerClassDefinition;
 
     public function __construct() {
-        $this->controllerClassDefinition = "spark\\Controller";
+        $this->controllerClassDefinition = "Spark\\Controller";
     }
 
     public function handleClassAnnotations($annotations = array(), $class, \ReflectionClass $classReflection) {

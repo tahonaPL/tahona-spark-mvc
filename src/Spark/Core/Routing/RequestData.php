@@ -63,7 +63,7 @@ class RequestData implements Request {
     }
 
     /**
-     * For /spark/core/test/controller/xxx/EngineController the module name is
+     * For /Spark/core/test/controller/xxx/EngineController the module name is
      * core/test/xxx  (controller is removed)
      *
      * @param $moduleName

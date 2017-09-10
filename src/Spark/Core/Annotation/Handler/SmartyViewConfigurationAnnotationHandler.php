@@ -18,7 +18,7 @@ class SmartyViewConfigurationAnnotationHandler extends AnnotationHandler {
     private $annotationName;
 
     public function __construct() {
-        $this->annotationName = "spark\\core\\annotation\\SmartyViewConfiguration";
+        $this->annotationName = "Spark\\core\\annotation\\SmartyViewConfiguration";
     }
 
     public function handleClassAnnotations($annotations = array(), $class, \ReflectionClass $classReflection) {

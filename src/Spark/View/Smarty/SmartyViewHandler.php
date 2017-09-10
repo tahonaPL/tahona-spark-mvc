@@ -23,7 +23,7 @@ use Spark\View\ViewModel;
 class SmartyViewHandler extends ViewHandler {
 
     const NAME            = "smartyViewHandler";
-    const CACHE_ID        = "spark.smarty.view.cache.id";
+    const CACHE_ID        = "Spark.smarty.view.cache.id";
     const COMPILE_CHECK   = "view.cache.compile_check";
     const CACHE_ENABLED   = "view.cache.enable";
     const CACHE_LIFE_TIME = "view.cache.life_time";
