@@ -6,6 +6,7 @@ use ReflectionClass;
 use Spark\Config;
 use Spark\Core\Annotation\Handler\AnnotationHandler;
 use Spark\Core\Annotation\Path;
+use Spark\Core\Library\Annotations;
 use Spark\Core\Routing\Factory\RoutingDefinitionFactory;
 use Spark\Core\Routing\RoutingDefinition;
 use Spark\Routing\RoutingUtils;
@@ -30,10 +31,9 @@ class PathAnnotationHandler extends AnnotationHandler {
 
     private $annotations;
 
-    const PATH_ANNOTATION = "Spark\\core\\annotation\\Path";
 
     public function __construct() {
-        $this->annotationName = self::PATH_ANNOTATION;
+        $this->annotationName = Annotations::PATH;
         $this->classes = array();
         $this->annotations = array();
     }

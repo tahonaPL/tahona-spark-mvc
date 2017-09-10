@@ -5,6 +5,7 @@ namespace Spark\Core\Annotation\Handler;
 use Spark\Config;
 use Spark\Core\Annotation\Handler\AnnotationHandler;
 use Spark\Core\Annotation\SmartyViewConfiguration;
+use Spark\Core\Library\Annotations;
 use Spark\Utils\Collections;
 use Spark\Utils\Functions;
 use Spark\Utils\Objects;
@@ -18,7 +19,7 @@ class SmartyViewConfigurationAnnotationHandler extends AnnotationHandler {
     private $annotationName;
 
     public function __construct() {
-        $this->annotationName = "Spark\\core\\annotation\\SmartyViewConfiguration";
+        $this->annotationName = Annotations::SMARTY_VIEW_CONFIGURATION;
     }
 
     public function handleClassAnnotations($annotations = array(), $class, \ReflectionClass $classReflection) {

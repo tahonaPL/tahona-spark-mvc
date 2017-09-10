@@ -140,7 +140,7 @@ class Engine {
 
             $beanLoader = new BeanLoader($initAnnotationProcessors, $this->config, $this->container);
             $beanLoader->addFromPath($src, array("proxy"));
-            $beanLoader->addClass("Spark\core\CoreConfig");
+            $beanLoader->addClass("Spark\Core\CoreConfig");
             $beanLoader->process();
 
             $this->addBaseServices();

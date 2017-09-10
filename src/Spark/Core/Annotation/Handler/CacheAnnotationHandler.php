@@ -11,6 +11,7 @@ namespace Spark\Core\Annotation\Handler;
 
 use ReflectionMethod;
 use Spark\Cache\Service\CacheService;
+use Spark\Core\Library\Annotations;
 use Spark\Utils\Collections;
 use Spark\Utils\Functions;
 use Spark\Utils\Objects;
@@ -27,7 +28,7 @@ class CacheAnnotationHandler extends AnnotationHandler {
     private $cacheService;
 
     public function __construct() {
-        $this->annotationName = "Spark\\core\\annotation\\Cache";
+        $this->annotationName = Annotations::CACHE;
     }
 
 

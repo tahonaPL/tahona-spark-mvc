@@ -2,6 +2,7 @@
 
 namespace Spark\Core\Annotation\Handler;
 
+use Spark\Controller;
 use Spark\Core\Annotation\Handler\AnnotationHandler;
 use Spark\Utils\Collections;
 use Spark\Utils\Functions;
@@ -14,7 +15,7 @@ class ControllerClassHandler extends AnnotationHandler {
     private $controllerClassDefinition;
 
     public function __construct() {
-        $this->controllerClassDefinition = "Spark\\Controller";
+        $this->controllerClassDefinition = Controller::class;
     }
 
     public function handleClassAnnotations($annotations = array(), $class, \ReflectionClass $classReflection) {

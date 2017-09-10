@@ -9,6 +9,7 @@
 namespace Spark\Core\Library;
 
 
+use Spark\Common\Exception\NotImplementedException;
 use Spark\Common\Optional;
 use Spark\Core\Annotation\Cache;
 use Spark\Utils\Collections;
@@ -18,14 +19,23 @@ use Spark\Utils\ReflectionUtils;
 
 class Annotations {
 
-    const SCOPE           = "Spark\\core\\annotation\\Scope";
-    const INJECT          = "Spark\\core\\annotation\\Inject";
-    const OVERRIDE_INJECT = "Spark\\core\\annotation\\OverrideInject";
-    const PROFILE         = "Spark\\core\\annotation\\Profile";
-    const BEAN            = "Spark\\core\\annotation\\Bean";
-    const CONTROLLER      = "Spark\\core\\annotation\\Controller";
-    const REST_CONTROLLER = "Spark\\core\\annotation\\RestController";
-    const CACHE           = "Spark\\core\\annotation\\Cache";
+    const CONTROLLER                = "Spark\\Core\\Annotation\\Controller";
+    const REST_CONTROLLER           = "Spark\\Core\\Annotation\\RestController";
+    const SERVICE                   = "Spark\\Core\\Annotation\\Service";
+    const REPOSITORY                = "Spark\\Core\\Annotation\\Repository";
+    const CONFIGURATION             = "Spark\\Core\\Annotation\\Configuration";
+    const COMPONENT                 = "Spark\\Core\\Annotation\\Component";
+    const SCOPE                     = "Spark\\Core\\Annotation\\Scope";
+    const INJECT                    = "Spark\\Core\\Annotation\\Inject";
+    const OVERRIDE_INJECT           = "Spark\\Core\\Annotation\\OverrideInject";
+    const PROFILE                   = "Spark\\Core\\Annotation\\Profile";
+    const BEAN                      = "Spark\\Core\\Annotation\\Bean";
+    const CACHE                     = "Spark\\Core\\Annotation\\Cache";
+    const DEBUG                     = "Spark\\Core\\Annotation\\Debug";
+    const ENABLE_APCU_BEAN_CACHE    = "Spark\\Core\\Annotation\\EnableApcuBeanCache";
+    const PATH                      = "Spark\\Core\\Annotation\\Path";
+    const SMARTY_VIEW_CONFIGURATION = "Spark\\Core\\Annotation\\SmartyViewConfiguration";
+    const POST_CONSTRUCT            = "Spark\\Core\\Annotation\\PostConstruct";
 
     public static function getScopeByClass($className) {
         return Optional::ofNullable(ReflectionUtils::getClassAnnotation($className, self::SCOPE))
@@ -34,9 +44,10 @@ class Annotations {
     }
 
     public static function getScopeByMethod($className, $method) {
-        return Optional::ofNullable(ReflectionUtils::getMethodAnnotation($className, $method, self::SCOPE))
-            ->map(Functions::field("value"))
-            ->getOrNull();
+//        return Optional::ofNullable(ReflectionUtils::getMethodAnnotation($className, $method, self::SCOPE))
+//            ->map(Functions::field("value"))
+//            ->getOrNull();
+        throw  new NotImplementedException();
     }
 
     /**
@@ -51,10 +62,10 @@ class Annotations {
 
     public static function hasCacheAnnotations($class) {
         $cacheDefinition = [];
-        ReflectionUtils::handleMethodAnnotation($class, Annotations::CACHE, function ($class, $reflectionProperty, $annotation) use (&$cacheDefinition) {
-            /** @var Cache $annotation */
+        ReflectionUtils::handleMethodAnnotation($class, Annotations::CACHE, function ($class, $reflectionProperty, $Annotation) use (&$cacheDefinition) {
+            /** @var Cache $Annotation */
             /** @var \ReflectionMethod $reflectionProperty */
-            $cacheDefinition[$reflectionProperty->getName()] = $annotation;
+            $cacheDefinition[$reflectionProperty->getName()] = $Annotation;
         });
         return Collections::isNotEmpty($cacheDefinition);
     }

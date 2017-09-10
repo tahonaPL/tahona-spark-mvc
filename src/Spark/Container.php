@@ -29,8 +29,6 @@ class Container {
     private $initialized = false;
 
     private $waitingList = array();
-    const INJECT_ANNOTATION          = "Spark\core\annotation\Inject";
-    const OVERRIDE_INJECT_ANNOTATION = "Spark\core\annotation\OverrideInject";
 
     public function registerObj($obj) {
         $this->register(lcfirst(Objects::getSimpleClassName($obj)), $obj);
@@ -300,11 +298,14 @@ class Container {
             foreach ($beansToUpdate as $observer) {
                 $targetBean = $observer->getBean();
 
-                $overrideInjections = Collections::builder(ReflectionUtils::getClassAnnotation(Objects::getClassName($targetBean), self::OVERRIDE_INJECT_ANNOTATION))
+                $fullClassName = Objects::getClassName($targetBean);
+                $classAnnotations = ReflectionUtils::getClassAnnotation($fullClassName, Annotations::OVERRIDE_INJECT);
+
+                $overrideInjections = Collections::builder($classAnnotations)
                     ->convertToMap(Functions::field("oldName"))
                     ->get();
 
-                ReflectionUtils::handlePropertyAnnotation($targetBean, self::INJECT_ANNOTATION,
+                ReflectionUtils::handlePropertyAnnotation($targetBean, Annotations::INJECT,
                     function (&$bean, \ReflectionProperty $property, $annotation) use ($observer, $beanDefinition, $overrideInjections) {
                         $beanNameToInject = $this->getBeanName($property, $annotation);
 
@@ -369,7 +370,7 @@ class Container {
      * @param $bean
      */
     private function invokePostConstruct($bean) {
-        ReflectionUtils::handleMethodAnnotation($bean, "Spark\\core\\annotation\\PostConstruct",
+        ReflectionUtils::handleMethodAnnotation($bean, Annotations::POST_CONSTRUCT,
             function ($bean, \ReflectionMethod $method, $annotation) {
                 $method->setAccessible(true);
                 $method->invoke($bean);

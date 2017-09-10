@@ -4,6 +4,7 @@ namespace Spark\Core\Annotation\Handler;
 
 use Spark\Config;
 use Spark\Core\Annotation\Handler\AnnotationHandler;
+use Spark\Core\Library\Annotations;
 use Spark\Utils\Collections;
 use Spark\Utils\Functions;
 use Spark\Utils\Objects;
@@ -22,8 +23,7 @@ class DebugAnnotationHandler extends AnnotationHandler {
     private $annotationNames;
 
     public function __construct() {
-        $this->annotationNames =
-            "Spark\\core\\annotation\\Debug";
+        $this->annotationNames = Annotations::DEBUG;
     }
 
     /**
