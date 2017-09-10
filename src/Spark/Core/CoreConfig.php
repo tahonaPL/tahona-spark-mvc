@@ -8,10 +8,10 @@
 
 namespace Spark\Core;
 
-use Spark\Core\annotation\Bean;
-use Spark\Core\annotation\Configuration;
-use Spark\Core\annotation\PostConstruct;
-use Spark\Core\routing\RoutingDefinitionConverter;
+use Spark\Core\Annotation\Bean;
+use Spark\Core\Annotation\Configuration;
+use Spark\Core\Annotation\PostConstruct;
+use Spark\Core\Routing\RoutingDefinitionConverter;
 
 /**
  * @Configuration()

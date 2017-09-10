@@ -11,9 +11,9 @@ namespace Spark\Cache\Service;
 
 use Spark\Cache\Cache;
 use Spark\Container;
-use Spark\Core\annotation\Inject;
-use Spark\Core\annotation\PostConstruct;
-use Spark\Core\provider\BeanProvider;
+use Spark\Core\Annotation\Inject;
+use Spark\Core\Annotation\PostConstruct;
+use Spark\Core\Provider\BeanProvider;
 
 class CacheProvider {
 

@@ -9,7 +9,7 @@
 namespace Spark\Http;
 
 
-use Spark\Core\routing\RequestData;
+use Spark\Core\Routing\RequestData;
 use Spark\Http\Request;
 
 class RequestProvider {

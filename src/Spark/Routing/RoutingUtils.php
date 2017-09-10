@@ -10,9 +10,9 @@ namespace Spark\Routing;
 
 
 use Spark\Common\Optional;
-use Spark\Core\routing\RoutingDefinition;
+use Spark\Core\Routing\RoutingDefinition;
 use Spark\Http\HttpRequestMethod;
-use Spark\Http\utils\RequestUtils;
+use Spark\Http\Utils\RequestUtils;
 use Spark\Utils\Collections;
 use Spark\Utils\Predicates;
 use Spark\Utils\StringFunctions;

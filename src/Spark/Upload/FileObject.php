@@ -9,7 +9,7 @@
 namespace Spark\Upload;
 
 
-use Spark\Common\data\ContentType;
+use Spark\Common\Data\ContentType;
 use Spark\Utils\FilterUtils;
 use Spark\Utils\FileUtils;
 

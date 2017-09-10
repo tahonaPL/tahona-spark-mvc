@@ -9,7 +9,7 @@
 namespace Spark\Http;
 
 
-use Spark\Common\data\ContentType;
+use Spark\Common\Data\ContentType;
 
 class ResponseHelper {
 

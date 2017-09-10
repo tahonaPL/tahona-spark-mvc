@@ -3,16 +3,16 @@
 namespace Spark;
 
 use Exception;
-use Spark\Common\collection\Entry;
+use Spark\Common\Collection\Entry;
 use Spark\Common\IllegalArgumentException;
 use Spark\Common\IllegalStateException;
-use Spark\Common\type\Orderable;
-use Spark\Core\definition\BeanDefinition;
-use Spark\Core\definition\BeanProxy;
-use Spark\Core\definition\ToInjectObserver;
-use Spark\Core\filler\Filler;
-use Spark\Core\library\Annotations;
-use Spark\Core\service\ServiceHelper;
+use Spark\Common\Type\Orderable;
+use Spark\Core\Definition\BeanDefinition;
+use Spark\Core\Definition\BeanProxy;
+use Spark\Core\Definition\ToInjectObserver;
+use Spark\Core\Filler\Filler;
+use Spark\Core\Library\Annotations;
+use Spark\Core\Service\ServiceHelper;
 use Spark\Utils\Asserts;
 use Spark\Utils\Collections;
 use Spark\Utils\Functions;

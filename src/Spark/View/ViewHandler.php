@@ -9,7 +9,7 @@
 namespace Spark\View;
 
 
-use Spark\Core\routing\RequestData;
+use Spark\Core\Routing\RequestData;
 
 abstract class ViewHandler {
 

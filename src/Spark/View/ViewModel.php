@@ -2,10 +2,10 @@
 
 namespace Spark\View;
 
-use Spark\Core\service\PropertyHelper;
+use Spark\Core\Service\PropertyHelper;
 use Spark\Http\Response;
 use Spark\Utils\UrlUtils;
-use Spark\View\redirect\RedirectViewModel;
+use Spark\View\Redirect\RedirectViewModel;
 
 /**
  * Description of ViewModel

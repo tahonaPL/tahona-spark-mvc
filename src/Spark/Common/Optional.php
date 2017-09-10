@@ -131,7 +131,7 @@ class Optional {
     }
 
     /**
-     * @return collection\FluentIterables
+     * @return Collection\FluentIterables
      */
     public function toFluentIterable() {
         return Collections::builder(Collections::asArray($this->orElse(array())));

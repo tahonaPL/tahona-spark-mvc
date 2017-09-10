@@ -4,9 +4,9 @@ namespace Spark;
 
 use Spark\Common\Optional;
 use Spark\Http\Request;
-use Spark\Core\service\ServiceHelper;
+use Spark\Core\Service\ServiceHelper;
 use Spark\Upload\FileObject;
-use Spark\View\utils\ViewUrlUtils;
+use Spark\View\Utils\ViewUrlUtils;
 
 class Controller {
 

@@ -3,7 +3,7 @@
 namespace Spark\Utils;
 
 use Spark\Common\Optional;
-use Spark\Http\utils\RequestUtils;
+use Spark\Http\Utils\RequestUtils;
 use Spark\Utils\Asserts;
 use Spark\Utils\Collections;
 use Spark\Utils\StringUtils;

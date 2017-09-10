@@ -9,7 +9,7 @@
 namespace Spark\Routing;
 
 
-use Spark\Core\routing\RoutingDefinition;
+use Spark\Core\Routing\RoutingDefinition;
 use Spark\Routing;
 use Spark\Utils\Collections;
 

@@ -11,7 +11,7 @@ namespace Spark\Utils;
 
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Annotations\AnnotationRegistry;
-use Spark\Core\annotation\Bean;
+use Spark\Core\Annotation\Bean;
 use Spark\Utils\Collections;
 use Spark\Utils\Objects;
 

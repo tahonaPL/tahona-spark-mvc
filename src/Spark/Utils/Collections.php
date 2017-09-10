@@ -9,7 +9,7 @@
 namespace Spark\Utils;
 
 
-use Spark\Common\collection\FluentIterables;
+use Spark\Common\Collection\FluentIterables;
 use Spark\Common\Optional;
 use Spark\Utils\Asserts;
 

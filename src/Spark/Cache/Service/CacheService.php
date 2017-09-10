@@ -11,7 +11,7 @@ namespace Spark\Cache\Service;
 
 use Spark\Cache\Cache;
 use Spark\Common\Optional;
-use Spark\Core\annotation\Inject;
+use Spark\Core\Annotation\Inject;
 use Spark\Utils\Collections;
 use Spark\Utils\DateUtils;
 use Spark\Utils\Objects;

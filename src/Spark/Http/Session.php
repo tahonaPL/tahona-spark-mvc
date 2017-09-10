@@ -2,7 +2,7 @@
 
 namespace Spark\Http;
 
-use Spark\Core\service\PropertyHelper;
+use Spark\Core\Service\PropertyHelper;
 
 class Session extends PropertyHelper {
 

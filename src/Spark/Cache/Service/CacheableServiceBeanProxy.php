@@ -10,8 +10,8 @@ namespace Spark\Cache\Service;
 
 
 use Doctrine\Common\Util\ClassUtils;
-use Spark\Core\annotation\Inject;
-use Spark\Core\definition\BeanProxy;
+use Spark\Core\Annotation\Inject;
+use Spark\Core\Definition\BeanProxy;
 use Spark\Utils\Objects;
 use Spark\Utils\StringUtils;
 

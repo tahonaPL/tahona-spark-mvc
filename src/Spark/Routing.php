@@ -3,15 +3,15 @@
 namespace Spark;
 
 use PHPUnit\Runner\Exception;
-use Spark\Common\collection\FluentIterables;
+use Spark\Common\Collection\FluentIterables;
 use Spark\Common\IllegalStateException;
 use Spark\Common\Optional;
-use Spark\Core\routing\exception\RouteNotFoundException;
-use Spark\Core\routing\RoutingDefinition;
-use Spark\Core\routing\exception\RoutingException;
+use Spark\Core\Routing\Exception\RouteNotFoundException;
+use Spark\Core\Routing\RoutingDefinition;
+use Spark\Core\Routing\Exception\RoutingException;
 use Spark\Http\Request;
-use Spark\Http\utils\RequestUtils;
-use Spark\Core\routing\RequestData;
+use Spark\Http\Utils\RequestUtils;
+use Spark\Core\Routing\RequestData;
 use Spark\Routing\RoutingUtils;
 use Spark\Utils\Asserts;
 use Spark\Utils\Collections;
