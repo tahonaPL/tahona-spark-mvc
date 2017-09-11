@@ -23,7 +23,7 @@ class Asserts {
      * @return object
      */
     public static function notNull($object, $message = "Object cannot be null or undefined.") {
-        if (false == isset($object) || is_null($object)) {
+        if (Objects::isNull($object)) {
             throw new IllegalArgumentException($message);
         }
         return $object;

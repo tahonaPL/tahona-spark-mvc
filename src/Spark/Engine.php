@@ -1,5 +1,5 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Spark;
 
@@ -36,6 +36,7 @@ use Spark\Http\RequestProvider;
 use Spark\Http\Response;
 use Spark\Http\Utils\RequestUtils;
 use Spark\Core\Routing\RequestData;
+use Spark\Optimization\SpeedTester;
 use Spark\Routing\RoutingInfo;
 use Spark\Utils\Asserts;
 use Spark\Utils\BooleanUtils;
@@ -62,7 +63,6 @@ class Engine {
     const CONTAINER_CACHE_KEY      = "container";
     const ROUTE_CACHE_KEY          = "route";
     const CONFIG_CACHE_KEY         = "config";
-    const INTERCEPTORS_CACHE_KEY   = "interceptors";
     const ERROR_HANDLERS_CACHE_KEY = "exceptionResolvers";
 
     /**
@@ -92,7 +92,7 @@ class Engine {
      */
     private $beanCache;
 
-    private $interceptors;
+
     private $exceptionResolvers;
     private $profile;
 
@@ -115,7 +115,6 @@ class Engine {
             $this->container = $container;
             $this->route = $this->beanCache->get($this->getCacheKey(self::ROUTE_CACHE_KEY));
             $this->config = $this->beanCache->get($this->getCacheKey(self::CONFIG_CACHE_KEY));
-            $this->interceptors = $this->beanCache->get($this->getCacheKey(self::INTERCEPTORS_CACHE_KEY));
             $this->exceptionResolvers = $this->beanCache->get($this->getCacheKey(self::ERROR_HANDLERS_CACHE_KEY));
 
             $this->clearCacheIfResetParam();
@@ -152,14 +151,12 @@ class Engine {
 
             $this->afterAllBean();
 
-            $this->interceptors = $this->container->getByType(HandlerInterceptor::CLASS_NAME);
             $this->exceptionResolvers = $this->container->getByType(ExceptionResolver::CLASS_NAME);
 
             if ($this->isApcuCacheEnabled()) {
                 $this->beanCache->put($this->getCacheKey(self::CONFIG_CACHE_KEY), $this->config);
                 $this->beanCache->put($this->getCacheKey(self::CONTAINER_CACHE_KEY), $this->container);
                 $this->beanCache->put($this->getCacheKey(self::ROUTE_CACHE_KEY), $this->route);
-                $this->beanCache->put($this->getCacheKey(self::INTERCEPTORS_CACHE_KEY), $this->interceptors);
                 $this->beanCache->put($this->getCacheKey(self::ERROR_HANDLERS_CACHE_KEY), $this->exceptionResolvers);
             }
         }
@@ -210,8 +207,8 @@ class Engine {
         $this->updateRequestProvider($requestData);
 
         //Interceptor
-        $this->preHandleInterceptor($requestData);
         $this->executeFilter($requestData);
+        $this->preHandleInterceptor($requestData);
 
         //Controller
         $controllerName = $requestData->getControllerClassName();
@@ -284,6 +281,7 @@ class Engine {
      * @param Request $requestData
      * @param $controller
      * @throws ErrorException
+     * @throws \Spark\Common\IllegalStateException
      */
     private function handleAction(RequestData $requestData, $controller) {
 
@@ -295,7 +293,7 @@ class Engine {
         $viewModel = Objects::invokeMethod($controller, $methodName, $methodFillersParams);
 
         if ($this->isRestController($routeDef)) {
-            $viewModel= new JsonViewModel($viewModel);
+            $viewModel = new JsonViewModel($viewModel);
         }
 
         $this->handleViewModel($requestData, $viewModel);
@@ -316,7 +314,7 @@ class Engine {
 
 
     private function executeFilter(Request $request) {
-        $filters = $this->container->getByType(HttpFilter::CLASS_NAME);
+        $filters = $this->container->getByType(HttpFilter::class);
 
         if (Collections::isNotEmpty($filters)) {
             $filtersIterator = new \ArrayIterator($filters);
@@ -326,23 +324,19 @@ class Engine {
     }
 
 
-    /**
-     * @return string
-     */
-    private function getCacheKey($key) {
+    private function getCacheKey($key): string {
         return $this->appName . "_" . $key;
     }
 
-    /**
-     * @return null
-     */
-    private function isApcuCacheEnabled() {
+    private function isApcuCacheEnabled(): bool {
         return $this->apcuExtensionLoaded && $this->config->getProperty(EnableApcuAnnotationHandler::APCU_CACHE_ENABLED, false);
     }
 
     private function preHandleInterceptor(Request $request) {
+        $interceptors = $this->container->getByType(HandlerInterceptor::class);
+
         /** @var HandlerInterceptor $interceptor */
-        foreach ($this->interceptors as $interceptor) {
+        foreach ($interceptors as $interceptor) {
             if (BooleanUtils::isFalse($interceptor->preHandle($request))) {
                 break;
             }
@@ -350,8 +344,10 @@ class Engine {
     }
 
     private function postHandleIntercetors(Request $request, Response $response) {
+        $interceptors = $this->container->getByType(HandlerInterceptor::class);
+
         /** @var HandlerInterceptor $interceptor */
-        foreach ($this->interceptors as $interceptor) {
+        foreach ($interceptors as $interceptor) {
             $interceptor->postHandle($request, $response);
         }
 
@@ -369,7 +365,7 @@ class Engine {
 
         $this->postHandleIntercetors($request, $viewModel);
 
-        if (isset($viewModel)) {
+        if (Objects::isNotNull($viewModel)) {
             $this->handleView($viewModel, $request);
         } else {
             throw new ErrorException("ViewModel not found. Did you initiated ViewModel? ");
@@ -418,7 +414,7 @@ class Engine {
         return $this->profile;
     }
 
-    private function executeFillers(RoutingDefinition $rf) {
+    private function executeFillers(RoutingDefinition $rf): array {
         $params = array();
         $parameters = $rf->getActionMethodParameters();
 
@@ -434,7 +430,7 @@ class Engine {
 
     private function getFillerValue($fillers, $paramName, $type) {
         /** @var Filler $filler */
-        foreach($fillers as $filler) {
+        foreach ($fillers as $filler) {
             $value = $filler->getValue($paramName, $type);
             if (Objects::isNotNull($value)) {
                 return $value;
@@ -443,11 +439,7 @@ class Engine {
         return null;
     }
 
-    /**
-     * @param $routeDef
-     * @return bool
-     */
-    private function isRestController(RoutingDefinition $routeDef) {
+    private function isRestController(RoutingDefinition $routeDef): bool {
         $controllerAnnotations = $routeDef->getControllerAnnotations();
 
         $restControllerAnnotation = Collections::builder()
@@ -456,8 +448,7 @@ class Engine {
                 return Objects::getClassName($ann) === Annotations::REST_CONTROLLER;
             });
 
-        $isPresent = $restControllerAnnotation->isPresent();
-        return $isPresent;
+        return $restControllerAnnotation->isPresent();
     }
 
 

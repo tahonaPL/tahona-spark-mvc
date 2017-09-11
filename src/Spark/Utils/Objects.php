@@ -19,11 +19,11 @@ use Traversable;
 class Objects {
 
     public static function isNotNull($obj) :bool {
-        return isset($obj) && !is_null($obj);
+        return isset($obj) && null !== $obj;
     }
 
     public static function isNull($obj) :bool {
-        return is_null($obj) || !isset($obj);
+        return null === $obj || !isset($obj);
     }
 
     public static function isArray($obj) :bool {
