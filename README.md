@@ -224,7 +224,6 @@ class UserController extends Controller {
 ##### 4.Inject in action  method of controller #####
 
 ```php
-
 /**
 * @Controller
 */
@@ -239,7 +238,7 @@ class UserController {
         ));
      }
 }
-
+```
 
 
 ### View ###

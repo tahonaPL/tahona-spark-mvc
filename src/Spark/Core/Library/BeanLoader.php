@@ -104,7 +104,7 @@ class BeanLoader {
 
     /**
      *  Function that process all bean with user custom Annotation Handlers after bean initialization.
-     *  Has limited functionality, for creation new beans and auto inject (Inject annotation)
+     *  Functionality is limited and do not work for creation new beans and auto inject (Inject annotation)
      *  ,but for other else it works fine.
      */
     public function postProcess() {

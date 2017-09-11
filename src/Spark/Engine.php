@@ -258,7 +258,7 @@ class Engine {
     }
 
     private function afterAllBean() {
-        $resourcePaths = $this->container->getByType(LangResourcePath::CLASS_NAME);
+        $resourcePaths = $this->container->getByType(LangResourcePath::class);
 
         /** @var LangMessageResource $resource */
         $resource = $this->container->get(LangMessageResource::NAME);
