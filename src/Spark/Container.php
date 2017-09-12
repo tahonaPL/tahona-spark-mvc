@@ -121,7 +121,7 @@ class Container {
      * @param $type
      * @return array
      */
-    public function getByType($type) {
+    public function getByType($type) : array {
         if (Collections::hasKey($this->typeMap, (string)$type)) {
             return $this->typeMap[$type];
         }

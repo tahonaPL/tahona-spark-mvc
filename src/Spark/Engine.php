@@ -15,6 +15,7 @@ use Spark\Core\Command\Output\OutputInterface;
 use Spark\Core\Error\ExceptionResolver;
 use Spark\Core\Error\GlobalErrorHandler;
 use Spark\Core\Filler\BeanFiller;
+use Spark\Core\Filler\FileObjectFiller;
 use Spark\Core\Filler\Filler;
 use Spark\Core\Filler\RequestFiller;
 use Spark\Core\Filler\SessionFiller;
@@ -249,6 +250,7 @@ class Engine {
 
         $this->container->registerObj(new RequestFiller());
         $this->container->registerObj(new SessionFiller());
+        $this->container->registerObj(new FileObjectFiller());
         $this->container->registerObj(new BeanFiller());
 
         $this->addViewHandlersToService();

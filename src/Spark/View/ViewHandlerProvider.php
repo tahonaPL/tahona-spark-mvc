@@ -48,11 +48,10 @@ class ViewHandlerProvider {
 
             $viewHandler->handleView($response, $request);
         }
-
     }
 
     private function getProvider(Response $viewModel, $request) {
-        $handlers = $this->beanProvider->getByType(ViewHandler::CLASS_NAME);
+        $handlers = $this->beanProvider->getByType(ViewHandler::class);
 
         /** @var $handler ViewHandler */
         foreach ($handlers as $handler) {
