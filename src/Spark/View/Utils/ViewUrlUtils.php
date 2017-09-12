@@ -24,9 +24,10 @@ class ViewUrlUtils {
     public static function createViewPathWithViewName(RequestData $request, $viewName = null) {
         $viewName = Objects::isNull($viewName) ? $request->getMethodName() : $viewName;
 
+
         return StringUtils::join("/", array(
-            $request->getNamespace(),
-            ($request->getModuleName()),
+            strtolower($request->getNamespace()),
+            strtolower($request->getModuleName()),
             strtolower($request->getControllerName()),
             str_replace("Action", "", $viewName)
         ));

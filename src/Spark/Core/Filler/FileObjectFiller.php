@@ -21,7 +21,7 @@ class FileObjectFiller implements Filler {
 
     public function getValue($name, $type) {
 
-        if ( $type === FileObject::class) {
+        if ($type === FileObject::class) {
             return $this->requestProvider->getRequest()
                 ->getFileObject($name);
         }

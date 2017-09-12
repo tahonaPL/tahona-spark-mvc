@@ -76,12 +76,7 @@ class SmartyViewHandler extends ViewHandler {
         }
 
         $viewPath = $this->removePrefix($viewPath);
-
-
-//        $s = new SpeedTester();
-//        $s->start();
         $smarty->display($viewPath . '.tpl');
-//        $s->displayTime();
     }
 
     /**
