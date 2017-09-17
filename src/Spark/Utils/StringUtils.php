@@ -39,8 +39,8 @@ final class StringUtils {
         return Objects::isString($text) && (bool)preg_match('/\S/', (string)$text);
     }
 
-    public static function isBlank($text) :bool {
-        return !self::isNotBlank($text);
+    public static function isBlank($text): bool {
+        return Objects::isString($text) && !(bool)preg_match('/\S/', (string)$text);
     }
 
     public static function equalsIgnoreCase($string1, $string2) :bool {

@@ -152,7 +152,7 @@ class Engine {
 
             $this->afterAllBean();
 
-            $this->exceptionResolvers = $this->container->getByType(ExceptionResolver::CLASS_NAME);
+            $this->exceptionResolvers = $this->container->getByType(ExceptionResolver::class);
 
             if ($this->isApcuCacheEnabled()) {
                 $this->beanCache->put($this->getCacheKey(self::CONFIG_CACHE_KEY), $this->config);
