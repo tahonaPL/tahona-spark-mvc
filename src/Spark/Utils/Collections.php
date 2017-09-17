@@ -40,12 +40,12 @@ final class Collections {
         }
     }
 
-    public static function size($collection) {
+    public static function size(array $collection) {
         return count($collection);
     }
 
-    public static function isNotEmpty($collection) {
-        return false == self::isEmpty($collection);
+    public static function isNotEmpty(array $collection): bool {
+        return false === self::isEmpty($collection);
     }
 
     /**
@@ -53,7 +53,7 @@ final class Collections {
      * @param $collection
      * @return bool
      */
-    public static function isEmpty($collection) {
+    public static function isEmpty(array $collection): bool {
         $isNull = Objects::isNull($collection);
         if ($isNull) {
             return true;
@@ -63,11 +63,11 @@ final class Collections {
         return $count === 0;
     }
 
-    public static function exist($collection, $key) {
+    public static function exist(array $collection, string $key): bool {
         return in_array($key, $collection);
     }
 
-    public static function insert($collection, $index, $element) {
+    public static function insert(array $collection, $index, $element): array {
         $result = array();
         foreach ($collection as $v) {
             if (Collections::size($result) === $index) {
@@ -377,7 +377,7 @@ final class Collections {
     }
 
     public static function subList($accessor, $fromIndex, $toIndex) {
-        return array_slice($accessor,$fromIndex, $toIndex);
+        return array_slice($accessor, $fromIndex, $toIndex);
     }
 
     /**
