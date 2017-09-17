@@ -1,5 +1,5 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Spark\Utils;
 
@@ -17,7 +17,7 @@ final class StringUtils {
         return strpos($text, $prefix) === 0;
     }
 
-    public static function contains($text, $search, $ignoreCase = false) : bool {
+    public static function contains($text, $search, $ignoreCase = false): bool {
         if ($ignoreCase) {
             $text = strtolower($text);
             $search = strtolower($search);
@@ -30,20 +30,21 @@ final class StringUtils {
     public static function substring(string $string = null, int $indexFrom, int $length = null) {
         if (Objects::isNotNull($string)) {
             $substr = substr($string, $indexFrom, $length);
-            return Objects::isString($substr) ? $substr: null;
+            return Objects::isString($substr) ? $substr : null;
         }
         return null;
     }
 
-    public static function isNotBlank($text) :bool {
+    public static function isNotBlank(string $text = null): bool {
         return Objects::isString($text) && (bool)preg_match('/\S/', (string)$text);
     }
 
-    public static function isBlank($text): bool {
-        return Objects::isString($text) && !(bool)preg_match('/\S/', (string)$text);
+    public static function isBlank(string $text = null): bool {
+        return Objects::isNull($text) ||
+            (Objects::isString($text) && !(bool)(preg_match('/\S/', (string)$text)));
     }
 
-    public static function equalsIgnoreCase($string1, $string2) :bool {
+    public static function equalsIgnoreCase($string1, $string2): bool {
         return self::compareIgnoreCase($string1, $string2) === 0;
     }
 
@@ -66,11 +67,11 @@ final class StringUtils {
      * @param $string2
      * @return bool
      */
-    public static function equals($string1, $string2):bool {
+    public static function equals($string1, $string2): bool {
         return $string1 === $string2;
     }
 
-    public static function join($joiner, $stringArray = array(), $missEmpty = false) :string {
+    public static function join($joiner, $stringArray = array(), $missEmpty = false): string {
         if ($missEmpty) {
             $stringArray = array_filter($stringArray);
         }
@@ -90,8 +91,8 @@ final class StringUtils {
     }
 
 
-    public static function trim(string  $string = null){
-        if (Objects::isNotNull($string)){
+    public static function trim(string $string = null) {
+        if (Objects::isNotNull($string)) {
             return trim($string);
         }
         return null;
