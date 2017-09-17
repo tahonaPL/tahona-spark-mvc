@@ -13,7 +13,7 @@ use Spark\Utils\Collections;
 
 class ResourcePath {
 
-    public $paths;
+    protected $paths;
 
     /**
      * Path constructor.

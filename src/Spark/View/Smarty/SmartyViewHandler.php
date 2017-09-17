@@ -70,12 +70,7 @@ class SmartyViewHandler extends ViewHandler {
             $smarty->assign($key, $value, true);
         }
 
-        $viewPath = $viewModel->getViewName();
-        if (Objects::isNull($viewPath)) {
-            $viewPath = ViewUrlUtils::createFullViewPath($request);
-        }
-
-        $viewPath = $this->removePrefix($viewPath);
+        $viewPath = $this->getViewPath($viewModel, $request);
         $smarty->display($viewPath . '.tpl');
     }
 
@@ -135,5 +130,19 @@ class SmartyViewHandler extends ViewHandler {
         /** @var LangKeyProvider $langKeyProvider */
         $langKeyProvider = $this->beanProvider->getBean(LangKeyProvider::NAME);
         return $langKeyProvider->getLang();
+    }
+
+    /**
+     * @param $viewModel
+     * @param RequestData $request
+     * @return string
+     */
+    private function getViewPath($viewModel, RequestData $request): string {
+        $viewPath = $viewModel->getViewName();
+        if (Objects::isNull($viewPath)) {
+            $viewPath = ViewUrlUtils::createFullViewPath($request);
+        }
+
+        return $this->removePrefix($viewPath);
     }
 }
