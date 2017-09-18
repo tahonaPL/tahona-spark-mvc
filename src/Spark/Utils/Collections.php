@@ -174,10 +174,20 @@ final class Collections {
     }
 
     /**
+     * @deprecated use Stream
      * @param array $array
      * @return FluentIterables
      */
     public static function builder($array = array()) {
+        Asserts::checkArgument(Objects::isArray($array));
+        return new FluentIterables($array);
+    }
+
+    /**
+     * @param array $array
+     * @return FluentIterables
+     */
+    public static function stream($array = array()) {
         Asserts::checkArgument(Objects::isArray($array));
         return new FluentIterables($array);
     }

@@ -14,10 +14,10 @@ use Spark\Utils\Predicates;
 
 class RequestUtils {
 
-    const SESSION_NAME = "SESSID"; //AUTOMATICALLY IS PHPSESSID
+    const SESSION_NAME        = "SESSID"; //AUTOMATICALLY IS PHPSESSID
     const POST_REQUEST_METHOD = 'POST';
 
-    public static function isPost() {
+    public static function isPost(): bool {
         return $_SERVER['REQUEST_METHOD'] === self::POST_REQUEST_METHOD;
     }
 
@@ -46,7 +46,7 @@ class RequestUtils {
         return $_FILES;
     }
 
-    public static function isFile() {
+    public static function isFile(): bool {
         return false == empty($_FILES);
     }
 
@@ -71,13 +71,11 @@ class RequestUtils {
     }
 
 
-    public static function getSession() {
+    public static function getSession(): Session {
         if (CookieUtils::hasCookie(self::SESSION_NAME)) {
             return self::getOrCreateSession();
-        } else {
-            return new Session();
-
         }
+        return new Session();
     }
 
     public static function redirect($url, $statusCode = 303) {
@@ -93,11 +91,11 @@ class RequestUtils {
      * @param $url
      * @return bool
      */
-    private static function hasHttpPrefix($url) {
+    private static function hasHttpPrefix($url): bool {
         return self::hasPrefix($url, "http");
     }
 
-    private static function hasHttpsPrefix($url) {
+    private static function hasHttpsPrefix($url): bool {
         return self::hasPrefix($url, "https");
     }
 
@@ -106,12 +104,12 @@ class RequestUtils {
      * @param $prefix
      * @return bool
      */
-    private static function hasPrefix($url, $prefix) {
+    private static function hasPrefix($url, $prefix): bool {
         return strpos($url, $prefix) >= 0
-        || strpos($url, "http") >= 0;
+            || strpos($url, "http") >= 0;
     }
 
-    public static function isSSL() {
+    public static function isSSL(): bool {
         if (isset($_SERVER['HTTPS'])) {
             if ('on' == strtolower($_SERVER['HTTPS']))
                 return true;
@@ -177,13 +175,14 @@ class RequestUtils {
     }
 
     public static function getHeaders() {
+        //TODO
         return array();
 
         //return getallheaders();
     }
 
     public static function getBody() {
-        $entityBody = stream_get_contents(fopen("php://input","r"));
+        $entityBody = stream_get_contents(fopen("php://input", "r"));
         return $entityBody ? $entityBody : null;
     }
 }

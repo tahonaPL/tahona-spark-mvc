@@ -45,7 +45,7 @@ class DateUtils {
     }
 
 
-    public static function format(DateTime $date, $format) {
+    public static function format(DateTime $date, $format): string {
         Asserts::notNull($date, "Date cannot be null.");
         Asserts::notNull($format, "Date Format cannot be null.");
         return $date->format($format);

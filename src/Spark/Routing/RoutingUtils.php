@@ -16,6 +16,7 @@ use Spark\Http\Utils\RequestUtils;
 use Spark\Utils\Collections;
 use Spark\Utils\Predicates;
 use Spark\Utils\StringFunctions;
+use Spark\Utils\StringPredicates;
 use Spark\Utils\StringUtils;
 use tahona\Routing;
 
@@ -135,11 +136,13 @@ class RoutingUtils {
     }
 
     public static function getParametrizedUrlKeys($parametrizedPath) {
-        return Optional::of($parametrizedPath)
+        $val = Optional::of($parametrizedPath)
             ->map(StringFunctions::replace("\\", "/"))
             ->map(StringFunctions::split("/"))
-            ->toFluentIterable()
-            ->filter(Predicates::notEmpty())
+            ->orElse(array());
+
+        return Collections::stream($val)
+            ->filter(StringPredicates::notBlank())
             ->filter(function ($x) {
                 return RoutingUtils::hasExpression($x);
             })

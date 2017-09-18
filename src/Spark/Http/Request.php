@@ -3,19 +3,21 @@
 namespace Spark\Http;
 
 
+use Spark\Upload\FileObject;
+
 interface Request {
 
-    public function isPost();
+    public function isPost(): bool;
 
     public function getPostData();
 
-    public function getParam($name, $default = null);
+    public function getParam(string $name, $default = null);
 
     public function getSession();
 
-    public function getFileObject($name);
+    public function getFileObject(string $name): FileObject;
 
-    public function isFileUploaded();
+    public function isFileUploaded(): bool;
 
     public function getHeaders();
 

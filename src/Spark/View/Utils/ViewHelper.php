@@ -10,6 +10,7 @@ namespace Spark\View\Utils;
 
 
 use Spark\Controller;
+use Spark\Http\Request;
 use Spark\View\Plain\RedirectViewHandler;
 use Spark\View\Redirect\RedirectViewModel;
 use Spark\View\ViewModel;

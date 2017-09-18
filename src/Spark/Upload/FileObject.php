@@ -12,6 +12,7 @@ namespace Spark\Upload;
 use Spark\Common\Data\ContentType;
 use Spark\Utils\FilterUtils;
 use Spark\Utils\FileUtils;
+use Spark\Utils\StringUtils;
 
 class FileObject {
 
@@ -100,8 +101,8 @@ class FileObject {
         return $this->filePath;
     }
 
-    public function isContentType(ContentType $type) {
-        return $type->isContentType($this->contentType);
+    public function isContentType(string $type): bool {
+        return StringUtils::equalsIgnoreCase($type, $this->contentType);
     }
 
     public function moveTo($directoryPath) {

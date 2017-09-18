@@ -30,7 +30,7 @@ class FluentIterables {
      * @param array $collection
      * @return FluentIterables
      */
-    public function addAll($collection) {
+    public function addAll(array $collection) {
         if (Collections::isNotEmpty($collection)) {
             $firstKey = Collections::getKeys($collection)[0];
             if ($this->hasKeyValue($firstKey)) {

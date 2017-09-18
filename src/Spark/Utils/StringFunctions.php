@@ -20,7 +20,6 @@ class StringFunctions {
         return function ($x) {
             return strtoupper($x);
         };
-
     }
 
     public static function replace($search, $replacement) {
@@ -35,19 +34,13 @@ class StringFunctions {
         };
     }
 
-    public static function equals($value) {
-        return function ($x) use ($value) {
-            return StringUtils::equals($x, $value);
-        };
-    }
-
     public static function join($joiner) {
         return function ($x) use ($joiner) {
             return StringUtils::join($joiner, $x);
         };
     }
 
-    public static function trim() {
+    public static function trim()  {
         return function ($x) {
             return StringUtils::trim($x);
         };

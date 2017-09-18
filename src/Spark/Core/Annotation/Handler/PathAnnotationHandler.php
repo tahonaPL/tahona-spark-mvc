@@ -16,6 +16,7 @@ use Spark\Utils\Objects;
 use Spark\Utils\Predicates;
 use Spark\Utils\ReflectionUtils;
 use Spark\Utils\StringFunctions;
+use Spark\Utils\StringPredicates;
 use Spark\Utils\StringUtils;
 
 /**
@@ -47,7 +48,7 @@ class PathAnnotationHandler extends AnnotationHandler {
     public function handleMethodAnnotations($methodAnnotations = array(), $class, \ReflectionMethod $methodReflection) {
 
         $methodAnnotations = Collections::builder($methodAnnotations)
-            ->filter(Predicates::compute($this->getClassName(), StringFunctions::equals($this->annotationName)))
+            ->filter(Predicates::compute($this->getClassName(), StringPredicates::equals($this->annotationName)))
             ->get();
 
         $routingDefinitionFactory = new RoutingDefinitionFactory();

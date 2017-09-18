@@ -26,11 +26,11 @@ class RoutingDefinition {
     private $path;
     private $controllerClassName;
     private $actionMethod;
-    private $requestMethods;
-    private $requestHeaders;
-    private $params;
-    private $actionMethodParameters;
-    private $controllerAnnotations;
+    private $requestMethods = array();
+    private $requestHeaders = array();
+    private $params = array();
+    private $actionMethodParameters = array();
+    private $controllerAnnotations = array();
 
     /**
      * RoutingDefinition constructor.

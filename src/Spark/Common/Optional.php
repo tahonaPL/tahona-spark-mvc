@@ -88,13 +88,17 @@ class Optional {
         return $this->map(Functions::invokeGetMethod($propertyName));
     }
 
-    /**
-     * @param callable $func
-     * @return $this|Optional
-     */
-    public function map(\Closure $func) {
+    public function map(\Closure $func): Optional {
         if ($this->isPresent()) {
             return new Optional($func($this->obj));
+        }
+        return self::absent();
+    }
+
+
+    public function flatMap(\Closure $func): Optional {
+        if ($this->isPresent()) {
+            return $func($this->obj);
         }
         return self::absent();
     }
@@ -130,11 +134,5 @@ class Optional {
         }
     }
 
-    /**
-     * @return Collection\FluentIterables
-     */
-    public function toFluentIterable() {
-        return Collections::builder(Collections::asArray($this->orElse(array())));
-    }
 
 }

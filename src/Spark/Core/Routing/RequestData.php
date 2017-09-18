@@ -34,7 +34,7 @@ class RequestData implements Request {
     //url + Get params
     private $cachedGetParams;
 
-    function __construct() {
+    public function __construct() {
         $this->headers = new HeadersWrapper(RequestUtils::getHeaders());
     }
 
@@ -81,7 +81,7 @@ class RequestData implements Request {
         $this->controllerName = $controllerName;
     }
 
-    public function isPost() {
+    public function isPost() : bool{
         return RequestUtils::isPost();
     }
 
@@ -94,7 +94,7 @@ class RequestData implements Request {
             ->get();
     }
 
-    public function getParam($name, $default = null) {
+    public function getParam(string $name, $default = null) {
         $param = $this->getParamOrNull($name);
         return Objects::isNotNull($param) ? $param : $default;
     }
@@ -108,11 +108,7 @@ class RequestData implements Request {
     }
 
 
-    /**
-     * @param $name
-     * @return FileObject
-     */
-    public function getFileObject($name) {
+    public function getFileObject(string $name): FileObject {
         $fileData = $this->getFile($name);
         if (Objects::isNotNull($fileData)) {
             return FileObjectFactory::create($fileData);
@@ -120,11 +116,11 @@ class RequestData implements Request {
         return null;
     }
 
-    public function getFile($name) {
+    public function getFile(string $name) {
         return RequestUtils::getFileParams($name);
     }
 
-    public function isFileUploaded() {
+    public function isFileUploaded(): bool {
         return RequestUtils::isFile();
     }
 
@@ -163,9 +159,9 @@ class RequestData implements Request {
     private function getParamOrNull($name) {
         if (isset($this->urlParams[$name])) {
             return $this->urlParams[$name];
-        } else {
-            return RequestUtils::getParam($name);
         }
+        return RequestUtils::getParam($name);
+
     }
 
     public function getUrlParams() {

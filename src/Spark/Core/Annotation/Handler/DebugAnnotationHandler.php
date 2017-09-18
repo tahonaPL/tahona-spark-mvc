@@ -10,6 +10,7 @@ use Spark\Utils\Functions;
 use Spark\Utils\Objects;
 use Spark\Utils\Predicates;
 use Spark\Utils\StringFunctions;
+use Spark\Utils\StringPredicates;
 use Spark\Utils\StringUtils;
 
 /**
@@ -35,7 +36,7 @@ class DebugAnnotationHandler extends AnnotationHandler {
     public function handleClassAnnotations($annotations = array(), $class, \ReflectionClass $classReflection) {
         $defined = $this->annotationNames;
         $annotation = Collections::builder($annotations)
-            ->filter(Predicates::compute($this->getClassName(), StringFunctions::equals($defined)))
+            ->filter(Predicates::compute($this->getClassName(), StringPredicates::equals($defined)))
             ->findFirst();
 
         if ($annotation->isPresent()) {
