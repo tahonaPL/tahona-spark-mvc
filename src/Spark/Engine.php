@@ -379,7 +379,7 @@ class Engine {
      * @param $request
      * @throws \Exception
      */
-    public function updateRequestProvider($request) {
+    public function updateRequestProvider(Request $request) {
         /** @var RequestProvider $requestProvider */
         $requestProvider = $this->container->get(RequestProvider::NAME);
         $requestProvider->setRequest($request);

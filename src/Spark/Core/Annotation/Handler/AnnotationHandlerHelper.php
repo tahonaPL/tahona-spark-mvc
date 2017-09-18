@@ -18,7 +18,7 @@ class AnnotationHandlerHelper {
 
     public static function getAnnotation($annotations, $defined) {
         return Collections::builder($annotations)
-            ->filter(Predicates::compute(self::getClassName(), Predicates::contains($defined)))
+            ->filter(Predicates::compute(self::getClassName(), Predicates::in($defined)))
             ->findFirst();
     }
 

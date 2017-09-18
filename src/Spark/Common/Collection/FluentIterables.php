@@ -21,9 +21,12 @@ class FluentIterables {
      */
     private $collection = array();
 
-    function __construct($collection = array()) {
-        Asserts::notNull($collection);
+    private function __construct(array $collection) {
         $this->collection = $collection;
+    }
+
+    public static function of(array $arr): FluentIterables {
+        return new FluentIterables($arr);
     }
 
     /**
@@ -66,7 +69,7 @@ class FluentIterables {
         return Collections::builder(Collections::filter($this->collection, $mapFunction));
     }
 
-    public function get() {
+    public function get(): array {
         return $this->collection;
     }
 
@@ -99,7 +102,7 @@ class FluentIterables {
      * @param callable $func
      * @return FluentIterables
      */
-    public function flatMap(\Closure $func, $mergeKeys = false) {
+    public function flatMap(\Closure $func, $mergeKeys = false): FluentIterables {
         return Collections::builder(Collections::flatMap($this->collection, $func, $mergeKeys));
     }
 
@@ -126,8 +129,8 @@ class FluentIterables {
      */
     public function findFirst(\Closure $func = null) {
         if (Objects::isNull($func)) {
-            return Collections::findFirst($this->collection, function($obj){
-               return Objects::isNotNull($obj);
+            return Collections::findFirst($this->collection, function ($obj) {
+                return Objects::isNotNull($obj);
             });
         }
 
@@ -166,8 +169,8 @@ class FluentIterables {
      */
     public function getList() {
         $collection = array();
-        foreach($this->collection as $v){
-            $collection[]=$v;
+        foreach ($this->collection as $v) {
+            $collection[] = $v;
         }
         return $collection;
     }
@@ -178,7 +181,7 @@ class FluentIterables {
 
     private function toEntries($collection) {
         $entries = [];
-        foreach($collection as $k=> $v) {
+        foreach ($collection as $k => $v) {
             $entries[] = new Entry($k, $v);
         }
         return $entries;

@@ -332,12 +332,9 @@ class Container {
      */
     private function getClassNames($object) {
         if ($object instanceof BeanProxy) {
-            $classNames = Objects::getClassNames($object->getBean());
-            return $classNames;
-        } else {
-            $classNames = Objects::getClassNames($object);
-            return $classNames;
+            return Objects::getClassNames($object->getBean());
         }
+        return Objects::getClassNames($object);
     }
 
     /**

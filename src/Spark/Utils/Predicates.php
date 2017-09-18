@@ -41,7 +41,13 @@ class Predicates {
         };
     }
 
-    public static function contains($defined = array()) {
+    public static function notIn(array $defined) {
+        return function ($x) use ($defined) {
+            return !Collections::contains($x, $defined);
+        };
+    }
+
+    public static function in(array $defined) {
         return function ($x) use ($defined) {
             return Collections::contains($x, $defined);
         };

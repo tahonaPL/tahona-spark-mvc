@@ -179,8 +179,7 @@ final class Collections {
      * @return FluentIterables
      */
     public static function builder($array = array()) {
-        Asserts::checkArgument(Objects::isArray($array));
-        return new FluentIterables($array);
+        return self::stream($array);
     }
 
     /**
@@ -189,7 +188,7 @@ final class Collections {
      */
     public static function stream($array = array()) {
         Asserts::checkArgument(Objects::isArray($array));
-        return new FluentIterables($array);
+        return FluentIterables::of($array);
     }
 
     /**
@@ -317,12 +316,8 @@ final class Collections {
         return Optional::absent();
     }
 
-    /**
-     * @param $getCode
-     * @param $array boolean
-     */
-    public static function contains($code, $array = array()) {
-        return in_array($code, $array);
+    public static function contains($element, array $array): bool {
+        return in_array($element, $array, true);
     }
 
     public static function setKeys(&$collection = array(), $keys = array(), $value) {

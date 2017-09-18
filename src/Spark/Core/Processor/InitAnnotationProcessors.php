@@ -176,7 +176,7 @@ class InitAnnotationProcessors extends AnnotationHandler {
      */
     private function getAnnotation($annotations, $defined = array()) {
         return Collections::builder($annotations)
-            ->filter(Predicates::compute($this->getClassName(), Predicates::contains($defined)))
+            ->filter(Predicates::compute($this->getClassName(), Predicates::in($defined)))
             ->findFirst();
     }
 

@@ -7,25 +7,16 @@ use Spark\Utils\Asserts;
 
 class DateUtils {
 
-    /**
-     * @return DateTime
-     */
-    public static function now() {
+
+    public static function now(): DateTime {
         return new DateTime();
     }
 
-    /**
-     *  $date is after $afterDate
-     *
-     * @param DateTime $date
-     * @param DateTime $afterDate
-     * @return bool
-     */
-    public static function isAfter(DateTime $date, DateTime $afterDate) {
+    public static function isAfter(DateTime $date, DateTime $afterDate): bool {
         return $date > $afterDate;
     }
 
-    public static function isAfterEqual(DateTime $date, DateTime $afterDate) {
+    public static function isAfterEqual(DateTime $date, DateTime $afterDate): bool {
         return $date >= $afterDate;
     }
 
@@ -36,11 +27,11 @@ class DateUtils {
      * @param DateTime $beforeDate
      * @return bool
      */
-    public static function isBefore(DateTime $date, DateTime $beforeDate) {
+    public static function isBefore(DateTime $date, DateTime $beforeDate) :bool {
         return $date < $beforeDate;
     }
 
-    public static function isBeforeEqual(DateTime $date, DateTime $beforeDate) {
+    public static function isBeforeEqual(DateTime $date, DateTime $beforeDate) :bool {
         return $date <= $beforeDate;
     }
 
