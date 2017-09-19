@@ -13,8 +13,8 @@ use Spark\Utils\Predicates;
 use Spark\Utils\StringUtils;
 
 /**
- * Created by PhpStorm.
- * User: primosz67
+ *
+ *
  * Date: 30.01.17
  * Time: 08:57
  */

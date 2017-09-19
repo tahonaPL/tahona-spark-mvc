@@ -1,7 +1,7 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: primosz67
+ *
+ *
  * Date: 13.07.14
  * Time: 19:31
  */
@@ -11,6 +11,7 @@ namespace Spark\Utils;
 
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Annotations\AnnotationRegistry;
+use Spark\Common\Optional;
 use Spark\Core\Annotation\Bean;
 use Spark\Utils\Collections;
 use Spark\Utils\Objects;
@@ -98,7 +99,6 @@ class ReflectionUtils {
         $fluentIterables = Collections::builder()
             ->addAll($reflectionMethods);
 
-
         while ($cls != null) {
             $fluentIterables->addAll($cls->getMethods());
             $cls = $cls->getParentClass();
@@ -153,6 +153,14 @@ class ReflectionUtils {
         $annotationReader = self::getReaderInstance();
         $reflectionObject = new \ReflectionClass($fullClassName);
         return $annotationReader->getClassAnnotations($reflectionObject);
+    }
+
+    public static function hasConstructParameters(\ReflectionClass $reflectionClass): bool {
+        $orElse = Optional::of($reflectionClass)
+            ->map(Functions::get("constructor"))
+            ->map(Functions::get("numberOfParameters"))
+            ->orElse(0);
+        return $orElse > 0;
     }
 
 }

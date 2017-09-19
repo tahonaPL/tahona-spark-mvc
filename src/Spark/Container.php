@@ -3,10 +3,14 @@
 namespace Spark;
 
 use Exception;
+use Spark\Cache\Cache;
+use Spark\Cache\Service\CacheableServiceBeanProxy;
 use Spark\Common\Collection\Entry;
+use Spark\Common\Collection\FluentIterables;
 use Spark\Common\IllegalArgumentException;
 use Spark\Common\IllegalStateException;
 use Spark\Common\Type\Orderable;
+use Spark\Core\Definition\BeanConstructorFactory;
 use Spark\Core\Definition\BeanDefinition;
 use Spark\Core\Definition\BeanProxy;
 use Spark\Core\Definition\ToInjectObserver;
@@ -32,6 +36,44 @@ class Container {
 
     public function registerObj($obj) {
         $this->register(lcfirst(Objects::getSimpleClassName($obj)), $obj);
+    }
+
+    public function registerClass($beanName, $class) {
+
+        $reflectionClass = new \ReflectionClass($class);
+
+        if (ReflectionUtils::hasConstructParameters($reflectionClass)) {
+            $methodParameters = FluentIterables::of($reflectionClass->getConstructor()->getParameters())
+                ->convertToMap(Functions::field("name"))
+                ->map(function ($param) {
+                    return $param->getClass();
+                })
+                ->map(function ($cls) {
+                    return Objects::isNotNull($cls) ? $cls->name : null;
+                })
+                ->get();
+
+            $this->beanContainer[$beanName] = new BeanConstructorFactory($beanName, $class, $methodParameters);
+        } else {
+            $this->register($beanName, $this->getCreateBean($class));
+        }
+    }
+
+    private function getCreateBean($class) {
+        $bean = new $class;
+
+        $cacheDefinition = array();
+        ReflectionUtils::handleMethodAnnotation($bean, Annotations::CACHE, function ($bean, $reflectionProperty, $annotation) use (&$cacheDefinition) {
+            /** @var Cache $annotation */
+            /** @var \ReflectionMethod $reflectionProperty */
+            $cacheDefinition[$reflectionProperty->getName()] = $annotation;
+        });
+
+        if (Collections::isNotEmpty($cacheDefinition)) {
+            return new CacheableServiceBeanProxy($bean);
+        }
+        return $bean;
+
     }
 
     public function register($name, $object) {
@@ -121,7 +163,7 @@ class Container {
      * @param $type
      * @return array
      */
-    public function getByType($type) : array {
+    public function getByType($type): array {
         if (Collections::hasKey($this->typeMap, (string)$type)) {
             return $this->typeMap[$type];
         }
@@ -321,7 +363,6 @@ class Container {
                         }
                         return null;
                     });
-
             }
         }
     }
@@ -413,4 +454,5 @@ class Container {
             }
         }
     }
+
 }

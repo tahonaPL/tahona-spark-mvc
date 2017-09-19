@@ -1,6 +1,6 @@
 <?php
 /**
- * Created by PhpStorm.
+ *
  * User: crownclown67
  * Date: 07.09.17
  * Time: 09:30

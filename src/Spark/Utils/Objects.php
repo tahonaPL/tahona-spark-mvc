@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
 /**
- * Created by PhpStorm.
- * User: primosz67
+ *
+ *
  * Date: 21.12.14
  * Time: 23:46
  */

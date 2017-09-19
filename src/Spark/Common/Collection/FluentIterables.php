@@ -1,7 +1,7 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: primosz67
+ *
+ *
  * Date: 24.03.15
  * Time: 08:02
  */
@@ -33,7 +33,7 @@ class FluentIterables {
      * @param array $collection
      * @return FluentIterables
      */
-    public function addAll(array $collection) {
+    public function addAll(array $collection): FluentIterables {
         if (Collections::isNotEmpty($collection)) {
             $firstKey = Collections::getKeys($collection)[0];
             if ($this->hasKeyValue($firstKey)) {
@@ -42,14 +42,14 @@ class FluentIterables {
                 Collections::addAll($this->collection, $collection);
             }
         }
-        return Collections::builder($this->collection);
+        return self::of($this->collection);
     }
 
     /**
      * @param $firstKey
      * @return bool
      */
-    private function hasKeyValue($firstKey) {
+    private function hasKeyValue($firstKey): bool {
         return $firstKey !== 0;
     }
 
@@ -57,16 +57,16 @@ class FluentIterables {
      * @param callable $keyFunction
      * @return FluentIterables
      */
-    public function convertToMap(\Closure $keyFunction) {
-        return Collections::builder(Collections::convertToMap($this->collection, $keyFunction));
+    public function convertToMap(\Closure $keyFunction): FluentIterables {
+        return self::of(Collections::convertToMap($this->collection, $keyFunction));
     }
 
     /**
      * @param callable $mapFunction
      * @return FluentIterables
      */
-    public function filter(\Closure $mapFunction) {
-        return Collections::builder(Collections::filter($this->collection, $mapFunction));
+    public function filter(\Closure $mapFunction): FluentIterables {
+        return self::of(Collections::filter($this->collection, $mapFunction));
     }
 
     public function get(): array {
@@ -77,15 +77,15 @@ class FluentIterables {
      * @param callable $func
      * @return FluentIterables
      */
-    public function map(\Closure $func) {
-        return Collections::builder(Collections::map($this->collection, $func));
+    public function map(\Closure $func): FluentIterables {
+        return self::of(Collections::map($this->collection, $func));
     }
 
     /**
      * @param callable $func
      * @return bool
      */
-    public function anyMatch(\Closure $func) {
+    public function anyMatch(\Closure $func): bool {
         return Collections::anyMatch($this->collection, $func);
     }
 
@@ -93,7 +93,7 @@ class FluentIterables {
      * @param callable $func
      * @return bool
      */
-    public function noneMatch(\Closure $func) {
+    public function noneMatch(\Closure $func): bool {
         return Collections::noneMatch($this->collection, $func);
     }
 
@@ -103,31 +103,27 @@ class FluentIterables {
      * @return FluentIterables
      */
     public function flatMap(\Closure $func, $mergeKeys = false): FluentIterables {
-        return Collections::builder(Collections::flatMap($this->collection, $func, $mergeKeys));
+        return self::of(Collections::flatMap($this->collection, $func, $mergeKeys));
     }
 
     /**
      * @param callable $func
      * @return FluentIterables
      */
-    public function groupBy(\Closure $func) {
-        return Collections::builder(Collections::groupBy($this->collection, $func));
+    public function groupBy(\Closure $func): FluentIterables {
+        return self::of(Collections::groupBy($this->collection, $func));
     }
 
     /**
      * @param callable $func
      * @return FluentIterables
      */
-    public function sort(\Closure $func) {
+    public function sort(\Closure $func): FluentIterables {
         Collections::sortFunc($this->collection, $func);
-        return Collections::builder($this->collection);
+        return self::of($this->collection);
     }
 
-    /**
-     * @param callable $func
-     * @return Optional
-     */
-    public function findFirst(\Closure $func = null) {
+    public function findFirst(\Closure $func = null): Optional {
         if (Objects::isNull($func)) {
             return Collections::findFirst($this->collection, function ($obj) {
                 return Objects::isNotNull($obj);
@@ -148,26 +144,26 @@ class FluentIterables {
         return $this;
     }
 
-    public function insert($index, $element) {
-        return Collections::builder(Collections::insert($this->collection, $index, $element));
+    public function insert($index, $element): FluentIterables {
+        return self::of(Collections::insert($this->collection, $index, $element));
     }
 
     /**
      * @param $element
      * @return FluentIterables
      */
-    public function add($element) {
+    public function add($element): FluentIterables {
         $array = $this->collection;
         $array[] = $element;
 
-        return Collections::builder($array);;
+        return self::of($array);;
     }
 
     /**
      * Return array with reorganize indexes. keys: 0, 1, 2 ...
      * @return array
      */
-    public function getList() {
+    public function getList(): array {
         $collection = array();
         foreach ($this->collection as $v) {
             $collection[] = $v;
@@ -175,11 +171,11 @@ class FluentIterables {
         return $collection;
     }
 
-    public function entries() {
-        return Collections::builder($this->toEntries($this->collection));
+    public function entries(): FluentIterables {
+        return self::of($this->toEntries($this->collection));
     }
 
-    private function toEntries($collection) {
+    private function toEntries(array $collection): array {
         $entries = [];
         foreach ($collection as $k => $v) {
             $entries[] = new Entry($k, $v);

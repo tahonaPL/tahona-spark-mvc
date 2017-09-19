@@ -1,7 +1,7 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: primosz67
+ *
+ *
  * Date: 24.03.15
  * Time: 08:06
  */
@@ -19,25 +19,23 @@ class Optional {
 
     private $obj;
 
-    function __construct($obj) {
+    private function __construct($obj) {
         $this->obj = $obj;
     }
 
-    /**
-     * @return Optional
-     */
-    public static function of($obj) {
+    public static function of($obj): Optional {
         Asserts::notNull($obj);
         return new Optional($obj);
     }
 
-    /**
-     * @return Optional
-     */
-    public static function ofNullable($obj) {
+    public static function ofNullable($obj): Optional {
         return new Optional($obj);
     }
 
+    /**
+     * @throws IllegalArgumentException
+     * @return mixed
+     */
     public function get() {
         Asserts::notNull($this->obj, "Cannot invoke get on NULL Optional reference");
         return $this->obj;
@@ -52,26 +50,23 @@ class Optional {
      * @return mixed
      */
     public function orElse($obj) {
-        return $this->getOrElse($obj);
+        if ($this->isPresent()) {
+            return $this->obj;
+        }
+
+        return $obj;
     }
 
     /**
      * @deprecated
-     * @param $obj
+     * @param $objs
      * @return mixed
      */
     public function getOrElse($obj) {
-        if ($this->isPresent()) {
-            return $this->obj;
-        } else {
-            return $obj;
-        }
+        return $this->orElse($obj);
     }
 
-    /**
-     * @return bool
-     */
-    public function isPresent() {
+    public function isPresent(): bool {
         return Objects::isNotNull($this->obj);
     }
 
@@ -103,18 +98,11 @@ class Optional {
         return self::absent();
     }
 
-    /**
-     * @return Optional
-     */
-    public static function absent() {
+    public static function absent(): Optional {
         return new Optional(null);
     }
 
-    /**
-     * @param callable $pred
-     * @return $this|Optional
-     */
-    public function filter(\Closure $pred) {
+    public function filter(\Closure $pred): Optional {
         if ($this->isPresent() && $pred($this->obj)) {
             return $this;
         }

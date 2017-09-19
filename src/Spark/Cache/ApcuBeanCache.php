@@ -5,8 +5,8 @@ namespace Spark\Cache;
 use Spark\Common\IllegalArgumentException;
 
 /**
- * Created by PhpStorm.
- * User: primosz67
+ *
+ *
  * Date: 18.10.16
  * Time: 22:38
  */

@@ -7,6 +7,7 @@ use Spark\Cache\Service\CacheService;
 use Spark\Common\Optional;
 use Spark\Core\Annotation\Cache;
 use Spark\Core\Annotation\Handler\AnnotationHandler;
+use Spark\Core\Definition\BeanConstructorFactory;
 use Spark\Core\Library\Annotations;
 use Spark\Utils\Collections;
 use Spark\Utils\Functions;
@@ -17,8 +18,8 @@ use Spark\Utils\StringFunctions;
 use Spark\Utils\StringUtils;
 
 /**
- * Created by PhpStorm.
- * User: primosz67
+ *
+ *
  * Date: 30.01.17
  * Time: 08:57
  */
@@ -42,7 +43,7 @@ class ComponentAnnotationHandler extends AnnotationHandler {
             $className = $classReflection->getName();
             $beanName = $this->getBeanName($annotation->get(), $className);
 
-            $this->getContainer()->register($beanName, $this->getCreateBean($class));
+            $this->addBean($class, $beanName);
         }
     }
 
@@ -62,23 +63,6 @@ class ComponentAnnotationHandler extends AnnotationHandler {
 
     }
 
-    private function getCreateBean($class) {
-        $bean = new $class;
-
-        $cacheDefinition = array();
-        ReflectionUtils::handleMethodAnnotation($bean, Annotations::CACHE, function ($bean, $reflectionProperty, $annotation) use (&$cacheDefinition) {
-            /** @var Cache $annotation */
-            /** @var \ReflectionMethod $reflectionProperty */
-            $cacheDefinition[$reflectionProperty->getName()] = $annotation;
-        });
-
-        if (Collections::isNotEmpty($cacheDefinition)) {
-            return new CacheableServiceBeanProxy($bean);
-        } else {
-            return $bean;
-        }
-
-    }
 
     /**
      * @param $annotations
@@ -89,6 +73,14 @@ class ComponentAnnotationHandler extends AnnotationHandler {
         return Collections::builder($annotations)
             ->filter(Predicates::compute($this->getClassName(), Predicates::in($defined)))
             ->findFirst();
+    }
+
+    /**
+     * @param $class
+     * @param $beanName
+     */
+    private function addBean($class, $beanName) {
+        $this->getContainer()->registerClass($beanName, $class);
     }
 
 }

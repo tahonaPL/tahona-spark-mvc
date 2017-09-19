@@ -3,8 +3,8 @@
 namespace Spark\Cache;
 
 /**
- * Created by PhpStorm.
- * User: primosz67
+ *
+ *
  * Date: 18.10.16
  * Time: 22:12
  */
