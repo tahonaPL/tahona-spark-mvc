@@ -18,15 +18,18 @@ class FilterUtils {
                 $param[$key] = self::filterVariable($value);
             }
             return $param;
-        } else if (is_object($param)) {
-            return $param;
-        } else if (isset($param)) {
-            $escapedString  = $param;
-//            $escapedString = self::escapeMysql($param);
-            return htmlspecialchars($escapedString);
-        } else {
-            return null;
         }
+
+        if (is_object($param)) {
+            return $param;
+        }
+
+        if (isset($param)) {
+            $escapedString  = $param;
+            return htmlspecialchars($escapedString);
+        }
+
+        return null;
     }
 
     /**
