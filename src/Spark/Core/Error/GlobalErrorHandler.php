@@ -118,7 +118,7 @@ class GlobalErrorHandler {
 
             //Default behavior
             /** @var ErrorException $error */
-            ResponseHelper::setCode(HttpCode::$INTERNAL_SERVER_ERROR);
+            ResponseHelper::setCode(HttpCode::INTERNAL_SERVER_ERROR);
             return new \Exception($error->getMessage(), $error->getCode(), $error);
         };
     }

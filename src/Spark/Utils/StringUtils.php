@@ -36,12 +36,12 @@ final class StringUtils {
     }
 
     public static function isNotBlank(string $text = null): bool {
-        return Objects::isString($text) && (bool)preg_match('/\S/', (string)$text);
+        return (bool)preg_match('/\S/', (string)$text);
     }
 
     public static function isBlank(string $text = null): bool {
         return Objects::isNull($text) ||
-            (Objects::isString($text) && !(bool)(preg_match('/\S/', (string)$text)));
+            !(bool)(preg_match('/\S/', (string)$text));
     }
 
     public static function equalsIgnoreCase($string1, $string2): bool {

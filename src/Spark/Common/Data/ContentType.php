@@ -9,8 +9,6 @@
 namespace Spark\Common\Data;
 
 
-use Spark\Utils\StringUtils;
-
 class ContentType {
 
     const APPLICATION_PDF  = "application/pdf";

@@ -389,7 +389,7 @@ final class Collections {
      * @param array $array
      * @return Optional
      */
-    public static function first($array = array()) {
+    public static function first($array = array()): Optional {
         return self::findFirst($array, Predicates::notNull());
     }
 

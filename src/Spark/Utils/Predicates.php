@@ -65,4 +65,10 @@ class Predicates {
         };
     }
 
+    public static function isArray(): \Closure {
+        return function ($x) {
+            return Objects::isArray($x);
+        };
+    }
+
 } 

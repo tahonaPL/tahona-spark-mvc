@@ -45,10 +45,6 @@ class Optional {
         return $this->obj;
     }
 
-    /**
-     * @param $obj
-     * @return mixed
-     */
     public function orElse($obj) {
         if ($this->isPresent()) {
             return $this->obj;

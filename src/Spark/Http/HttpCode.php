@@ -11,8 +11,11 @@ namespace Spark\Http;
 
 class HttpCode {
 
-    const OK = 200;
-    const UNAUTHORIZED = 401;
+    const OK                    = 200;
+    const UNAUTHORIZED          = 401;
+    const INTERNAL_SERVER_ERROR = 500;
+    const NOT_FOUND             = 404;
+
 
     public static $OK; //200
     public static $CREATED; //201

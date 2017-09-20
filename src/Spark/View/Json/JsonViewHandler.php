@@ -27,8 +27,8 @@ class JsonViewHandler extends ViewHandler {
     }
 
     public function handleView($viewModel, RequestData $request) {
-        ResponseHelper::setCode(HttpCode::$OK);
-        ResponseHelper::setContentType(ContentType::$APPLICATION_JSON);
+        ResponseHelper::setCode(HttpCode::OK);
+        ResponseHelper::setContentType(ContentType::APPLICATION_JSON);
 
         echo JsonUtils::toJson($viewModel->getObj());
 //        echo json_encode(, JSON_NUMERIC_CHECK );

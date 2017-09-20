@@ -95,11 +95,8 @@ class UrlUtils {
 
     /**
      * build full path with params. If "path" start with https or http returned is "path" value.
-     * @param $path
-     * @param array $params
-     * @return string
      */
-    public static function getPath($path, $params = array()) {
+    public static function getPath(string $path, $params = array()): string {
         if (strpos($path, "http:") === 0 || StringUtils::startsWith($path, "https")) {
             return $path;
         } else {

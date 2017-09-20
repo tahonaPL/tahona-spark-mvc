@@ -9,16 +9,12 @@
 namespace Spark\View;
 
 
-use Spark\Common\IllegalArgumentException;
 use Spark\Config;
 use Spark\Core\Annotation\Inject;
 use Spark\Core\Provider\BeanProvider;
-use Spark\Container;
 use Spark\Http\Response;
 use Spark\Utils\Asserts;
-use Spark\Utils\Collections;
 use Spark\Utils\Objects;
-use Spark\View\ViewModel;
 
 class ViewHandlerProvider {
 
