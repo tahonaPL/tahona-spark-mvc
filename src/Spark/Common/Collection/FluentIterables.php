@@ -10,7 +10,6 @@ namespace Spark\Common\Collection;
 
 
 use Spark\Common\Optional;
-use Spark\Utils\Asserts;
 use Spark\Utils\Collections;
 use Spark\Utils\Objects;
 
@@ -25,7 +24,7 @@ class FluentIterables {
         $this->collection = $collection;
     }
 
-    public static function of(array $arr): FluentIterables {
+    public static function of(array $arr = array()): FluentIterables {
         return new FluentIterables($arr);
     }
 

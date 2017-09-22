@@ -25,11 +25,15 @@ class FilterUtils {
         }
 
         if (isset($param)) {
-            $escapedString  = $param;
+            $escapedString = $param;
             return htmlspecialchars($escapedString);
         }
 
         return null;
+    }
+
+    public static function stripTags(string $input): string {
+        return strip_tags($input);
     }
 
     /**

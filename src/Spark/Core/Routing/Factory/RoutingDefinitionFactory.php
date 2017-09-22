@@ -58,6 +58,7 @@ class RoutingDefinitionFactory {
         $routingDefinition->setControllerClassName($reflectionClass->getName());
         $routingDefinition->setControllerAnnotations($controllerAnnotations);
         $routingDefinition->setActionMethod($methodReflection->getName());
+        $routingDefinition->setActionMethodParameters($this->getMethodParameters($methodReflection));
 
         $routingDefinition->setRequestHeaders($methodAnnotation->header);
         $routingDefinition->setRequestMethods($methodAnnotation->method);
