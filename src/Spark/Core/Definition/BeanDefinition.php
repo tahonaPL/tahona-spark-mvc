@@ -22,6 +22,7 @@ class BeanDefinition {
     private $bean;
 
     private $classNames;
+    private $ready = false;
 
     /**
      * BeanDefinition constructor.
@@ -33,6 +34,10 @@ class BeanDefinition {
         $this->bean = $bean;
 
         $this->classNames = $classNames;
+    }
+
+    public function ready() {
+        $this->ready = true;
     }
 
     /**
@@ -59,6 +64,11 @@ class BeanDefinition {
     public function hasType($type) {
         return in_array($type, $this->classNames);
     }
+
+    public function isReady() {
+        return $this->ready;
+    }
+
 
 
 }

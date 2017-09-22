@@ -2,25 +2,23 @@
 
 namespace Spark;
 
-use Exception;
 use Spark\Cache\Cache;
 use Spark\Cache\Service\CacheableServiceBeanProxy;
-use Spark\Common\Collection\Entry;
 use Spark\Common\Collection\FluentIterables;
-use Spark\Common\IllegalArgumentException;
 use Spark\Common\IllegalStateException;
 use Spark\Common\Type\Orderable;
+use Spark\Core\Annotation\Bean;
 use Spark\Core\Definition\BeanConstructorFactory;
 use Spark\Core\Definition\BeanDefinition;
 use Spark\Core\Definition\BeanProxy;
 use Spark\Core\Definition\ToInjectObserver;
-use Spark\Core\Filler\Filler;
 use Spark\Core\Library\Annotations;
 use Spark\Core\Service\ServiceHelper;
 use Spark\Utils\Asserts;
 use Spark\Utils\Collections;
 use Spark\Utils\Functions;
 use Spark\Utils\Objects;
+use Spark\Utils\Predicates;
 use Spark\Utils\ReflectionUtils;
 use Spark\Utils\StringUtils;
 
@@ -79,30 +77,30 @@ class Container {
     public function register($name, $object) {
         Asserts::checkState(false === isset($this->beanContainer[$name]), "Bean already added: " . $name);
 
-        $this->beanContainer[$name] = new BeanDefinition($name, $object, $this->getClassNames($object));
+        $beanDefinition = new BeanDefinition($name, $object, $this->getClassNames($object));
+        $this->addToContainer($beanDefinition);
 
         if ($this->initialized) {
-            /** @var BeanDefinition $definition */
-            $definition = $this->beanContainer[$name];
+            $waiting = $this->initLifeCycle($beanDefinition);
 
-            $this->updateRelations($name);
-
-            $bean = $definition->getBean();
-
-            $this->injectTo($bean);
-            $this->buildBeanAnnotation($bean);
+            if (Collections::isNotEmpty($waiting)) {
+                throw new IllegalStateException("Problem with injection");
+            }
         }
     }
 
     /**
      * @param $bean
-     * @return array  lista Observerów czekających na wstrzyknięcie.
+     * @return array lista Observerów czekających na wstrzyknięcie.
      */
-    public function injectTo($bean) {
+    public function injectTo(BeanDefinition $beanDef): array {
+        $bean = $beanDef->getBean();
 
-        $toInjectObservers = Collections::builder();
+        $toInjectObservers = FluentIterables::of();
         if ($bean instanceof BeanProxy) {
-            $toInjectObservers->addAll($this->injectTo($bean->getBean()));
+            $variable = $bean->getBean();
+            $v = new BeanDefinition($beanDef->getName(), $variable, $beanDef->getClassNames());
+            $toInjectObservers->addAll($this->injectTo($v));
         }
 
         if ($bean instanceof ServiceHelper) {
@@ -115,7 +113,7 @@ class Container {
         $overrideInjections = Annotations::getOverrideInjections(Objects::getClassName($bean));
 
         $result = ReflectionUtils::handlePropertyAnnotation($bean, Annotations::INJECT,
-            function ($bean, \ReflectionProperty $property, $annotation) use ($overrideInjections) {
+            function ($bean, \ReflectionProperty $property, $annotation) use ($overrideInjections, $beanDef) {
                 $beanNameToInject = $this->getBeanName($property, $annotation);
 
                 $swap = Collections::hasKey($overrideInjections, $beanNameToInject);
@@ -127,15 +125,17 @@ class Container {
 
                 if ($hasKey) {
                     $property->setAccessible(true);
-                    $property->setValue($bean, $this->get($beanNameToInject));
+                    $toInject = $this->getBeanDefinition($beanNameToInject);
+                    $property->setValue($bean, $toInject->getBean());
                     return null;
                 }
 
-                return new ToInjectObserver($bean, $beanNameToInject);
+                return new ToInjectObserver($beanDef, $beanNameToInject);
             }
         );
-        $toInjectObservers->addAll($result);
-        return $toInjectObservers->get();
+        return $toInjectObservers->addAll($result)
+            ->filter(Predicates::notNull())
+            ->get();
     }
 
     /**
@@ -151,8 +151,8 @@ class Container {
     }
 
     public function get($name) {
-        Asserts::checkState($this->hasBean($name), "No bean with name: " . $name);
-        return $this->beanContainer[$name]->getBean();
+        return $this->getBeanDefinition($name)
+            ->getBean();
     }
 
     public function hasBean($name) {
@@ -177,7 +177,7 @@ class Container {
 
             // initialized flag must be before "injectAndCreate" for register bean in @PostConstruct block
             $this->initialized = true;
-            $this->injectAndCreate($this->beanContainer);
+            $this->buildAllBeans();
         }
     }
 
@@ -194,63 +194,63 @@ class Container {
         $bean = $def->getBean();
         $buildBeanDefinitions = $this->createBuildAnnotationBeans($bean);
 
-        Collections::builder($buildBeanDefinitions)
-            ->each(function ($def) {
-                /** @var BeanDefinition $def */
-                $this->beanContainer[$def->getName()] = $def;
+        FluentIterables::of($buildBeanDefinitions)
+            ->each(function ($newDef) {
+                $this->addToContainer($newDef);
             });
 
         //Then - Update their relations
         /** @var BeanDefinition $beanDef */
         foreach ($buildBeanDefinitions as $beanDef) {
-            $this->updateRelations($beanDef->getName());
+            $waitingList = $this->initLifeCycle($beanDef);
 
-            $newBean = $beanDef->getBean();
-            $waitingList = $this->injectTo($newBean);
-
-            if (Collections::isEmpty($waitingList)) {
-                $this->buildBeanAnnotation($beanDef);
-            } else {
+            if (Collections::isNotEmpty($waitingList)) {
                 $this->waitingList[$beanDef->getName()] = $waitingList;
             }
         }
-
-        $this->addToTypeContainer($def);
-        $this->invokePostConstruct($bean);
     }
 
-
-    /**
-     * @param $beansToInject
-     */
-    private function injectAndCreate(&$beansToInject) {
+    private function buildAllBeans() {
+        $beansToInject = &$this->beanContainer;
 
         //Inject all beans already created
         /** @var BeanDefinition $definition */
         foreach ($beansToInject as $serviceName => $definition) {
-            $bean = $definition->getBean();
-            $failedInjectionList = $this->injectTo($bean);
 
-            if (Collections::isNotEmpty($failedInjectionList)) {
-                $this->waitingList[$serviceName] = $failedInjectionList;
-            } else {
-                $this->beanContainer[$serviceName] = $definition;
+            $waiting = $this->initLifeCycle($definition);
+
+            if (Collections::isNotEmpty($waiting)) {
+                $this->waitingList[$serviceName] = $waiting;
             }
         }
 
-        //Build all @Build beans without wainting list  and update others waiting relations.
-        $excludeBuildNamesList = Collections::getKeys($this->waitingList);
+//        $noneReady = FluentIterables::of($this->beanContainer)
+//            ->filter(function ($def) {
+//                return !$def->isReady();
+//            })
+//            ->map(Functions::get("name"))
+//            ->get();
+//
+//
+//        Asserts::checkState(Collections::isEmpty($noneReady), "not all beans are ready");
 
-        foreach ($this->beanContainer as $serviceName => $definition) {
-            if (!Collections::contains($serviceName, $excludeBuildNamesList)) {
-                $this->buildBeanAnnotation($definition);
-            }
-        }
+        $beanNames = $this->getBeanNames();
 
         if (Collections::isNotEmpty($this->waitingList)) {
             $message = "Missing Beans for: ";
             foreach ($this->waitingList as $k => $obsList) {
-                $message .= "( $k -> (" . $this->getName($obsList) . " )) <br/>";
+
+                $obsListNames = FluentIterables::of($obsList)
+                    ->map(Functions::invokeGetMethod(ToInjectObserver::D_BEAN_NAME_TO_INJECT))
+                    ->get();
+
+//                $obsListNames = FluentIterables::of($obsListNames)
+//                    ->filter(Predicates::not(Predicates::in($beanNames)))
+//                    ->get();
+
+//                if (Collections::isNotEmpty($obsListNames)) {
+                $message .= "( $k -> (" . $this->getName($obsListNames) . " )) <br/>";
+//                }
             }
 
             echo $message;
@@ -262,38 +262,24 @@ class Container {
     }
 
     /**
-     * @param $waitingBeans
+     * @param $waitingBeansNames
      * @return int
      */
-    private function getName($waitingBeans = array()) {
-        $arr = Collections::builder($waitingBeans)
-            ->map(Functions::invokeGetMethod(ToInjectObserver::D_BEAN_NAME_TO_INJECT))
-            ->get();
-        return StringUtils::join(",", $arr);
+    private function getName($waitingBeansNames = array()) {
+        return StringUtils::join(",", $waitingBeansNames);
     }
 
-    private function updateRelations($newBeanName) {
-        $beanDefinition = &$this->beanContainer[$newBeanName];
+    private function updateRelations(string $newBeanName) {
         $beansToUpdate = $this->getBeansToUpdate($newBeanName);
 
         if (Collections::isNotEmpty($beansToUpdate)) {
-
-            $this->updateBeansRelation($beansToUpdate, $beanDefinition);
-
-            //Remove beans from waiting list if there is nothing to injdect
-            /** @var ToInjectObserver $obs */
+            $this->updateBeansRelation($beansToUpdate);
 
             //if buildBean invoke multiple times
-            $arry = array();
             foreach ($this->waitingList as $serviceName => $observerList) {
                 if (Collections::isEmpty($observerList)) {
-                    $arry[$serviceName] = $observerList;
                     Collections::removeByKey($this->waitingList, $serviceName);
                 }
-            }
-
-            foreach ($arry as $serviceName => $observerList) {
-                $this->buildBeanAnnotation($this->beanContainer[$serviceName]);
             }
         }
     }
@@ -333,36 +319,22 @@ class Container {
      * @param $beansToUpdate
      * @param $beanDefinition
      */
-    private function updateBeansRelation($beansToUpdate, $beanDefinition) {
+    private function updateBeansRelation($beansToUpdate) {
 //
+
         if (Collections::isNotEmpty($beansToUpdate)) {
             /** @var ToInjectObserver $observer */
             foreach ($beansToUpdate as $observer) {
-                $targetBean = $observer->getBean();
+                $beanDef = $observer->getBeanDef();
+                $waiting = $this->injectTo($beanDef);
+                $this->removeFromWaitingList($observer);
 
-                $fullClassName = Objects::getClassName($targetBean);
-                $classAnnotations = ReflectionUtils::getClassAnnotation($fullClassName, Annotations::OVERRIDE_INJECT);
+                if (Collections::isEmpty($waiting) && !$beanDef->isReady()) {
+                    $this->invokePostConstruct($beanDef);
 
-                $overrideInjections = Collections::builder($classAnnotations)
-                    ->convertToMap(Functions::field("oldName"))
-                    ->get();
-
-                ReflectionUtils::handlePropertyAnnotation($targetBean, Annotations::INJECT,
-                    function (&$bean, \ReflectionProperty $property, $annotation) use ($observer, $beanDefinition, $overrideInjections) {
-                        $beanNameToInject = $this->getBeanName($property, $annotation);
-
-                        if (Collections::hasKey($overrideInjections, $beanNameToInject)) {
-                            $beanNameToInject = $overrideInjections[$beanNameToInject]->newName;
-                        }
-
-                        if (StringUtils::equals($beanNameToInject, $observer->getBeanNameToInject())) {
-                            $property->setAccessible(true);
-                            $property->setValue($bean, $beanDefinition->getBean());
-
-                            $this->removeFromWaitingList($observer);
-                        }
-                        return null;
-                    });
+                    $this->updateRelations($beanDef->getName());
+                    $this->buildBeanAnnotation($beanDef);
+                }
             }
         }
     }
@@ -395,7 +367,6 @@ class Container {
 
                 $method->setAccessible(true);
                 $newBean = $method->invoke($bean);
-                //TODO cacheBean ?
 
                 $beanDef = new BeanDefinition($name, $newBean, $this->getClassNames($newBean));
                 $buildedBeans[$name] = $beanDef;
@@ -404,16 +375,14 @@ class Container {
         return $buildedBeans;
     }
 
-    /**
-     * @param $bean
-     */
-    private function invokePostConstruct($bean) {
-        ReflectionUtils::handleMethodAnnotation($bean, Annotations::POST_CONSTRUCT,
+    private function invokePostConstruct(BeanDefinition $beanDefinition) {
+        ReflectionUtils::handleMethodAnnotation($beanDefinition->getBean(), Annotations::POST_CONSTRUCT,
             function ($bean, \ReflectionMethod $method, $annotation) {
                 $method->setAccessible(true);
                 $method->invoke($bean);
             }
         );
+        $beanDefinition->ready();
     }
 
 
@@ -453,6 +422,48 @@ class Container {
                     ->get();
             }
         }
+    }
+
+    /**
+     * @param $name
+     * @param $beanDefinition
+     */
+    private function addToContainer(BeanDefinition $beanDefinition) {
+        $beanName = $beanDefinition->getName();
+
+        Asserts::checkState(!Collections::hasKey($this->beanContainer, $beanName), "Cannot add same bean twice! ($beanName)");
+
+        $this->beanContainer[$beanDefinition->getName()] = $beanDefinition;
+        $this->addToTypeContainer($beanDefinition);
+    }
+
+    /**
+     * @param $beanDef
+     * @return array
+     */
+    private function initLifeCycle(BeanDefinition $beanDef): array {
+
+        if (!$beanDef->isReady()) {
+            $waitingList = $this->injectTo($beanDef);
+
+            if (Collections::isEmpty($waitingList)) {
+                $this->invokePostConstruct($beanDef);
+
+                $this->updateRelations($beanDef->getName());
+                $this->buildBeanAnnotation($beanDef);
+            }
+            return $waitingList;
+        }
+        return array();
+    }
+
+    /**
+     * @param $name
+     * @return BeanDefinition
+     */
+    private function getBeanDefinition($name) {
+        Asserts::checkState($this->hasBean($name), "No bean with name: " . $name);
+        return $this->beanContainer[$name];
     }
 
 }

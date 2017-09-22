@@ -35,7 +35,7 @@ class CacheableServiceBeanProxy implements BeanProxy {
         $this->className = Objects::getClassName($this->bean);
     }
 
-    function __call($methodName, $arguments) {
+    public function __call($methodName, $arguments) {
         $cacheMethodName = $this->getCacheName($methodName);
 
         if ($this->cacheService->isCacheable($cacheMethodName)) {
