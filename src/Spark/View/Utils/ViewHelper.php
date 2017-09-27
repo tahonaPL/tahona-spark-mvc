@@ -20,7 +20,7 @@ class ViewHelper {
     /**
      * @param $url
      * @param array $arr
-     * @return ViewModel
+     * @return RedirectViewModel
      */
     public static function createRedirectView($url, $arr = array()) {
         return new RedirectViewModel($url, $arr);
