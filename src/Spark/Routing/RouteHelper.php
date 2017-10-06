@@ -59,8 +59,8 @@ class RouteHelper {
 
     private $controller;
     private $method;
-    private $params;
-    private $roles;
+    private $params = array();
+    private $roles = array();
 
     /**
      * @return RouteHelper
