@@ -15,6 +15,8 @@ use Spark\Common\Optional;
 use Spark\Core\Annotation\Bean;
 use Spark\Utils\Collections;
 use Spark\Utils\Objects;
+use Spark\Utils\Reflection\MethodAnnotation;
+use Spark\Utils\Reflection\PropertyAnnotation;
 
 class ReflectionUtils {
 
@@ -65,6 +67,35 @@ class ReflectionUtils {
         }
 
         return $observersWaitingToInject;
+    }
+
+
+    /**
+     * @param $bean
+     * @param $annotationName
+     * @return PropertyAnnotation
+     */
+    public static function getPropertyAnnotations(&$bean, $annotationName) {
+        Asserts::notNull($bean);
+
+        $annotationReader = self::getReaderInstance();
+        $classNames = Objects::getClassNames($bean);
+
+        $properties = Collections::stream($classNames)
+            ->flatMap(function ($className) {
+                $classRef = new \ReflectionClass($className);
+                return $classRef->getProperties();
+            })
+            ->get();
+
+        /** @var $properties \ReflectionProperty */
+        return Collections::stream($properties)
+            ->map(function ($reflectionProperty) use ($annotationName, $annotationReader) {
+                $annotation = $annotationReader->getPropertyAnnotation($reflectionProperty, $annotationName);
+                return new PropertyAnnotation($reflectionProperty, $annotation);
+            })
+            ->filter(Predicates::compute(Functions::get(PropertyAnnotation::D_ANNOTATION), Predicates::notNull()))
+            ->get();
     }
 
     /**
@@ -156,11 +187,13 @@ class ReflectionUtils {
     }
 
     public static function hasConstructParameters(\ReflectionClass $reflectionClass): bool {
-        $orElse = Optional::of($reflectionClass)
+        return Optional::of($reflectionClass)
             ->map(Functions::get("constructor"))
             ->map(Functions::get("numberOfParameters"))
-            ->orElse(0);
-        return $orElse > 0;
+            ->filter(function ($x) {
+                return $x > 0;
+            })
+            ->isPresent();
     }
 
 }

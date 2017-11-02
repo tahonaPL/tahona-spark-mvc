@@ -11,7 +11,8 @@ namespace Spark\Core\Definition;
 
 class ToInjectObserver {
 
-    const BEAN = "beanDef";
+    const D_ID                  = "id";
+    const BEAN                  = "beanDef";
     const D_BEAN_NAME_TO_INJECT = "beanNameToInject";
 
     private $id;
@@ -29,7 +30,7 @@ class ToInjectObserver {
         $this->beanDef = $beanDef;
         $this->beanNameToInject = $beanNameToInject;
 
-        $this->id = uniqid("toInject");
+        $this->id = "$beanNameToInject-" . spl_object_hash($this);
     }
 
     /**
@@ -42,7 +43,7 @@ class ToInjectObserver {
     /**
      * @return mixed
      */
-    public function getBeanDef() : BeanDefinition {
+    public function getBeanDef(): BeanDefinition {
         return $this->beanDef;
     }
 
@@ -52,7 +53,6 @@ class ToInjectObserver {
     public function getId() {
         return $this->id;
     }
-
 
 
 }

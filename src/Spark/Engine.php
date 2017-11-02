@@ -1,7 +1,9 @@
 <?php
+
 namespace Spark;
 
 use ErrorException;
+use phpDocumentor\Reflection\Types\Object_;
 use Spark\Cache\ApcuBeanCache;
 use Spark\Cache\BeanCache;
 use Spark\Cache\Service\CacheProvider;
@@ -57,8 +59,6 @@ use Spark\View\ViewModel;
 
 class Engine {
 
-    private static $rootAppPath;
-
     const CONTAINER_CACHE_KEY      = "container";
     const ROUTE_CACHE_KEY          = "route";
     const CONFIG_CACHE_KEY         = "config";
@@ -68,7 +68,8 @@ class Engine {
      * @var string Application Name used in apcu Cache as a prefix
      */
     private $appName;
-    private $apcuExtensionLoaded;
+
+    private $appPath;
 
     /**
      * @var Routing
@@ -98,17 +99,17 @@ class Engine {
     private $hasAllreadyCachedData;
 
     public function __construct($appName, $profile, $rootAppPath) {
+        Asserts::checkState(extension_loaded("apcu"), "Apcu Cache enable is mandatory!");
+        Asserts::notNull($rootAppPath, "Engine configuration: did you forget root project path('s) field: 'root' e.g 'path'");
+
         $this->appName = $appName;
         $this->profile = $profile;
-        $this->apcuExtensionLoaded = extension_loaded("apcu");
-
-        Asserts::notNull($rootAppPath, "Engine configuration: did you forget root project path('s) field: 'root' e.g 'path'");
-        self::$rootAppPath = $rootAppPath;
+        $this->appPath = $rootAppPath;
 
         $this->beanCache = new ApcuBeanCache();
 
         $container = $this->beanCache->get($this->getCacheKey(self::CONTAINER_CACHE_KEY));
-        $this->hasAllreadyCachedData = $this->apcuExtensionLoaded && $container;
+        $this->hasAllreadyCachedData = Objects::isNotNull($container);
 
         if ($this->hasAllreadyCachedData) {
             $this->container = $container;
@@ -120,32 +121,27 @@ class Engine {
         }
 
         if (!$this->hasAllreadyCachedData) {
-            if ($this->apcuExtensionLoaded) {
-                $this->beanCache->clearAll();
-            }
-
-            $src = $rootAppPath . "/src";
+            $this->beanCache->clearAll();
 
             $this->container = new Container();
             $this->route = new Routing(array());
             $this->config = new Config();
 
             $this->config->set("app.profile", $this->getProfile());
-            $this->config->set("app.path", $rootAppPath);
-            $this->config->set("src.path", $rootAppPath . "/src");
+            $this->config->set("app.path", $this->appPath);
+            $this->config->set("src.path", $this->getSourcePath());
 
             $initAnnotationProcessors = new InitAnnotationProcessors($this->route, $this->config, $this->container);
 
             $beanLoader = new BeanLoader($initAnnotationProcessors, $this->config, $this->container);
-            $beanLoader->addFromPath($src, array("proxy"));
+            $beanLoader->addFromPath($this->getSourcePath(), array("proxy"));
             $beanLoader->addClass("Spark\Core\CoreConfig");
             $beanLoader->process();
 
             $this->addBaseServices();
-
-            $this->container->registerObj($this->container);
             $this->container->setConfig($this->config);
             $this->container->initServices();
+
             $beanLoader->postProcess();
 
             $this->afterAllBean();
@@ -163,16 +159,6 @@ class Engine {
         /** @var GlobalErrorHandler $globalErrorHandler */
         $globalErrorHandler = $this->container->get(GlobalErrorHandler::NAME);
         $globalErrorHandler->setup($this->exceptionResolvers);
-    }
-
-    /**
-     * use $this->config->getProperty("app.path")
-     *
-     * @deprecated
-     * @return mixed
-     */
-    public static function getRootPath() {
-        return self::$rootAppPath;
     }
 
     public function run() {
@@ -263,7 +249,7 @@ class Engine {
     }
 
     private function addViewHandlersToService() {
-        $smartyViewHandler = new SmartyViewHandler(self::$rootAppPath);
+        $smartyViewHandler = new SmartyViewHandler($this->appPath);
         $plainViewHandler = new PlainViewHandler();
         $jsonViewHandler = new JsonViewHandler();
         $redirectViewHandler = new RedirectViewHandler();
@@ -329,7 +315,7 @@ class Engine {
     }
 
     private function isApcuCacheEnabled(): bool {
-        return $this->apcuExtensionLoaded && $this->config->getProperty(EnableApcuAnnotationHandler::APCU_CACHE_ENABLED, false);
+        return $this->config->getProperty(EnableApcuAnnotationHandler::APCU_CACHE_ENABLED, false);
     }
 
     private function preHandleInterceptor(Request $request) {
@@ -449,6 +435,13 @@ class Engine {
             });
 
         return $restControllerAnnotation->isPresent();
+    }
+
+    /**
+     * @return string
+     */
+    private function getSourcePath(): string {
+        return $this->appPath . "/src";
     }
 
 
