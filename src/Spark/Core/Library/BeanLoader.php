@@ -83,7 +83,8 @@ class BeanLoader {
     }
 
     public function addFromPath($src, $excludeDir = array()) {
-        $this->classesInSrc = Collections::builder(FileUtils::getAllClassesInPath($src))
+        $this->classesInSrc = Collections::stream(FileUtils::getAllClassesInPath($src))
+            ->addAll($this->classesInSrc)
             ->filter(function ($cls) use ($excludeDir) {
                 return !Collections::builder($excludeDir)->anyMatch(function ($x) use ($cls) {
                     return StringUtils::startsWith($cls, $x);
@@ -104,8 +105,8 @@ class BeanLoader {
 
     /**
      *  Function that process all bean with user custom Annotation Handlers after bean initialization.
-     *  Functionality is limited and do not work for creation new beans and auto inject (Inject annotation)
-     *  ,but for other else it works fine.
+     *  Functionality is limited and do not work for creation new beans and auto inject (Inject annotation),
+     *  but for everything else works well.
      */
     public function postProcess() {
         $handlers = $this->container->getByType(AnnotationHandler::class);

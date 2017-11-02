@@ -28,4 +28,10 @@ class StringPredicates {
             return StringUtils::isBlank($x);
         };
     }
+
+    public static function contains($value) {
+        return function ($x) use ($value) {
+            return StringUtils::contains($x, $value);
+        };
+    }
 }

@@ -174,9 +174,10 @@ final class Collections {
     }
 
     /**
-     * @deprecated use Stream
+     *
      * @param array $array
      * @return FluentIterables
+     * @deprecated use Stream
      */
     public static function builder($array = array()) {
         return self::stream($array);
@@ -241,7 +242,7 @@ final class Collections {
 
     public static function addAllOrReplace(&$collection, $addElements = array()) {
         foreach ($addElements as $k => $el) {
-            $collection["" . $k] = $el;
+            $collection[$k] = $el;
         }
     }
 
