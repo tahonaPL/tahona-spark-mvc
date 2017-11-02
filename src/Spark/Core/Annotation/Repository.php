@@ -11,10 +11,8 @@ namespace Spark\Core\Annotation;
 use Doctrine\Common\Annotations\Annotation\Target;
 
 
-
 /**
  * @Annotation
- * @Component
  * @Target({"CLASS","ANNOTATION"})
  */
 final class Repository {

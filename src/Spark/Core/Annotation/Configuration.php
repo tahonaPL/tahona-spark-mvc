@@ -13,7 +13,6 @@ use Doctrine\Common\Annotations\Annotation\Target;
 
 /**
  * @Annotation
- * @Component
  * @Target({"CLASS"})
  */
 final class Configuration {

@@ -14,7 +14,6 @@ use Doctrine\Common\Annotations\Annotation\Target;
 
 /**
  * @Annotation
- * @Component
  * @Target({"CLASS","ANNOTATION"})
  */
 final class Service {
