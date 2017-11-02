@@ -22,7 +22,7 @@ class FluentIterables {
     private $collection = array();
 
     private function __construct(array $collection) {
-        $this->collection = $collection;
+        Collections::addAllOrReplace($this->collection, $collection);
     }
 
     public static function of($arr = array()): FluentIterables {
@@ -34,15 +34,18 @@ class FluentIterables {
      * @return FluentIterables
      */
     public function addAll(array $collection): FluentIterables {
+        $col = $this->collection;
+
         if (Collections::isNotEmpty($collection)) {
             $firstKey = Collections::getKeys($collection)[0];
+
             if ($this->hasKeyValue($firstKey)) {
-                Collections::addAllOrReplace($this->collection, $collection);
+                Collections::addAllOrReplace($col, $collection);
             } else {
-                Collections::addAll($this->collection, $collection);
+                Collections::addAll($col, $collection);
             }
         }
-        return self::of($this->collection);
+        return self::of($col);
     }
 
     /**

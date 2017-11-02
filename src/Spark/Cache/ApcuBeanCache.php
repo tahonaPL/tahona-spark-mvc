@@ -21,7 +21,12 @@ class ApcuBeanCache implements BeanCache {
     }
 
     public function get($key) {
-        return apcu_fetch($key);
+        $success = null;
+        $obj = apcu_fetch($key, $success);
+        if ($success) {
+            return $obj;
+        }
+        return null;
     }
 
     public function has($key) {
