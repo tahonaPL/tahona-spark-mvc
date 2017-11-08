@@ -452,7 +452,7 @@ class Container {
         return $this->beanContainer[$name];
     }
 
-    private function clearEmptyWaitingList(): void {
+    private function clearEmptyWaitingList() {
         foreach ($this->waitingList as $serviceName => $observerList) {
             if (Collections::isEmpty($observerList)) {
                 Collections::removeByKey($this->waitingList, $serviceName);

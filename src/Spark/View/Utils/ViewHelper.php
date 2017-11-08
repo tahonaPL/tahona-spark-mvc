@@ -32,10 +32,9 @@ class ViewHelper {
      * @return ViewModel
      */
     public static function view($viewPath, $arr = array()) {
-        $viewModel = new ViewModel();
-        $viewModel->setViewName($viewPath);
-        $viewModel->addAll($arr);
-        return $viewModel;
+        return self::create()
+            ->setViewName($viewPath)
+            ->addAll($arr);
     }
 
     /**
@@ -44,9 +43,14 @@ class ViewHelper {
      * @return ViewModel
      */
     public static function local(Controller $controller, $viewName) {
-        $viewModel = new ViewModel();
-        return $viewModel->setViewName(ViewUrlUtils::createViewPathWithViewName($controller->getRequest(), $viewName));
+        return self::l($controller->getRequest(), $viewName);
     }
+
+    public static function localByRequest(Request $request, $viewName) {
+        return self::create()
+            ->setViewName(ViewUrlUtils::createViewPathWithViewName($request, $viewName));
+    }
+
 
     public static function create() {
         return new ViewModel();

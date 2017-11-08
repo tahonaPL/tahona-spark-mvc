@@ -11,6 +11,7 @@ namespace Spark\Utils;
 
 use Spark\Common\IllegalStateException;
 use Spark\Common\Optional;
+use Spark\Upload\MoveFileException;
 use Spark\Utils\Asserts;
 use Spark\Upload\FileObject;
 
