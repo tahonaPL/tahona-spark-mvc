@@ -12,11 +12,11 @@ namespace Spark\Core\Command\Output;
 class OutputInterface {
 
     public function write($message) {
-        print($message);
+        echo $message;
     }
 
     public function writeln($message) {
-        print($message . PHP_EOL);
+        echo $message, PHP_EOL;
     }
 
     public function writeObject($object) {

@@ -17,7 +17,7 @@ use Doctrine\Common\Annotations\Annotation\Target;
  * @Component
  * @Target({"PROPERTY"})
  */
-final class Value {
+final class PropertySource {
 
     /** @var string */
     public $name = "";

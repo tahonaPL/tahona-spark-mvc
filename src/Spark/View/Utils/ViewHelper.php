@@ -43,7 +43,7 @@ class ViewHelper {
      * @return ViewModel
      */
     public static function local(Controller $controller, $viewName) {
-        return self::l($controller->getRequest(), $viewName);
+        return self::localByRequest($controller->getRequest(), $viewName);
     }
 
     public static function localByRequest(Request $request, $viewName) {
