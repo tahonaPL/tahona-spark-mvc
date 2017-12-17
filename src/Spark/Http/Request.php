@@ -13,7 +13,7 @@ interface Request {
 
     public function getParam(string $name, $default = null);
 
-    public function getSession();
+    public function getSession(): Session;
 
     public function getFileObject(string $name): FileObject;
 

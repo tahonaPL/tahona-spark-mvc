@@ -7,7 +7,7 @@ namespace Spark\Utils;
 final class StringUtils {
 
     const SPACE = ' ';
-    const EMPTY = ' ';
+    const EMPTY = '';
 
 
     private function __construct() {
@@ -58,6 +58,10 @@ final class StringUtils {
 
     public static function replace($text, $searchText, $replacement) {
         return str_replace($searchText, $replacement, $text);
+    }
+
+    public static function replaceWithRegExp($text, $regExp, $replacement) {
+        return preg_replace($regExp, $replacement, $text);
     }
 
     /**

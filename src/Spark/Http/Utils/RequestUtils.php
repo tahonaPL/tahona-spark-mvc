@@ -14,7 +14,7 @@ use Spark\Utils\Predicates;
 
 class RequestUtils {
 
-    const SESSION_NAME        = "SESSID"; //AUTOMATICALLY IS PHPSESSID
+    const SESSION_NAME        = 'SESSID'; //AUTOMATICALLY IS PHPSESSID
     const POST_REQUEST_METHOD = 'POST';
 
     public static function isPost(): bool {
@@ -57,30 +57,28 @@ class RequestUtils {
         return null;
     }
 
-    public static function getOrCreateSession() {
+    public static function getOrCreateSession(): Session {
         //move to sessionUtils or something
-        if (false == isset($_SESSION)) {
+        if (false === isset($_SESSION)) {
             session_name(self::SESSION_NAME);
             session_start();
         }
 
-        if (false === Collections::hasKey($_SESSION, "spark_session")) {
-            $_SESSION["spark_session"] = new Session();
+        if (false === Collections::hasKey($_SESSION, 'spark_session')) {
+            $_SESSION['spark_session'] = new Session();
         }
-        return $_SESSION["spark_session"];
+
+        return $_SESSION['spark_session'];
     }
 
 
     public static function getSession(): Session {
-        if (CookieUtils::hasCookie(self::SESSION_NAME)) {
-            return self::getOrCreateSession();
-        }
-        return new Session();
+        return self::getOrCreateSession();
     }
 
-    public static function redirect($url, $statusCode = 303) {
-        if (false == self::hasHttpPrefix($url) || false == self::hasHttpsPrefix($url)) {
-            $url = RequestUtils::getRequestScheme() . "://" . $url;
+    public static function redirect($url, $statusCode = 303): void {
+        if (false === self::hasHttpPrefix($url) || false === self::hasHttpsPrefix($url)) {
+            $url = RequestUtils::getRequestScheme() . '://' . $url;
         }
 
         header('Location: ' . $url, true, $statusCode);
@@ -92,11 +90,11 @@ class RequestUtils {
      * @return bool
      */
     private static function hasHttpPrefix($url): bool {
-        return self::hasPrefix($url, "http");
+        return self::hasPrefix($url, 'http');
     }
 
     private static function hasHttpsPrefix($url): bool {
-        return self::hasPrefix($url, "https");
+        return self::hasPrefix($url, 'https');
     }
 
     /**
@@ -106,7 +104,7 @@ class RequestUtils {
      */
     private static function hasPrefix($url, $prefix): bool {
         return strpos($url, $prefix) >= 0
-            || strpos($url, "http") >= 0;
+            || strpos($url, 'http') >= 0;
     }
 
     public static function isSSL(): bool {
@@ -124,9 +122,9 @@ class RequestUtils {
     public static function getRequestScheme() {
         $isSSL = self::isSSL();
         if ($isSSL) {
-            return "https";
+            return 'https';
         } else {
-            return "http";
+            return 'http';
         }
     }
 
@@ -135,7 +133,7 @@ class RequestUtils {
     }
 
     public static function getRequestIp() {
-        if (Collections::hasKey($_SERVER, "HTTP_CLIENT_IP")) {
+        if (Collections::hasKey($_SERVER, 'HTTP_CLIENT_IP')) {
             return $_SERVER['HTTP_CLIENT_IP'];
         } else if (Collections::hasKey($_SERVER, 'HTTP_X_FORWARDED_FOR'))
             $ipaddress = $_SERVER['HTTP_X_FORWARDED_FOR'];
@@ -182,7 +180,7 @@ class RequestUtils {
     }
 
     public static function getBody() {
-        $entityBody = stream_get_contents(fopen("php://input", "r"));
+        $entityBody = stream_get_contents(fopen('php://input', 'r'));
         return $entityBody ? $entityBody : null;
     }
 }

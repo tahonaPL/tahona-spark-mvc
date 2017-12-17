@@ -5,6 +5,7 @@ namespace Spark\Core\Routing;
 
 use Spark\Common\Optional;
 use Spark\Http\HeadersWrapper;
+use Spark\Http\Session;
 use Spark\Http\Utils\CookieUtils;
 use Spark\Http\Utils\RequestUtils;
 use Spark\Utils\UrlUtils;
@@ -81,7 +82,7 @@ class RequestData implements Request {
         $this->controllerName = $controllerName;
     }
 
-    public function isPost() : bool{
+    public function isPost(): bool {
         return RequestUtils::isPost();
     }
 
@@ -103,7 +104,7 @@ class RequestData implements Request {
         $this->urlParams = $urlParams;
     }
 
-    public function getSession() {
+    public function getSession(): Session {
         return RequestUtils::getOrCreateSession();
     }
 
