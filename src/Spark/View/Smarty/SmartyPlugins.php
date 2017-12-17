@@ -22,9 +22,9 @@ use Spark\Utils\Collections;
 use Spark\Utils\StringUtils;
 
 class SmartyPlugins {
-    const NAME = "smartyPlugins";
+    const NAME = 'smartyPlugins';
 
-    const SEO_OBJECT = "seoObject";
+    const SEO_OBJECT = 'seoObject';
 
     /**
      * Smarty plugins
@@ -69,17 +69,17 @@ class SmartyPlugins {
     }
 
     public function invoke($params, $smarty) {
-        $method = $params["method"];
-        $val = $params["value"];
+        $method = $params['method'];
+        $val = $params['value'];
         return $method($val);
     }
 
 
     public function getMessage($params, $smarty) {
-        $code = $params["code"];
+        $code = $params['code'];
 
-        if (Collections::hasKey($params, "params")) {
-            return $this->langMessageResource->get($code, $params["params"]);
+        if (Collections::hasKey($params, 'params')) {
+            return $this->langMessageResource->get($code, $params['params']);
         } else {
             return $this->langMessageResource->get($code);
 
@@ -96,7 +96,7 @@ class SmartyPlugins {
             $seoObject = $params[self::SEO_OBJECT];
             return SeoUrlFactory::getSeoUrlFromSeoObject($seoObject);
         }
-        return "";
+        return '';
     }
 
     /**
@@ -111,8 +111,8 @@ class SmartyPlugins {
      * @return mixed
      */
     private function getPath($params) {
-        $path = $params["path"];
-        $newPath = $this->routing->resolveRoute($path, Collections::getValueOrDefault($params, "params", array()));
+        $path = $params['path'];
+        $newPath = $this->routing->resolveRoute($path, Collections::getValueOrDefault($params, 'params', array()));
 
         if (StringUtils::isNotBlank($newPath)) {
             return $newPath;

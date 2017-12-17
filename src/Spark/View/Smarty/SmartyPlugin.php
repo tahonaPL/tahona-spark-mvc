@@ -11,6 +11,6 @@ namespace Spark\View\Smarty;
 
 interface SmartyPlugin {
 
-    public function getTag();
-    public function execute($params, $smarty);
+    public function getTag(): string;
+    public function execute(array $params, $smarty);
 }

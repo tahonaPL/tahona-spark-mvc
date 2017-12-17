@@ -16,10 +16,7 @@ class MathUtils {
     }
 
     public static function div($a, $b) {
-        if (empty($a) || empty($b)) {
-            return 0;
-        }
-
+        Asserts::checkArgument(empty($a) || empty($b), 'Numbers cannot be empty');
         return $a / $b;
     }
 

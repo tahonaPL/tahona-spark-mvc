@@ -15,20 +15,20 @@ class ViewUrlUtils {
      *
      * @param  $request
      */
-    public static function createFullViewPath(RequestData $request) {
-        return StringUtils::join("/", array(
+    public static function createFullViewPath(RequestData $request): string {
+        return StringUtils::join('/', array(
             self::createViewPathWithViewName($request)
         ));
     }
 
-    public static function createViewPathWithViewName(RequestData $request, $viewName = null) {
+    public static function createViewPathWithViewName(RequestData $request, $viewName = null): string {
         $viewName = Objects::isNull($viewName) ? $request->getMethodName() : $viewName;
 
-        return StringUtils::join("/", array(
+        return StringUtils::join('/', array(
             strtolower($request->getNamespace()),
             strtolower($request->getModuleName()),
             strtolower($request->getControllerName()),
-            str_replace("Action", "", $viewName)
+            str_replace('Action', '', $viewName)
         ));
     }
 

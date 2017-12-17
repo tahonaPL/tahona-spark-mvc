@@ -22,7 +22,7 @@ class ViewHelper {
      * @param array $arr
      * @return RedirectViewModel
      */
-    public static function createRedirectView($url, $arr = array()) {
+    public static function createRedirectView($url, $arr = array()): RedirectViewModel {
         return new RedirectViewModel($url, $arr);
     }
 
@@ -31,7 +31,7 @@ class ViewHelper {
      * @param array $arr
      * @return ViewModel
      */
-    public static function view($viewPath, $arr = array()) {
+    public static function view($viewPath, $arr = array()): ViewModel {
         return self::create()
             ->setViewName($viewPath)
             ->addAll($arr);
@@ -42,17 +42,17 @@ class ViewHelper {
      * @param $viewName
      * @return ViewModel
      */
-    public static function local(Controller $controller, $viewName) {
+    public static function local(Controller $controller, $viewName): ViewModel {
         return self::localByRequest($controller->getRequest(), $viewName);
     }
 
-    public static function localByRequest(Request $request, $viewName) {
+    public static function localByRequest(Request $request, $viewName) : ViewModel{
         return self::create()
             ->setViewName(ViewUrlUtils::createViewPathWithViewName($request, $viewName));
     }
 
 
-    public static function create() {
+    public static function create(): ViewModel {
         return new ViewModel();
     }
 }

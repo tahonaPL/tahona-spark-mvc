@@ -257,11 +257,11 @@ final class Collections {
      * @param $key
      * @return array|null
      */
-    public static function getValue($array = array(), $key) {
+    public static function getValue(array $array = array(), $key) {
         return self::getValueOrDefault($array, $key);
     }
 
-    public static function getValueOrDefault($array = array(), $key, $default = null) {
+    public static function getValueOrDefault(array $array = array(), $key, $default = null) {
         if (Collections::hasKey($array, $key)) {
             return $array[$key];
         } else {
