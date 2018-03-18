@@ -12,7 +12,6 @@ namespace Spark\Routing;
 use Spark\Utils\Asserts;
 use Spark\Utils\Collections;
 use Spark\Utils\Objects;
-use ___PHPSTORM_HELPERS\this;
 
 abstract class PrefixedRouting {
 

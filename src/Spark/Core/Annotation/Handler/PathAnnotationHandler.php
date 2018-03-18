@@ -3,7 +3,9 @@
 namespace Spark\Core\Annotation\Handler;
 
 use ReflectionClass;
+use Spark\Common\Collection\FluentIterables;
 use Spark\Config;
+use Spark\Controller;
 use Spark\Core\Annotation\Handler\AnnotationHandler;
 use Spark\Core\Annotation\Path;
 use Spark\Core\Library\Annotations;
@@ -29,9 +31,7 @@ class PathAnnotationHandler extends AnnotationHandler {
 
     private $annotationName;
     private $classes;
-
     private $annotations;
-
 
     public function __construct() {
         $this->annotationName = Annotations::PATH;
@@ -46,18 +46,15 @@ class PathAnnotationHandler extends AnnotationHandler {
     }
 
     public function handleMethodAnnotations($methodAnnotations = array(), $class, \ReflectionMethod $methodReflection) {
-
-        $methodAnnotations = Collections::builder($methodAnnotations)
+        $methodAnnotations = FluentIterables::of($methodAnnotations)
             ->filter(Predicates::compute($this->getClassName(), StringPredicates::equals($this->annotationName)))
             ->get();
 
         $routingDefinitionFactory = new RoutingDefinitionFactory();
 
         if ($this->hasPathAnnotation($class)) {
-
             /** @var Path $classPathAnnotation */
             foreach ($this->annotations[$class] as $classPathAnnotation) {
-
                 /** @var Path $methodAnnotation */
                 foreach ($methodAnnotations as $methodAnnotation) {
                     $routingDefinition = $routingDefinitionFactory->createDefinition($methodReflection, $classPathAnnotation, $methodAnnotation);
@@ -74,17 +71,23 @@ class PathAnnotationHandler extends AnnotationHandler {
 
     }
 
+    protected function supports($class): bool {
+        $classAnnotations = ReflectionUtils::getClassAnnotations($class);
+        return FluentIterables::of(Objects::getClassNames($class))
+                ->anyMatch(StringPredicates::equals(Controller::class))
+            || FluentIterables::of($classAnnotations)
+                ->map(Functions::getClassName())
+                ->anyMatch(Predicates::in([
+                    Annotations::CONTROLLER,
+                    Annotations::REST_CONTROLLER
+                ]));
+    }
+
     private function getClassName() {
         return Functions::getClassName();
     }
 
-    /**
-     *
-     * @param $class
-     * @return bool
-     */
-    private function hasPathAnnotation($class) {
+    private function hasPathAnnotation($class): bool {
         return Collections::hasKey($this->annotations, $class) && Collections::isNotEmpty($this->annotations[$class]);
     }
-
 }
