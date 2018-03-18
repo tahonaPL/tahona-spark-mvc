@@ -8,4 +8,4 @@ composer
 .buildpath
 .settings
 
-.composer.lock
+composer.lock
