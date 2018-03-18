@@ -3,7 +3,6 @@
 namespace Spark;
 
 use ErrorException;
-use phpDocumentor\Reflection\Types\Object_;
 use Spark\Cache\ApcuBeanCache;
 use Spark\Cache\BeanCache;
 use Spark\Cache\Service\CacheProvider;
@@ -15,6 +14,7 @@ use Spark\Core\Command\Output\OutputInterface;
 use Spark\Core\Error\ExceptionResolver;
 use Spark\Core\Error\GlobalErrorHandler;
 use Spark\Core\Filler\BeanFiller;
+use Spark\Core\Filler\CookieFiller;
 use Spark\Core\Filler\FileObjectFiller;
 use Spark\Core\Filler\Filler;
 use Spark\Core\Filler\RequestFiller;
@@ -30,8 +30,8 @@ use Spark\Core\Processor\InitAnnotationProcessors;
 use Spark\Core\Provider\BeanProvider;
 use Spark\Core\Routing\RoutingDefinition;
 use Spark\Core\Utils\SystemUtils;
-use Spark\Filter\FilterChain;
-use Spark\Filter\HttpFilter;
+use Spark\Core\Filter\FilterChain;
+use Spark\Core\Filter\HttpFilter;
 use Spark\Http\Request;
 use Spark\Http\RequestProvider;
 use Spark\Http\Response;
@@ -56,6 +56,7 @@ use Spark\View\Smarty\SmartyPlugins;
 use Spark\View\Smarty\SmartyViewHandler;
 use Spark\View\ViewHandlerProvider;
 use Spark\View\ViewModel;
+use Spark\Cache\SimpleBeanCache;
 
 class Engine {
 
@@ -106,7 +107,7 @@ class Engine {
         $this->profile = $profile;
         $this->appPath = $rootAppPath;
 
-        $this->beanCache = new ApcuBeanCache();
+         $this->beanCache = new ApcuBeanCache();
 
         $container = $this->beanCache->get($this->getCacheKey(self::CONTAINER_CACHE_KEY));
         $this->hasAllreadyCachedData = Objects::isNotNull($container);
@@ -235,6 +236,7 @@ class Engine {
         $this->container->registerObj(new RequestFiller());
         $this->container->registerObj(new SessionFiller());
         $this->container->registerObj(new FileObjectFiller());
+        $this->container->registerObj(new CookieFiller());
         $this->container->registerObj(new BeanFiller());
 
         $this->addViewHandlersToService();

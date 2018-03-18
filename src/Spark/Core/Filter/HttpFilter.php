@@ -6,7 +6,7 @@
  * Time: 00:10
  */
 
-namespace Spark\Filter;
+namespace Spark\Core\Filter;
 
 
 use Spark\Http\Request;

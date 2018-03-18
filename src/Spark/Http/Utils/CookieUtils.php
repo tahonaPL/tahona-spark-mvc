@@ -27,8 +27,15 @@ class CookieUtils {
         return false;
     }
 
-    public static function getCookieValue($key){
+    public static function getCookieValue($key) {
         return self::hasCookie($key) ? $_COOKIE[$key] : null;
     }
 
+    public static function setCookie(string $key, string $value, $expire = 0): void {
+        setcookie($key, $value, $expire);
+    }
+
+    public static function getAllCookies(): array {
+        return Objects::isNotNull($_COOKIE) ? $_COOKIE : array();
+    }
 }
