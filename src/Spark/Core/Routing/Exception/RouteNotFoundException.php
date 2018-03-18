@@ -8,7 +8,6 @@
 
 namespace Spark\Core\Routing\Exception;
 
-
 use Spark\Http\Utils\RequestUtils;
 use Spark\Utils\UrlUtils;
 
@@ -18,7 +17,10 @@ class RouteNotFoundException extends RoutingException {
         parent::__construct("Route not found for: " . $methodType . " path:" . $path, 404);
     }
 
-    public static function notFound() {
+    /**
+     * @return RouteNotFoundException
+     */
+    public static function notFound(): RouteNotFoundException {
         return new RouteNotFoundException(RequestUtils::getMethod(), UrlUtils::getPathInfo());
     }
 }

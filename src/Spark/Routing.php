@@ -2,7 +2,6 @@
 
 namespace Spark;
 
-use PHPUnit\Runner\Exception;
 use Spark\Common\Collection\FluentIterables;
 use Spark\Common\IllegalStateException;
 use Spark\Common\Optional;
@@ -15,7 +14,7 @@ use Spark\Core\Routing\RequestData;
 use Spark\Routing\RoutingUtils;
 use Spark\Utils\Asserts;
 use Spark\Utils\Collections;
-use Spark\Utils\Dev;
+
 use Spark\Utils\Functions;
 use Spark\Utils\Objects;
 use Spark\Utils\Predicates;

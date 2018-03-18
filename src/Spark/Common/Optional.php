@@ -1,13 +1,6 @@
 <?php
-/**
- *
- *
- * Date: 24.03.15
- * Time: 08:06
- */
 
 namespace Spark\Common;
-
 
 use Spark\Utils\Asserts;
 use Spark\Utils\Collections;
@@ -37,7 +30,7 @@ class Optional {
      * @return mixed
      */
     public function get() {
-        Asserts::notNull($this->obj, "Cannot invoke get on NULL Optional reference");
+        Asserts::notNull($this->obj, 'Cannot invoke get on NULL Optional reference');
         return $this->obj;
     }
 
@@ -55,7 +48,7 @@ class Optional {
 
     /**
      * @deprecated
-     * @param $objs
+     * @param $obj
      * @return mixed
      */
     public function getOrElse($obj) {
@@ -69,13 +62,12 @@ class Optional {
     public function orElseGet(\Closure $func) {
         if ($this->isPresent()) {
             return $this->obj;
-        } else {
-            return $func();
         }
+        return $func();
     }
 
-    public function mapProperty($propertyName) {
-        Asserts::checkState(StringUtils::isNotBlank($propertyName), "Property cannot be null");
+    public function mapProperty($propertyName): Optional {
+        Asserts::checkState(StringUtils::isNotBlank($propertyName), 'Property cannot be null');
         return $this->map(Functions::invokeGetMethod($propertyName));
     }
 
@@ -85,7 +77,6 @@ class Optional {
         }
         return self::absent();
     }
-
 
     public function flatMap(\Closure $func): Optional {
         if ($this->isPresent()) {
@@ -112,11 +103,9 @@ class Optional {
         throw $ex;
     }
 
-    public function ifPresent(\Closure $voidFunc) {
+    public function ifPresent(\Closure $voidFunc): void {
         if ($this->isPresent()) {
             $voidFunc($this->obj);
         }
     }
-
-
 }

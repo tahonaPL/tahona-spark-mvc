@@ -22,7 +22,7 @@ class Asserts {
      * @throws IllegalArgumentException
      * @return object
      */
-    public static function notNull($object, $message = "Object cannot be null or undefined.") {
+    public static function notNull($object, $message = 'Object cannot be null or undefined.') {
         if (Objects::isNull($object)) {
             throw new IllegalArgumentException($message);
         }
@@ -35,8 +35,8 @@ class Asserts {
      * @param string $message
      * @throws \Spark\Common\IllegalArgumentException
      */
-    public static function isArray($object, $message = "Object is not an array") {
-        if (is_null($object) || !is_array($object)) {
+    public static function isArray($object, $message = 'Object is not an array') {
+        if (null === $object || !is_array($object)) {
             throw new IllegalArgumentException($message);
         }
     }
@@ -46,13 +46,13 @@ class Asserts {
      * @param string $message
      * @throws \Spark\Common\IllegalArgumentException
      */
-    public static function checkArray($object, $message = "Object is not an array") {
+    public static function checkArray($object, $message = 'Object is not an array') {
         if (is_null($object) || !is_array($object)) {
             throw new IllegalArgumentException($message);
         }
     }
 
-    public static function checkArgument($bool, $message = "Invalid argument") {
+    public static function checkArgument($bool, $message = 'Invalid argument') {
         if (!$bool) {
             throw new IllegalArgumentException($message);
         }

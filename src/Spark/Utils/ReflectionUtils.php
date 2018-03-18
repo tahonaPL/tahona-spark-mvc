@@ -15,7 +15,6 @@ use Spark\Common\Optional;
 use Spark\Core\Annotation\Bean;
 use Spark\Utils\Collections;
 use Spark\Utils\Objects;
-use Spark\Utils\Reflection\MethodAnnotation;
 use Spark\Utils\Reflection\PropertyAnnotation;
 
 class ReflectionUtils {

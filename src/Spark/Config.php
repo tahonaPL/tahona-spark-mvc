@@ -37,6 +37,7 @@ class Config {
      * Make sure that property will not be replace in the code!
      *
      * @param $property String only like $config->getProperty("db.user");
+     * @return mixed|null
      */
     public function getProperty($property, $default = null) {
         return Collections::getValueOrDefault($this->cache, $property, $default);

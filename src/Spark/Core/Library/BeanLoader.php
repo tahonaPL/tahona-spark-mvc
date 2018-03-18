@@ -17,7 +17,6 @@ use Spark\Core\Annotation\Handler\AnnotationHandler;
 use Spark\Core\Processor\InitAnnotationProcessors;
 use Spark\Utils\Asserts;
 use Spark\Utils\Collections;
-use Spark\Utils\Dev;
 use Spark\Utils\FileUtils;
 use Spark\Utils\Predicates;
 use Spark\Utils\ReflectionUtils;

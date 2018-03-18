@@ -29,7 +29,7 @@ class DebugAnnotationHandler extends AnnotationHandler {
 
     /**
      *
-     * @param array $annotations
+     * @param $annotations
      * @param $class
      * @param \ReflectionClass $classReflection
      */
