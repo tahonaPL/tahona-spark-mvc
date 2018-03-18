@@ -229,7 +229,7 @@ class Container {
         $beanNames = $this->getBeanNames();
 
         if (Collections::isNotEmpty($this->waitingList)) {
-            $message = "Missing Beans for: ";
+            $message = "Missing Beans for:\n \n";
             foreach ($this->waitingList as $k => $obsList) {
 
                 $obsListNames = FluentIterables::of($obsList)
@@ -241,7 +241,7 @@ class Container {
 //                    ->get();
 
 //                if (Collections::isNotEmpty($obsListNames)) {
-                $message .= "( $k -> (" . $this->getName($obsListNames) . " )) <br/>";
+                $message .= "( $k -> (" . $this->getName($obsListNames) . " )) <br/>\n";
 //                }
             }
 
