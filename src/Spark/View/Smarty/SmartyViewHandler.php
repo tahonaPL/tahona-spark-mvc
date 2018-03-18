@@ -10,6 +10,7 @@ namespace Spark\View\Smarty;
 
 use Spark\Config;
 use Spark\Core\Annotation\Inject;
+use Spark\Core\Annotation\PostConstruct;
 use Spark\Core\Lang\LangKeyProvider;
 use Spark\Core\Provider\BeanProvider;
 use Spark\Http\Request;
@@ -22,18 +23,16 @@ use Spark\View\ViewModel;
 
 class SmartyViewHandler extends ViewHandler {
 
-    const NAME            = "smartyViewHandler";
-    const CACHE_ID        = "spark.smarty.view.cache.id";
-    const COMPILE_CHECK   = "spark.view.cache.compile_check";
-    const CACHE_ENABLED   = "spark.view.cache.enable";
+    const NAME = "smartyViewHandler";
+    const CACHE_ID = "spark.smarty.view.cache.id";
+    const COMPILE_CHECK = "spark.view.cache.compile_check";
+    const CACHE_ENABLED = "spark.view.cache.enable";
     const CACHE_LIFE_TIME = "spark.view.cache.life_time";
-    const DEBUGGING       = "spark.view.cache.debugging";
+    const DEBUGGING = "spark.view.cache.debugging";
     const ERROR_REPORTING = "spark.view.cache.error.reporting";
-    const FORCE_COMPILE   = "spark.view.cache.force.compile";
-
+    const FORCE_COMPILE = "spark.view.cache.force.compile";
     private $rootAppPath;
     private $smarty;
-
     /**
      * @Inject
      * @var SmartyPlugins
@@ -44,41 +43,20 @@ class SmartyViewHandler extends ViewHandler {
      * @var Config
      */
     private $config;
-
     /**
      * @Inject
      * @var BeanProvider
      */
     private $beanProvider;
 
-
     public function __construct($rootAppPath) {
         $this->rootAppPath = $rootAppPath;
     }
 
-    public function isView($viewModel) {
-        return $viewModel instanceof ViewModel;
-    }
-
-    public function handleView($viewModel, RequestData $request) {
-        $smarty = $this->init();
-
-        $smarty->setCacheId($this->config->getProperty(self::CACHE_ID, "TAHONA_ROCKS") . "" . $this->getLang());
-
-        /** @var ViewModel $viewModel */
-        foreach ($viewModel->getParams() as $key => $value) {
-            $smarty->assign($key, $value, true);
-        }
-
-        $viewPath = $this->getViewPath($viewModel, $request);
-        $smarty->display($viewPath . '.tpl');
-    }
-
     /**
-     * @return \Smarty
+     * @PostConstruct()
      */
     private function init() {
-
         if (Objects::isNull($this->smarty)) {
             $config = $this->config;
             $smarty = new \Smarty();
@@ -109,6 +87,22 @@ class SmartyViewHandler extends ViewHandler {
             $this->smarty = $smarty;
         }
         return $this->smarty;
+    }
+
+    public function isView($viewModel) {
+        return $viewModel instanceof ViewModel;
+    }
+
+    public function handleView($viewModel, RequestData $request) {
+        $this->smarty->setCacheId($this->config->getProperty(self::CACHE_ID, "TAHONA_ROCKS") . "" . $this->getLang());
+
+        /** @var ViewModel $viewModel */
+        foreach ($viewModel->getParams() as $key => $value) {
+            $this->smarty->assign($key, $value, true);
+        }
+
+        $viewPath = $this->getViewPath($viewModel, $request);
+        $this->smarty->display($viewPath . '.tpl');
     }
 
     /**
