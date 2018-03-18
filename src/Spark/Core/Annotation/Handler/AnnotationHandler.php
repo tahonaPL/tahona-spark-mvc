@@ -8,7 +8,6 @@
 
 namespace Spark\Core\Annotation\Handler;
 
-
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionProperty;
@@ -25,78 +24,63 @@ abstract class AnnotationHandler {
      * @var Container
      */
     private $container;
-
     /**
      * @Inject()
      * @var Routing
      */
     private $routing;
-
     /**
      * @Inject()
      * @var Config
      */
     private $config;
 
-    public function handleClassAnnotations($annotations = array(), $class, ReflectionClass $classReflection) {
-
+    public function handleClassAnnotations($annotations = array(), $class, ReflectionClass $classReflection){
     }
 
-    public function handleMethodAnnotations($annotations = array(), $class, ReflectionMethod $methodReflection) {
-
+    public function handleMethodAnnotations($annotations = array(), $class, ReflectionMethod $methodReflection){
     }
 
-    public function handleFieldAnnotations($annotations = array(), $class, ReflectionProperty $fieldReflection) {
-
+    public function handleFieldAnnotations($annotations = array(), $class, ReflectionProperty $fieldReflection){
     }
 
-    /**
-     * @return Container
-     */
-    protected function getContainer() {
+    protected function supports($class): bool {
+        return true;
+    }
+
+    protected function getContainer(): Container {
         return $this->container;
     }
 
-    /**
-     * @param Container $container
-     */
-    public function setContainer(&$container) {
+    public function setContainer(Container $container){
         $this->container = $container;
     }
 
-    /**
-     * @return Routing
-     */
-    protected function getRouting() {
+    protected function getRouting(): Routing {
         return $this->routing;
     }
 
     /**
      * @param RoutingInfo $routing
      */
-    public function setRouting(&$routing) {
+    public function setRouting(&$routing){
         $this->routing = $routing;
     }
 
-    /**
-     * @return Config
-     */
-    protected function getConfig() {
+    protected function getConfig(): Config {
         return $this->config;
     }
 
     /**
      * @param Config $config
      */
-    public function setConfig(&$config) {
+    public function setConfig(&$config){
         $this->config = $config;
     }
 
-    public function clear() {
+    public function clear(){
         $this->routing = null;
         $this->container = null;
         $this->config = null;
     }
-
-
 }
