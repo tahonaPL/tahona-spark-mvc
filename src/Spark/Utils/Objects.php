@@ -7,30 +7,28 @@ declare(strict_types=1);
  * Time: 23:46
  */
 
-
 namespace Spark\Utils;
 
-
 use ArrayAccess;
+use Spark\Common\Collection\FluentIterables;
 use Spark\Utils\Asserts;
-use tahona\shop\client\domain\Client;
 use Traversable;
 
 class Objects {
 
-    public static function isNotNull($obj) :bool {
+    public static function isNotNull($obj): bool {
         return isset($obj) && null !== $obj;
     }
 
-    public static function isNull($obj) :bool {
+    public static function isNull($obj): bool {
         return null === $obj || !isset($obj);
     }
 
-    public static function isArray($obj) :bool {
+    public static function isArray($obj): bool {
         return is_array($obj) || ($obj instanceof Traversable);
     }
 
-    public static function isString($obj) :bool {
+    public static function isString($obj): bool {
         return is_string($obj);
     }
 
@@ -63,25 +61,24 @@ class Objects {
         return get_class($obj);
     }
 
-    public static function getClassNames($obj) {
-        $parents = class_parents($obj);
-        $implements = class_implements($obj);
-        $className = self::getClassName($obj);
+    public static function getClassNames($objOrClass) {
+        $parents = class_parents($objOrClass);
+        $implements = class_implements($objOrClass);
 
-        return Collections::builder()
+        $className = self::isString($objOrClass) ? $objOrClass : self::getClassName($objOrClass);
+
+        return FluentIterables::of()
             ->add($className)
             ->addAll($parents)
             ->addAll($implements)
             ->getList();
     }
 
-    public static function isPrimitive($obj) :bool {
+    public static function isPrimitive($obj): bool {
         return is_scalar($obj);
     }
 
-    public static function equals($a, $b) :bool {
+    public static function equals($a, $b): bool {
         return $a === $b;
     }
-
-
-} 
+}
