@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Spark\Utils;
 
 class JsonUtils {
@@ -31,15 +30,22 @@ class JsonUtils {
      * @return array
      */
     private static function convertObjectToArray($object) {
-        $reflectionClass = new \ReflectionClass($object);
-        $properties = $reflectionClass->getProperties();
+        $classes = Objects::getClassNames($object);
+        $reverted = Collections::reverse($classes);
 
         $resultArray = array();
-        foreach ($properties as $property) {
-            $property->setAccessible(true);
-            $value = $property->getValue($object);
-            $resultArray[$property->getName()] = self::prepareValue($value);
+
+        foreach ($reverted as $class) {
+            $reflectionClass = new \ReflectionClass($class);
+            $properties = $reflectionClass->getProperties();
+
+            foreach ($properties as $property) {
+                $property->setAccessible(true);
+                $value = $property->getValue($object);
+                $resultArray[$property->getName()] = self::prepareValue($value);
+            }
         }
+
         return $resultArray;
     }
 

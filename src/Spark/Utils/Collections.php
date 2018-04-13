@@ -8,13 +8,11 @@
 
 namespace Spark\Utils;
 
-
 use Spark\Common\Collection\FluentIterables;
 use Spark\Common\Optional;
 use Spark\Utils\Asserts;
 
 final class Collections {
-
 
     private function __construct() {
     }
@@ -377,7 +375,6 @@ final class Collections {
         return array_search($value, $array);
     }
 
-
     public static function range($first, $last, $step = 1) {
         return range($first, $last, $step);
     }
@@ -398,5 +395,7 @@ final class Collections {
         return array_chunk($array, $size, true);
     }
 
-
+    public static function reverse($array = []): array {
+        return array_reverse($array, true);
+    }
 }
