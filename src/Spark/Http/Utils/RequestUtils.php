@@ -6,6 +6,7 @@ use Doctrine\Common\Collections\Collection;
 use Spark\Common\Optional;
 use Spark\Http\Utils\CookieUtils;
 use Spark\Http\Session;
+use Spark\Utils\Asserts;
 use Spark\Utils\Collections;
 use Spark\Utils\FilterUtils;
 use Spark\Utils\Functions;
@@ -14,7 +15,6 @@ use Spark\Utils\Predicates;
 
 class RequestUtils {
 
-    const SESSION_NAME        = 'SESSID'; //AUTOMATICALLY IS PHPSESSID
     const POST_REQUEST_METHOD = 'POST';
 
     public static function isPost(): bool {
@@ -60,8 +60,9 @@ class RequestUtils {
     public static function getOrCreateSession(): Session {
         //move to sessionUtils or something
         if (false === isset($_SESSION)) {
-            session_name(self::SESSION_NAME);
-            session_start();
+            Asserts::checkState(!headers_sent(), 'Session will not be updated if header sent or var_dump');
+            Asserts::checkState(session_start(), 'Session could not be start');
+            session_regenerate_id();
         }
 
         if (false === Collections::hasKey($_SESSION, 'spark_session')) {
@@ -70,7 +71,6 @@ class RequestUtils {
 
         return $_SESSION['spark_session'];
     }
-
 
     public static function getSession(): Session {
         return self::getOrCreateSession();
