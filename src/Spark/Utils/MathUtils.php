@@ -8,7 +8,6 @@
 
 namespace Spark\Utils;
 
-
 class MathUtils {
 
     public static function formatNumber($val, $decimal = 2) {
@@ -16,7 +15,8 @@ class MathUtils {
     }
 
     public static function div($a, $b) {
-        Asserts::checkArgument(empty($a) || empty($b), 'Numbers cannot be empty');
+        Asserts::checkArgument(Objects::isNotNull($a) && Objects::isNotNull($b), 'Numbers cannot be empty');
+        Asserts::checkArgument($b !== 0, 'Second variable cannot be null');
         return $a / $b;
     }
 
@@ -26,5 +26,9 @@ class MathUtils {
 
     public static function min($x1, $x2): int {
         return min([$x1, $x2]);
+    }
+
+    public static function sum(array $values) {
+        return array_sum($values);
     }
 } 

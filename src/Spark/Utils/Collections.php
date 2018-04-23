@@ -262,9 +262,9 @@ final class Collections {
     public static function getValueOrDefault(array $array = array(), $key, $default = null) {
         if (Collections::hasKey($array, $key)) {
             return $array[$key];
-        } else {
-            return $default;
         }
+
+        return $default;
     }
 
     public static function noneMatch($collection = array(), \Closure $func) {

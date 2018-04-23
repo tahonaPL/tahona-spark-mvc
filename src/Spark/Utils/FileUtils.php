@@ -8,15 +8,11 @@
 
 namespace Spark\Utils;
 
-
 use Spark\Common\IllegalStateException;
-use Spark\Common\Optional;
-use Spark\Upload\MoveFileException;
-use Spark\Utils\Asserts;
 use Spark\Upload\FileObject;
+use Spark\Upload\MoveFileException;
 
 final class FileUtils {
-
 
     private function __construct() {
     }
@@ -30,8 +26,7 @@ final class FileUtils {
         }
     }
 
-
-    public static function exist($filePath):bool {
+    public static function exist($filePath): bool {
         return file_exists($filePath);
     }
 
@@ -69,17 +64,16 @@ final class FileUtils {
 
     public static function getAbsolutePath($dir) {
         if (strpos($dir, "/") === 0) {
-
             $rootAbsolutePath = realpath(__ROOT__);
 
             if (strpos($rootAbsolutePath, "\\") > 0) {
                 //windows
                 return $rootAbsolutePath . $dir;
 
-            } else {
-                //linux
-                return realpath($rootAbsolutePath . $dir);
             }
+
+            //linux
+            return $rootAbsolutePath . $dir;
 
         } else {
             return $dir;
@@ -122,7 +116,6 @@ final class FileUtils {
             })->get();
     }
 
-
     /**
      * @param $path
      */
@@ -131,7 +124,6 @@ final class FileUtils {
     }
 
     public static function getAllClassesInPath($dir) {
-
         $result = array();
 
         $fileNames = FileUtils::getFilesInPath($dir);
@@ -162,14 +154,19 @@ final class FileUtils {
         return StringUtils::replace(StringUtils::replace($fileName, '/', '\\'), ".php", "");
     }
 
-    public static function isDir($dir):bool {
+    public static function isDir($dir): bool {
         return is_dir($dir);
     }
 
-
-    public static function isFile($filePath):bool {
+    public static function isFile($filePath): bool {
         return is_file($filePath);
     }
 
-
+    public static function removeFile($relativeFilePath): bool {
+        $directoryPath = self::getAbsolutePath($relativeFilePath);
+        if (self::isFile($directoryPath)) {
+            return unlink($directoryPath);
+        }
+        return false;
+    }
 }

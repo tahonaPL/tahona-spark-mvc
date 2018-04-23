@@ -7,7 +7,6 @@ use Spark\Utils\Asserts;
 
 class DateUtils {
 
-
     public static function now(): DateTime {
         return new DateTime();
     }
@@ -27,14 +26,13 @@ class DateUtils {
      * @param DateTime $beforeDate
      * @return bool
      */
-    public static function isBefore(DateTime $date, DateTime $beforeDate) :bool {
+    public static function isBefore(DateTime $date, DateTime $beforeDate): bool {
         return $date < $beforeDate;
     }
 
-    public static function isBeforeEqual(DateTime $date, DateTime $beforeDate) :bool {
+    public static function isBeforeEqual(DateTime $date, DateTime $beforeDate): bool {
         return $date <= $beforeDate;
     }
-
 
     public static function format(DateTime $date, $format): string {
         Asserts::notNull($date, "Date cannot be null.");
@@ -54,6 +52,4 @@ class DateUtils {
     public static function getYearsBetween(DateTime $from, DateTime $to) {
         return date_diff($from, $to)->y;
     }
-
-
 }

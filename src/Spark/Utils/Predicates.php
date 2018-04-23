@@ -8,7 +8,6 @@
 
 namespace Spark\Utils;
 
-
 class Predicates {
 
     public static function alwaysTrue() {
@@ -71,4 +70,14 @@ class Predicates {
         };
     }
 
-} 
+    public static function testOR(array $predicatesArray): callable {
+        return function ($x) use ($predicatesArray) {
+            foreach ($predicatesArray as $pred) {
+                if ($pred($x)) {
+                    return true;
+                }
+            }
+            return false;
+        };
+    }
+}

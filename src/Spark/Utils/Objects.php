@@ -81,4 +81,8 @@ class Objects {
     public static function equals($a, $b): bool {
         return $a === $b;
     }
+
+    public static function defaultIfNull($obj, $default) {
+        return Objects::isNotNull($obj) ? $obj : $default;
+    }
 }
