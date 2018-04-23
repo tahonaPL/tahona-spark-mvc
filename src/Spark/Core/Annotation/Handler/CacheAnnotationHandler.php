@@ -1,7 +1,7 @@
 <?php
 /**
  *
- * User: crownclown67
+ * 
  * Date: 10.06.17
  * Time: 03:03
  */
@@ -76,10 +76,9 @@ class CacheAnnotationHandler extends AnnotationHandler {
      * @return array
      */
     private function getAnnotations($annotations) {
-        $authorizeAnnotations = Collections::builder($annotations)
+        return Collections::builder($annotations)
             ->filter(Predicates::compute($this->getClassName(), Predicates::equals($this->annotationName)))
             ->get();
-        return $authorizeAnnotations;
     }
 
 

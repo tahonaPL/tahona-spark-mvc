@@ -1,7 +1,7 @@
 <?php
 /**
  *
- * User: crownclown67
+ *
  * Date: 03.06.17
  * Time: 14:48
  */
