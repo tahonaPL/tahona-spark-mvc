@@ -114,17 +114,17 @@ class InitAnnotationProcessors extends AnnotationHandler {
      * @param $handlers
      */
     private function processAnnotationsForHandlers($class, $handlers) {
-        $reflectionObject = new ReflectionClass($class);
-        $classAnnotations = $this->annotationReader->getClassAnnotations($reflectionObject);
+        $reflectionClass = new ReflectionClass($class);
+        $classAnnotations = $this->annotationReader->getClassAnnotations($reflectionClass);
 
         if ($this->hasValidProfile($classAnnotations)) {
             /** @var AnnotationHandler $handler */
             foreach ($handlers as $handler) {
                 if ($handler->supports($class)) {
-                    $handler->handleClassAnnotations($classAnnotations, $class, $reflectionObject);
+                    $handler->handleClassAnnotations($classAnnotations, $class, $reflectionClass);
 
                     //Methods
-                    $reflectionMethods = $reflectionObject->getMethods();
+                    $reflectionMethods = $reflectionClass->getMethods();
                     foreach ($reflectionMethods as $method) {
                         $methodAnnotations = $this->annotationReader->getMethodAnnotations($method);
                         /** @var AnnotationHandler $handler */
@@ -133,7 +133,7 @@ class InitAnnotationProcessors extends AnnotationHandler {
                     }
 
                     //Field
-                    $reflectionProperties = $reflectionObject->getProperties();
+                    $reflectionProperties = $reflectionClass->getProperties();
                     foreach ($reflectionProperties as $property) {
                         $methodAnnotations = $this->annotationReader->getPropertyAnnotations($property);
 

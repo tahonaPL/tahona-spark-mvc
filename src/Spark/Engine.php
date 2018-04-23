@@ -13,6 +13,8 @@ use Spark\Core\Command\Input\InputInterface;
 use Spark\Core\Command\Output\OutputInterface;
 use Spark\Core\Error\ExceptionResolver;
 use Spark\Core\Error\GlobalErrorHandler;
+use Spark\Core\Event\EventBus;
+use Spark\Core\Event\Handler\SubscribeAnnotationHandler;
 use Spark\Core\Filler\BeanFiller;
 use Spark\Core\Filler\CookieFiller;
 use Spark\Core\Filler\FileObjectFiller;
@@ -222,6 +224,11 @@ class Engine {
         $this->container->register("cache", $this->beanCache);
         $this->container->registerObj(new CacheProvider());
         $this->container->registerObj(new CacheService());
+
+        //EventBus
+        $this->container->registerObj(new EventBus());
+        $this->container->registerObj(new SubscribeAnnotationHandler());
+
         $this->container->register(LangMessageResource::NAME, new LangMessageResource(array()));
         $this->container->register(LangKeyProvider::NAME, new CookieLangKeyProvider("lang"));
 
