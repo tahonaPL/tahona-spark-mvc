@@ -23,14 +23,14 @@ use Spark\View\ViewModel;
 
 class SmartyViewHandler extends ViewHandler {
 
-    const NAME = "smartyViewHandler";
-    const CACHE_ID = "spark.smarty.view.cache.id";
-    const COMPILE_CHECK = "spark.view.cache.compile_check";
-    const CACHE_ENABLED = "spark.view.cache.enable";
-    const CACHE_LIFE_TIME = "spark.view.cache.life_time";
-    const DEBUGGING = "spark.view.cache.debugging";
-    const ERROR_REPORTING = "spark.view.cache.error.reporting";
-    const FORCE_COMPILE = "spark.view.cache.force.compile";
+    public const NAME = 'smartyViewHandler';
+    public const CACHE_ID = 'spark.smarty.view.cache.id';
+    public const COMPILE_CHECK = 'spark.view.cache.compile_check';
+    public const CACHE_ENABLED = 'spark.view.cache.enable';
+    public const CACHE_LIFE_TIME = 'spark.view.cache.life_time';
+    public const DEBUGGING = 'spark.view.cache.debugging';
+    public const ERROR_REPORTING = 'spark.view.cache.error.reporting';
+    public const FORCE_COMPILE = 'spark.view.cache.force.compile';
     private $rootAppPath;
     private $smarty;
     /**
@@ -60,18 +60,18 @@ class SmartyViewHandler extends ViewHandler {
         if (Objects::isNull($this->smarty)) {
             $config = $this->config;
             $smarty = new \Smarty();
-            $smarty->setCacheDir($this->rootAppPath . "/view/cache");
-            $smarty->setCompileDir($this->rootAppPath . "/view/compile");
-            $smarty->setTemplateDir($this->rootAppPath . "/view");
+            $smarty->setCacheDir($this->rootAppPath . '/view/cache');
+            $smarty->setCompileDir($this->rootAppPath . '/view/compile');
+            $smarty->setTemplateDir($this->rootAppPath . '/view');
 
-            $smarty->registerPlugin("function", "invoke", array($this->smartyPlugins, "invoke"));
-            $smarty->registerPlugin("function", "path", array($this->smartyPlugins, "path"));
-            $smarty->registerPlugin("function", "message", array($this->smartyPlugins, "getMessage"));
+            $smarty->registerPlugin('function', 'invoke', array($this->smartyPlugins, 'invoke'));
+            $smarty->registerPlugin('function', 'path', array($this->smartyPlugins, 'path'));
+            $smarty->registerPlugin('function', 'message', array($this->smartyPlugins, 'getMessage'));
 
             $definedPlugins = $this->smartyPlugins->getDefinedPlugins();
             /** @var SmartyPlugin $plugin */
             foreach ($definedPlugins as $plugin) {
-                $smarty->registerPlugin("function", $plugin->getTag(), array($plugin, "execute"));
+                $smarty->registerPlugin('function', $plugin->getTag(), array($plugin, 'execute'));
             }
 
 //            var_dump($this->smartyPlugins->path(array("path"=>"/admin"), null));
@@ -94,7 +94,7 @@ class SmartyViewHandler extends ViewHandler {
     }
 
     public function handleView($viewModel, RequestData $request) {
-        $this->smarty->setCacheId($this->config->getProperty(self::CACHE_ID, "TAHONA_ROCKS") . "" . $this->getLang());
+        $this->smarty->setCacheId($this->config->getProperty(self::CACHE_ID, 'TAHONA_ROCKS') . '' . $this->getLang());
 
         /** @var ViewModel $viewModel */
         foreach ($viewModel->getParams() as $key => $value) {
@@ -111,7 +111,7 @@ class SmartyViewHandler extends ViewHandler {
      * @return string
      */
     private function removePrefix($viewPath) {
-        if (StringUtils::startsWith($viewPath, "/")) {
+        if (StringUtils::startsWith($viewPath, '/')) {
             return StringUtils::substring($viewPath, 1, StringUtils::length($viewPath));
         }
         return $viewPath;

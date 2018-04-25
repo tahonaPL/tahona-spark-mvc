@@ -2,7 +2,6 @@
 
 namespace Spark\View\Utils;
 
-
 use Spark\Http\Request;
 use Spark\Core\Routing\RequestData;
 use Spark\Utils\Objects;
@@ -14,11 +13,12 @@ class ViewUrlUtils {
      *  app/view/{namespace}/{module+controlle-sub-dir}/{controller-name}/{action-name}
      *
      * @param  $request
+     * @return string
      */
     public static function createFullViewPath(RequestData $request): string {
-        return StringUtils::join('/', array(
+        return StringUtils::replace(StringUtils::join('/', array(
             self::createViewPathWithViewName($request)
-        ));
+        )), "\\", '/');
     }
 
     public static function createViewPathWithViewName(RequestData $request, $viewName = null): string {
@@ -31,6 +31,4 @@ class ViewUrlUtils {
             str_replace('Action', '', $viewName)
         ));
     }
-
-
-} 
+}

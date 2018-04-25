@@ -1,3 +1,4 @@
+
 # README #
 
 ### What is this repository for? ###
@@ -511,11 +512,11 @@ class ExampleCommand implements Command {
      */
     private $someBean;
 
-    public function getName() {
+    public function getName() :string{
         return "example:exampleCommandCommand";
     }
 
-    public function execute(InputInterface $in, OutputInterface $out) {
+    public function execute(InputInterface $in, OutputInterface $out) : void {
         $out->writeln("executing " . $this->getName());
 
         //Example ....

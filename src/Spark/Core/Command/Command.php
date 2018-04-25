@@ -14,7 +14,7 @@ use Spark\Core\Command\Output\OutputInterface;
 
 interface Command {
 
-    public function getName();
+    public function getName() : string ;
 
-    public function execute(InputInterface $in, OutputInterface $out);
+    public function execute(InputInterface $in, OutputInterface $out) : void;
 }
