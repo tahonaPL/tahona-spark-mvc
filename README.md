@@ -620,6 +620,43 @@ class NotFoundErrorHandler extends ExceptionResolver {
 where error handler with order equal 0 , will be first to invoke.
 If you return *Viewmodel* the handling will stop and the view will be return as response.
 
+### Event Bus ### 
+
+```php
+/**
+* @Inject
+*/
+private $eventBus;
+...
+$this->eventBus->post(new SomeEvent());
+
+```
+Event definition :
+
+```php
+class SomeEvent implements Event {...}
+```
+
+Subscription
+```php
+
+@Component 
+class SomeListener {
+
+  /**
+  * @Subscribe
+  */
+  public function handleSomeCase(SomeEvent $event) {
+     //...logic
+  }
+
+}
+
+
+```
+
+
+
 ### Installation - Composer - Speed up ###
 
 
