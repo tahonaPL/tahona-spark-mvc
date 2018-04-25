@@ -57,12 +57,16 @@ class ComponentAnnotationHandler extends AnnotationHandler {
     }
 
     private function getBeanName($annotation, $class) {
+        if (StringUtils::equals(Objects::getClassName($annotation), Annotations::CONFIGURATION)) {
+            //For configuration name is a full class name
+            return $class;
+        }
+
         $isOk = Objects::isNotNull($annotation) && StringUtils::isNotBlank($annotation->name);
         $array = StringUtils::split($class, "\\");
         return $isOk ? $annotation->name : lcfirst(end($array));
 
     }
-
 
     /**
      * @param $annotations
@@ -82,5 +86,4 @@ class ComponentAnnotationHandler extends AnnotationHandler {
     private function addBean($class, $beanName) {
         $this->getContainer()->registerClass($beanName, $class);
     }
-
 }
