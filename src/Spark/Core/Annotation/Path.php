@@ -24,9 +24,5 @@ final class Path {
     public $method = array();
     /** @var array */
     public $header = array();
-//    /**
-//     * @var array
-//     */
-//    public $params = array();
 
 }

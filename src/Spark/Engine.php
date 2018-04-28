@@ -62,10 +62,10 @@ use Spark\Cache\SimpleBeanCache;
 
 class Engine {
 
-    const CONTAINER_CACHE_KEY      = "container";
-    const ROUTE_CACHE_KEY          = "route";
-    const CONFIG_CACHE_KEY         = "config";
-    const ERROR_HANDLERS_CACHE_KEY = "exceptionResolvers";
+    const CONTAINER_CACHE_KEY      = 'container';
+    const ROUTE_CACHE_KEY          = 'route';
+    const CONFIG_CACHE_KEY         = 'config';
+    const ERROR_HANDLERS_CACHE_KEY = 'exceptionResolvers';
 
     /**
      * @var string Application Name used in apcu Cache as a prefix
@@ -102,7 +102,7 @@ class Engine {
     private $hasAllreadyCachedData;
 
     public function __construct($appName, $profile, $rootAppPath) {
-        Asserts::checkState(extension_loaded("apcu"), "Apcu Cache enable is mandatory!");
+        Asserts::checkState(extension_loaded('apcu'), 'Apcu Cache enable is mandatory!');
         Asserts::notNull($rootAppPath, "Engine configuration: did you forget root project path('s) field: 'root' e.g 'path'");
 
         $this->appName = $appName;
@@ -130,14 +130,14 @@ class Engine {
             $this->route = new Routing(array());
             $this->config = new Config();
 
-            $this->config->set("app.profile", $this->getProfile());
-            $this->config->set("app.path", $this->appPath);
-            $this->config->set("src.path", $this->getSourcePath());
+            $this->config->set('app.profile', $this->getProfile());
+            $this->config->set('app.path', $this->appPath);
+            $this->config->set('src.path', $this->getSourcePath());
 
             $initAnnotationProcessors = new InitAnnotationProcessors($this->route, $this->config, $this->container);
 
             $beanLoader = new BeanLoader($initAnnotationProcessors, $this->config, $this->container);
-            $beanLoader->addFromPath($this->getSourcePath(), array("proxy"));
+            $beanLoader->addFromPath($this->getSourcePath(), array('proxy'));
             $beanLoader->addClass("Spark\Core\CoreConfig");
             $beanLoader->process();
 
@@ -216,12 +216,12 @@ class Engine {
     private function devToolsInit() {
         $enabled = $this->config->getProperty(Config::DEV_ENABLED);
         if ($enabled) {
-            RequestUtils::setCookie("XDEBUG_SESSION", true);
+            RequestUtils::setCookie('XDEBUG_SESSION', true);
         }
     }
 
     private function addBaseServices() {
-        $this->container->register("cache", $this->beanCache);
+        $this->container->register('cache', $this->beanCache);
         $this->container->registerObj(new CacheProvider());
         $this->container->registerObj(new CacheService());
 
@@ -230,7 +230,7 @@ class Engine {
         $this->container->registerObj(new SubscribeAnnotationHandler());
 
         $this->container->register(LangMessageResource::NAME, new LangMessageResource(array()));
-        $this->container->register(LangKeyProvider::NAME, new CookieLangKeyProvider("lang"));
+        $this->container->register(LangKeyProvider::NAME, new CookieLangKeyProvider('lang'));
 
         $this->container->register(SmartyPlugins::NAME, new SmartyPlugins());
         $this->container->register(RequestProvider::NAME, new RequestProvider());
@@ -265,7 +265,7 @@ class Engine {
 
         $provider = new ViewHandlerProvider();
         $this->container->register(ViewHandlerProvider::NAME, $provider);
-        $this->container->register("defaultViewHandler", $smartyViewHandler);
+        $this->container->register('defaultViewHandler', $smartyViewHandler);
         $this->container->register(SmartyViewHandler::NAME, $smartyViewHandler);
         $this->container->register(PlainViewHandler::NAME, $plainViewHandler);
         $this->container->register(JsonViewHandler::NAME, $jsonViewHandler);
@@ -301,7 +301,7 @@ class Engine {
     private function handleView($viewModel, $request) {
         $handler = $this->container->get(ViewHandlerProvider::NAME);
 
-        Asserts::notNull($handler, "No handler found for response objcet" . Objects::getClassName($viewModel));
+        Asserts::notNull($handler, 'No handler found for response object' . Objects::getClassName($viewModel));
 
         /** @var $handler ViewHandlerProvider */
         $handler->handleView($viewModel, $request);
@@ -310,6 +310,7 @@ class Engine {
 
     private function executeFilter(Request $request) {
         $filters = $this->container->getByType(HttpFilter::class);
+
 
         if (Collections::isNotEmpty($filters)) {
             $filtersIterator = new \ArrayIterator($filters);
@@ -320,7 +321,7 @@ class Engine {
 
 
     private function getCacheKey($key): string {
-        return $this->appName . "_" . $key;
+        return $this->appName . '_' . $key;
     }
 
     private function isApcuCacheEnabled(): bool {
@@ -356,14 +357,14 @@ class Engine {
      * @throws Common\IllegalStateException
      */
     public function handleViewModel(Request $request, $viewModel) {
-        Asserts::checkState($viewModel instanceof Response, "Wrong controller action response type. Returned type from controller needs to be instance of Response.");
+        Asserts::checkState($viewModel instanceof Response, 'Wrong controller action response type. Returned type from controller needs to be instance of Response.');
 
         $this->postHandleIntercetors($request, $viewModel);
 
         if (Objects::isNotNull($viewModel)) {
             $this->handleView($viewModel, $request);
         } else {
-            throw new ErrorException("ViewModel not found. Did you initiated ViewModel? ");
+            throw new ErrorException('ViewModel not found. Did you initiated ViewModel? ');
         }
     }
 
@@ -384,8 +385,8 @@ class Engine {
 
         $commands = $this->container->getByType(Command::class);
         Collections::builder($commands)
-            ->filter(Predicates::compute(Functions::get("name"), function ($n) use ($input) {
-                return StringUtils::startsWith($n, $input->get("command"));
+            ->filter(Predicates::compute(Functions::get('name'), function ($n) use ($input) {
+                return StringUtils::startsWith($n, $input->get('command'));
             }))
             ->each(function ($command) use ($input, $out) {
                 /** @var Command $command */
@@ -450,7 +451,7 @@ class Engine {
      * @return string
      */
     private function getSourcePath(): string {
-        return $this->appPath . "/src";
+        return $this->appPath . '/src';
     }
 
 
