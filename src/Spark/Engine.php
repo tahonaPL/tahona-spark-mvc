@@ -94,7 +94,6 @@ class Engine {
     private $exceptionResolvers;
     private $profile;
 
-    private $hasAllreadyCachedData;
 
     public function __construct($appName, $profile, $rootAppPath) {
         Asserts::checkState(extension_loaded('apcu'), 'Apcu Cache enable is mandatory!');
@@ -107,6 +106,7 @@ class Engine {
         $this->beanCache = new ApcuBeanCache();
 //        $this->contextLoader = new CacheContextLoader($this->appName, $this->beanCache);
         $this->contextLoader = new StaticClassContextLoader();
+
 
         if ($this->contextLoader->hasData()) {
             $this->container = $this->contextLoader->getContainer();
