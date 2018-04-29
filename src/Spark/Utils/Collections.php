@@ -379,8 +379,8 @@ final class Collections {
         return range($first, $last, $step);
     }
 
-    public static function subList($accessor, $fromIndex, $toIndex) {
-        return array_slice($accessor, $fromIndex, $toIndex);
+    public static function subList($collection, $fromIndex, $toIndex) {
+        return array_slice($collection, $fromIndex, $toIndex);
     }
 
     /**

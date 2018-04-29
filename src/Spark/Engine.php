@@ -21,6 +21,8 @@ use Spark\Core\Filler\FileObjectFiller;
 use Spark\Core\Filler\Filler;
 use Spark\Core\Filler\RequestFiller;
 use Spark\Core\Filler\SessionFiller;
+use Spark\Core\Filter\FilterChain;
+use Spark\Core\Filter\HttpFilter;
 use Spark\Core\Interceptor\HandlerInterceptor;
 use Spark\Core\Lang\CookieLangKeyProvider;
 use Spark\Core\Lang\LangKeyProvider;
@@ -29,23 +31,21 @@ use Spark\Core\Lang\LangResourcePath;
 use Spark\Core\Library\Annotations;
 use Spark\Core\Library\BeanLoader;
 use Spark\Core\Processor\InitAnnotationProcessors;
+use Spark\Core\Processor\Loader\CacheContextLoader;
+use Spark\Core\Processor\Loader\StaticClassContextLoader;
 use Spark\Core\Provider\BeanProvider;
+use Spark\Core\Routing\RequestData;
 use Spark\Core\Routing\RoutingDefinition;
 use Spark\Core\Utils\SystemUtils;
-use Spark\Core\Filter\FilterChain;
-use Spark\Core\Filter\HttpFilter;
 use Spark\Http\Request;
 use Spark\Http\RequestProvider;
 use Spark\Http\Response;
 use Spark\Http\Utils\RequestUtils;
-use Spark\Core\Routing\RequestData;
-use Spark\Optimization\SpeedTester;
 use Spark\Routing\RoutingInfo;
 use Spark\Utils\Asserts;
 use Spark\Utils\BooleanUtils;
 use Spark\Utils\Collections;
 use Spark\Utils\Functions;
-use Spark\Utils\JsonUtils;
 use Spark\Utils\Objects;
 use Spark\Utils\Predicates;
 use Spark\Utils\StringUtils;
@@ -58,14 +58,9 @@ use Spark\View\Smarty\SmartyPlugins;
 use Spark\View\Smarty\SmartyViewHandler;
 use Spark\View\ViewHandlerProvider;
 use Spark\View\ViewModel;
-use Spark\Cache\SimpleBeanCache;
 
 class Engine {
 
-    const CONTAINER_CACHE_KEY      = 'container';
-    const ROUTE_CACHE_KEY          = 'route';
-    const CONFIG_CACHE_KEY         = 'config';
-    const ERROR_HANDLERS_CACHE_KEY = 'exceptionResolvers';
 
     /**
      * @var string Application Name used in apcu Cache as a prefix
@@ -109,22 +104,25 @@ class Engine {
         $this->profile = $profile;
         $this->appPath = $rootAppPath;
 
-         $this->beanCache = new ApcuBeanCache();
+        $this->beanCache = new ApcuBeanCache();
+//        $this->contextLoader = new CacheContextLoader($this->appName, $this->beanCache);
+        $this->contextLoader = new StaticClassContextLoader();
 
-        $container = $this->beanCache->get($this->getCacheKey(self::CONTAINER_CACHE_KEY));
-        $this->hasAllreadyCachedData = Objects::isNotNull($container);
+        if ($this->contextLoader->hasData()) {
+            $this->container = $this->contextLoader->getContainer();
+            $this->route = $this->contextLoader->getRoute();
+            $this->config = $this->contextLoader->getConfig();
+            $this->exceptionResolvers = $this->contextLoader->getExceptionResolvers();
 
-        if ($this->hasAllreadyCachedData) {
-            $this->container = $container;
-            $this->route = $this->beanCache->get($this->getCacheKey(self::ROUTE_CACHE_KEY));
-            $this->config = $this->beanCache->get($this->getCacheKey(self::CONFIG_CACHE_KEY));
-            $this->exceptionResolvers = $this->beanCache->get($this->getCacheKey(self::ERROR_HANDLERS_CACHE_KEY));
+            $resetParam = $this->config->getProperty(EnableApcuAnnotationHandler::APCU_CACHE_RESET);
 
-            $this->clearCacheIfResetParam();
+            if (isset($_GET[$resetParam])) {
+                $this->contextLoader->clear();
+            }
         }
 
-        if (!$this->hasAllreadyCachedData) {
-            $this->beanCache->clearAll();
+        if (!$this->contextLoader->hasData()) {
+            $this->contextLoader->clear();
 
             $this->container = new Container();
             $this->route = new Routing(array());
@@ -138,7 +136,7 @@ class Engine {
 
             $beanLoader = new BeanLoader($initAnnotationProcessors, $this->config, $this->container);
             $beanLoader->addFromPath($this->getSourcePath(), array('proxy'));
-            $beanLoader->addClass("Spark\Core\CoreConfig");
+            $beanLoader->addClass("Spark\\Core\\CoreConfig");
             $beanLoader->process();
 
             $this->addBaseServices();
@@ -151,12 +149,14 @@ class Engine {
 
             $this->exceptionResolvers = $this->container->getByType(ExceptionResolver::class);
 
-            if ($this->isApcuCacheEnabled()) {
-                $this->beanCache->put($this->getCacheKey(self::CONFIG_CACHE_KEY), $this->config);
-                $this->beanCache->put($this->getCacheKey(self::CONTAINER_CACHE_KEY), $this->container);
-                $this->beanCache->put($this->getCacheKey(self::ROUTE_CACHE_KEY), $this->route);
-                $this->beanCache->put($this->getCacheKey(self::ERROR_HANDLERS_CACHE_KEY), $this->exceptionResolvers);
-            }
+//            if ($this->isApcuCacheEnabled()) {
+            $this->contextLoader->save(
+                $this->config,
+                $this->container,
+                $this->route,
+                $this->exceptionResolvers
+            );
+//            }
         }
 
         /** @var GlobalErrorHandler $globalErrorHandler */
@@ -273,10 +273,9 @@ class Engine {
     }
 
     /**
-     * @param Request $requestData
+     * @param RequestData|Request $requestData
      * @param $controller
      * @throws ErrorException
-     * @throws \Spark\Common\IllegalStateException
      */
     private function handleAction(RequestData $requestData, $controller) {
 
@@ -311,7 +310,6 @@ class Engine {
     private function executeFilter(Request $request) {
         $filters = $this->container->getByType(HttpFilter::class);
 
-
         if (Collections::isNotEmpty($filters)) {
             $filtersIterator = new \ArrayIterator($filters);
             $chain = new FilterChain($filtersIterator->current(), $filtersIterator);
@@ -319,10 +317,6 @@ class Engine {
         }
     }
 
-
-    private function getCacheKey($key): string {
-        return $this->appName . '_' . $key;
-    }
 
     private function isApcuCacheEnabled(): bool {
         return $this->config->getProperty(EnableApcuAnnotationHandler::APCU_CACHE_ENABLED, false);
@@ -394,14 +388,6 @@ class Engine {
             });
     }
 
-    private function clearCacheIfResetParam() {
-        $resetParam = $this->config->getProperty(EnableApcuAnnotationHandler::APCU_CACHE_RESET);
-
-        if (isset($_GET[$resetParam])) {
-            $this->beanCache->clearAll();
-            $this->hasAllreadyCachedData = false;
-        }
-    }
 
     private function getProfile() {
         if (SystemUtils::isCommandLineInterface()) {

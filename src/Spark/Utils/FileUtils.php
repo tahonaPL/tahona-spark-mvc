@@ -9,6 +9,7 @@
 namespace Spark\Utils;
 
 use Spark\Common\IllegalStateException;
+use Spark\Common\Optional;
 use Spark\Upload\FileObject;
 use Spark\Upload\MoveFileException;
 
@@ -33,14 +34,14 @@ final class FileUtils {
     public static function moveFileToDir(FileObject $file, $directoryPath) {
         $directoryPath = self::getAbsolutePath($directoryPath);
 
-        $newFilePath = $directoryPath . "/" . $file->getFileName();
+        $newFilePath = $directoryPath . '/' . $file->getFileName();
         $success = copy($file->getFilePath(), $newFilePath);
 
         if ($success) {
             unlink($file->getFilePath());
             $file->setFilePath($newFilePath);
         } else {
-            throw new MoveFileException("cant move file to :" . $directoryPath . " check write permission.");
+            throw new MoveFileException('cant move file to :' . $directoryPath . ' check write permission.');
         }
     }
 
@@ -58,39 +59,29 @@ final class FileUtils {
             unlink($file->getFilePath());
             $file->setFilePath($newFilePath);
         } else {
-            throw new IllegalStateException("cant move file to :" . $fullPath . " check write permission.");
+            throw new IllegalStateException('cant move file to :' . $fullPath . ' check write permission.');
         }
     }
 
     public static function getAbsolutePath($dir) {
-        if (strpos($dir, "/") === 0) {
-            $rootAbsolutePath = realpath(__ROOT__);
-
-            if (strpos($rootAbsolutePath, "\\") > 0) {
-                //windows
-                return $rootAbsolutePath . $dir;
-
-            }
-
-            //linux
-            return $rootAbsolutePath . $dir;
-
+        if (strpos($dir, __ROOT__) !== 0) {
+            return __ROOT__ . $dir;
         } else {
             return $dir;
         }
     }
 
     public static function getExtension(FileObject $fileObject) {
-        if (strpos($fileObject->getFileName(), ".") > 0) {
-            $exploded = explode(".", $fileObject->getFileName());
+        if (strpos($fileObject->getFileName(), '.') > 0) {
+            $exploded = explode('.', $fileObject->getFileName());
             return $exploded[1];
         } else {
-            return "";
+            return '';
         }
     }
 
     public static function getFilesInPath($path) {
-        Asserts::checkArgument(is_dir($path), "Path should be point to directory ");
+        Asserts::checkArgument(is_dir($path), 'Path should be point to directory ');
 
         $scandir = scandir($path);
         $scandir = array_diff($scandir, array('.', '..'));
@@ -105,14 +96,14 @@ final class FileUtils {
     public static function getFileList($path) {
         return Collections::builder(self::getFilesInPath($path))
             ->filter(function ($file) use ($path) {
-                return is_file($path . "/" . $file);
+                return is_file($path . '/' . $file);
             })->get();
     }
 
     public static function getDirList($path, $exclude = array()) {
         return Collections::builder(self::getFilesInPath($path))
             ->filter(function ($file) use ($path, $exclude) {
-                return is_dir($path . "/" . $file) && !Collections::isIn($file, $exclude);
+                return is_dir($path . '/' . $file) && !Collections::isIn($file, $exclude);
             })->get();
     }
 
@@ -129,16 +120,16 @@ final class FileUtils {
         $fileNames = FileUtils::getFilesInPath($dir);
 
         foreach ($fileNames as $fileName) {
-            $filePath = $dir . "/" . $fileName;
+            $filePath = $dir . '/' . $fileName;
             if (is_dir($filePath)) {
                 $subFiles = Collections::builder(self::getAllClassesInPath($filePath))
                     ->map(function ($x) use ($fileName) {
-                        return self::toClassName($fileName . "/" . $x);
+                        return self::toClassName($fileName . '/' . $x);
                     })->get();
 
                 Collections::addAll($result, $subFiles);
 
-            } else if (StringUtils::contains($fileName, ".php")) {
+            } else if (StringUtils::contains($fileName, '.php')) {
                 $result[] = self::toClassName($fileName);
             }
         }
@@ -151,7 +142,7 @@ final class FileUtils {
      * @return mixed
      */
     private static function toClassName($fileName) {
-        return StringUtils::replace(StringUtils::replace($fileName, '/', '\\'), ".php", "");
+        return StringUtils::replace(StringUtils::replace($fileName, '/', '\\'), '.php', '');
     }
 
     public static function isDir($dir): bool {
@@ -169,4 +160,27 @@ final class FileUtils {
         }
         return false;
     }
+
+
+    public static function writeToFile($content, $absolutePath, bool $createDir = false): void {
+
+        if ($createDir) {
+            $splitted = Optional::of($absolutePath)
+                ->map(StringFunctions::split('/'))
+                ->get();
+
+            Collections::stream(
+                Collections::range(0, Collections::size($splitted) - 1)
+            )->each(function ($index) use ($splitted) {
+                $pathArr = Collections::subList($splitted, 0, $index);
+                $path = StringUtils::join($pathArr, "/");
+
+                if (StringUtils::isNotBlank($path)) {
+                    self::createFolderIfNotExist($path);
+                }
+            });
+        }
+        file_put_contents($absolutePath, $content);
+    }
+
 }
