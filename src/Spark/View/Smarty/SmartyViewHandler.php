@@ -31,6 +31,8 @@ class SmartyViewHandler extends ViewHandler {
     public const DEBUGGING = 'spark.view.cache.debugging';
     public const ERROR_REPORTING = 'spark.view.cache.error.reporting';
     public const FORCE_COMPILE = 'spark.view.cache.force.compile';
+    public const MERGE_COMPILED_INCLUDES = 'spark.view.cache.merge.compiled.includes';
+
     private $rootAppPath;
     private $smarty;
     /**
@@ -80,6 +82,7 @@ class SmartyViewHandler extends ViewHandler {
             $smarty->compile_check = $config->getProperty(self::COMPILE_CHECK, true);
             $smarty->caching = $config->getProperty(self::CACHE_ENABLED, false);
             $smarty->cache_lifetime = $config->getProperty(self::CACHE_LIFE_TIME, 1800);
+            $smarty->merge_compiled_includes = $config->getProperty(self::MERGE_COMPILED_INCLUDES, true);
 
             $smarty->debugging = $config->getProperty(self::DEBUGGING, false);
             $smarty->error_reporting = $config->getProperty(self::ERROR_REPORTING, E_ALL & ~E_NOTICE);
