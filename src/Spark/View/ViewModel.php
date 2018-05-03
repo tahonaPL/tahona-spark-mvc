@@ -2,6 +2,7 @@
 
 namespace Spark\View;
 
+use Spark\Core\Service\Properties;
 use Spark\Core\Service\PropertyHelper;
 use Spark\Http\Response;
 use Spark\Utils\UrlUtils;
@@ -12,9 +13,11 @@ use Spark\View\Redirect\RedirectViewModel;
  *
  * @author primosz67
  */
-class ViewModel extends PropertyHelper implements Response {
+class ViewModel implements Response {
+    use Properties;
 
     private $viewName;
+
 
     /**
      * @param $name

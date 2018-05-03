@@ -37,7 +37,7 @@ class RoutingUtils {
         $routeElementsCount = count($exRoute);
         $routeStaticElementsCount = $routeElementsCount - $paramsCount;
         
-        if (false == $hasPathParams) {
+        if (!$hasPathParams) {
             return false;
         }
         
@@ -50,13 +50,13 @@ class RoutingUtils {
                 
                 if (StringUtils::equalsIgnoreCase($urlElement, $routeExpressionKey)) {
                     $routeStaticElementsCount --;
-                } else if (false == StringUtils::equalsIgnoreCase($urlElement, $routeExpressionKey)) {
+                } else if (!StringUtils::equalsIgnoreCase($urlElement, $routeExpressionKey)) {
                     $routeExpressionKey = self::clearRouteParamExpression($routeExpressionKey);
                     
                     if (Collections::exist($routeDefinitionParams, $routeExpressionKey)) {
                         $paramsCount --;
                     }
-                } else if (false == StringUtils::equals($routeExpressionKey, $urlElement)) {
+                } else if (!StringUtils::equals($routeExpressionKey, $urlElement)) {
                     return false;
                 }
             }

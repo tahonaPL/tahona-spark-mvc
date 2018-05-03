@@ -42,7 +42,7 @@ final class Collections {
         return count($collection);
     }
 
-    public static function isNotEmpty(array $collection): bool {
+    public static function isNotEmpty(?array $collection): bool {
         return false === self::isEmpty($collection);
     }
 
@@ -51,7 +51,7 @@ final class Collections {
      * @param $collection
      * @return bool
      */
-    public static function isEmpty(array $collection): bool {
+    public static function isEmpty(?array $collection): bool {
         $isNull = Objects::isNull($collection);
         if ($isNull) {
             return true;
