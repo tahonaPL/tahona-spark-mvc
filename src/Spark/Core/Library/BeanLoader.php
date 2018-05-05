@@ -9,6 +9,7 @@
 namespace Spark\Core\Library;
 
 
+use function foo\func;
 use ReflectionClass;
 use Spark\Config;
 use Spark\Container;
@@ -18,6 +19,7 @@ use Spark\Core\Processor\InitAnnotationProcessors;
 use Spark\Utils\Asserts;
 use Spark\Utils\Collections;
 use Spark\Utils\FileUtils;
+use Spark\Utils\Functions;
 use Spark\Utils\Predicates;
 use Spark\Utils\ReflectionUtils;
 use Spark\Utils\StringUtils;
@@ -65,7 +67,7 @@ class BeanLoader {
     public function addClass($classPath) {
         $this->checkClassExist($classPath);
 
-        $this->classesInSrc[$classPath] = $classPath;
+        $this->classesInSrc[$classPath] = new ReflectionClass($classPath);
     }
 
     /**
@@ -88,17 +90,22 @@ class BeanLoader {
                 return !Collections::builder($excludeDir)->anyMatch(function ($x) use ($cls) {
                     return StringUtils::startsWith($cls, $x);
                 });
+            })->convertToMap(Functions::getSameObject())
+            ->map(function($name) {
+                return new ReflectionClass($name);
             })
             ->get();
     }
 
     /**
      *  Function that process all bean ins application with Spark basics annotation handlers
+     * @throws \ReflectionException
      */
-    public function process() {
-        foreach ($this->classesInSrc as $class) {
+    public function process(): void {
+        foreach ($this->classesInSrc as $classReflection) {
             //project beans
-            $this->annotationProcessor->processAnnotations($class);
+            $this->annotationProcessor->processClass($classReflection);
+            $this->annotationProcessor->processAnnotations($classReflection);
         }
     }
 
@@ -114,16 +121,18 @@ class BeanLoader {
                 $this->annotationProcessor->addPostHandler($h);
             });
 
-        foreach ($this->classesInSrc as $class) {
+        foreach ($this->classesInSrc as $classReflection) {
             //project beans
-            $this->annotationProcessor->processPostAnnotations($class);
+            $this->annotationProcessor->processPostAnnotations($classReflection);
         }
 
         //Spark beans
         /** @var PostLoadDefinition $postLoadDefinition */
         foreach ($this->postLoad as $postLoadDefinition) {
             if ($postLoadDefinition->canLoad()) {
-                $this->annotationProcessor->processPostAnnotations($postLoadDefinition->getClass());
+                $this->annotationProcessor->processPostAnnotations(
+                    new ReflectionClass($postLoadDefinition->getClass())
+                );
             }
         }
         $this->annotationProcessor->clear();

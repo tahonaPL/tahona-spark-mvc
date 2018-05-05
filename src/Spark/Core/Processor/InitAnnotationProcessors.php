@@ -26,6 +26,8 @@ use Spark\Core\Annotation\Handler\SmartyViewConfigurationAnnotationHandler;
 use Spark\Core\Annotation\RestController;
 use Spark\Core\Annotation\SmartyViewConfiguration;
 use Spark\Core\Library\Annotations;
+use Spark\Core\Processor\Handler\ClassHandler;
+use Spark\Core\Processor\Handler\Handler;
 use Spark\Utils\Collections;
 use Spark\Utils\Functions;
 use Spark\Utils\Objects;
@@ -37,6 +39,7 @@ class InitAnnotationProcessors extends AnnotationHandler {
 
     private $handlers;
     private $postHandlers;
+    private $classHandlers;
     private $routing;
     private $config;
     /**
@@ -55,9 +58,12 @@ class InitAnnotationProcessors extends AnnotationHandler {
             new PathAnnotationHandler(),
             new SmartyViewConfigurationAnnotationHandler(),
             new DebugAnnotationHandler(),
-            new ControllerClassHandler(),
             new ControllerAnnotationHandler(),
         );
+
+        $this->classHandlers = [
+            new ControllerClassHandler()
+        ];
 
         $this->postHandlers = array(
             new CacheAnnotationHandler()
@@ -69,6 +75,10 @@ class InitAnnotationProcessors extends AnnotationHandler {
 
         /** @var AnnotationHandler $handler */
         foreach ($this->handlers as $handler) {
+            $this->updateHanlder($handler);
+        }
+
+        foreach ($this->classHandlers as $handler) {
             $this->updateHanlder($handler);
         }
 
@@ -87,7 +97,7 @@ class InitAnnotationProcessors extends AnnotationHandler {
     /**
      * @param $handler
      */
-    private function updateHanlder($handler) {
+    private function updateHanlder(Handler $handler): void {
         $handler->setConfig($this->config);
         $handler->setRouting($this->routing);
         $handler->setContainer($this->container);
@@ -110,11 +120,12 @@ class InitAnnotationProcessors extends AnnotationHandler {
 
     /**
      *
-     * @param $class
+     * @param ReflectionClass $reflectionClass
      * @param $handlers
+     * @internal param $class
      */
-    private function processAnnotationsForHandlers($class, $handlers) {
-        $reflectionClass = new ReflectionClass($class);
+    private function processAnnotationsForHandlers(ReflectionClass $reflectionClass, $handlers) {
+        $class = $reflectionClass->name;
         $classAnnotations = $this->annotationReader->getClassAnnotations($reflectionClass);
 
         if ($this->hasValidProfile($classAnnotations)) {
@@ -150,7 +161,6 @@ class InitAnnotationProcessors extends AnnotationHandler {
                 $supports = $handler->supports($class);
 
                 if ($supports) {
-
                     if (Collections::isNotEmpty($classAnnotations)) {
                         $handler->handleClassAnnotations($classAnnotations, $class, $reflectionClass);
                     }
@@ -178,6 +188,9 @@ class InitAnnotationProcessors extends AnnotationHandler {
             $handler->clear();
         }
         foreach ($this->postHandlers as $handler) {
+            $handler->clear();
+        }
+        foreach ($this->classHandlers as $handler) {
             $handler->clear();
         }
     }
@@ -219,5 +232,15 @@ class InitAnnotationProcessors extends AnnotationHandler {
         return function ($x) {
             return Objects::getClassName($x);
         };
+    }
+
+    public function processClass(ReflectionClass $rFClass) {
+
+        /** @var ClassHandler $classHandler */
+        foreach ($this->classHandlers as $classHandler) {
+            if ($classHandler->supports($rFClass->name)) {
+                $classHandler->handleClass($rFClass);
+            }
+        }
     }
 }
