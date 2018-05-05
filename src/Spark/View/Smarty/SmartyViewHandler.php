@@ -82,7 +82,7 @@ class SmartyViewHandler extends ViewHandler {
             $smarty->compile_check = $config->getProperty(self::COMPILE_CHECK, true);
             $smarty->caching = $config->getProperty(self::CACHE_ENABLED, false);
             $smarty->cache_lifetime = $config->getProperty(self::CACHE_LIFE_TIME, 1800);
-            $smarty->merge_compiled_includes = $config->getProperty(self::MERGE_COMPILED_INCLUDES, true);
+            $smarty->merge_compiled_includes = $config->getProperty(self::MERGE_COMPILED_INCLUDES, false);
 
             $smarty->debugging = $config->getProperty(self::DEBUGGING, false);
             $smarty->error_reporting = $config->getProperty(self::ERROR_REPORTING, E_ALL & ~E_NOTICE);

@@ -118,27 +118,54 @@ class InitAnnotationProcessors extends AnnotationHandler {
         $classAnnotations = $this->annotationReader->getClassAnnotations($reflectionClass);
 
         if ($this->hasValidProfile($classAnnotations)) {
+
+            $methodCache = [];
+            $propertyCache = [];
+
+            $reflectionMethods = $reflectionClass->getMethods();
+            $reflectionProperties = $reflectionClass->getProperties();
+
+            foreach ($reflectionMethods as $method) {
+                $methodAnnotations = $this->annotationReader->getMethodAnnotations($method);
+                if (Collections::isNotEmpty($methodAnnotations)) {
+                    $methodCache[$method->name] = [
+                        'annotations' => $methodAnnotations,
+                        'method' => $method
+                    ];
+                }
+            }
+
+            foreach ($reflectionProperties as $property) {
+                $propertiesAnnotations = $this->annotationReader->getPropertyAnnotations($property);
+                if (Collections::isNotEmpty($propertiesAnnotations)) {
+                    $propertyCache[$property->name] = [
+                        'annotations' => $propertiesAnnotations,
+                        'property' => $property
+                    ];
+                }
+            }
+
             /** @var AnnotationHandler $handler */
             foreach ($handlers as $handler) {
-                if ($handler->supports($class)) {
-                    $handler->handleClassAnnotations($classAnnotations, $class, $reflectionClass);
+                $supports = $handler->supports($class);
 
-                    //Methods
-                    $reflectionMethods = $reflectionClass->getMethods();
-                    foreach ($reflectionMethods as $method) {
-                        $methodAnnotations = $this->annotationReader->getMethodAnnotations($method);
-                        /** @var AnnotationHandler $handler */
-                        $handler->handleMethodAnnotations($methodAnnotations, $class, $method);
+                if ($supports) {
 
+                    if (Collections::isNotEmpty($classAnnotations)) {
+                        $handler->handleClassAnnotations($classAnnotations, $class, $reflectionClass);
                     }
 
-                    //Field
-                    $reflectionProperties = $reflectionClass->getProperties();
-                    foreach ($reflectionProperties as $property) {
-                        $methodAnnotations = $this->annotationReader->getPropertyAnnotations($property);
-
+                    //Methods
+                    foreach ($methodCache as $value) {
                         /** @var AnnotationHandler $handler */
-                        $handler->handleFieldAnnotations($methodAnnotations, $class, $property);
+                        $handler->handleMethodAnnotations($value['annotations'], $class, $value['method']);
+                    }
+
+
+                    //Field
+                    foreach ($propertyCache as $value) {
+                        /** @var AnnotationHandler $handler */
+                        $handler->handleFieldAnnotations($value['annotations'], $class, $value['property']);
                     }
                 }
             }
@@ -179,9 +206,9 @@ class InitAnnotationProcessors extends AnnotationHandler {
      * @return bool
      */
     private function isProperProfile($profile) {
-        $profileName = $this->config->getProperty("app.profile");
+        $profileName = $this->config->getProperty('app.profile');
 
-        $annotationProfileName = $profile->map(Functions::field("name"))
+        $annotationProfileName = $profile->map(Functions::field('name'))
             ->orElse(null);
 
         return StringUtils::isBlank($annotationProfileName)

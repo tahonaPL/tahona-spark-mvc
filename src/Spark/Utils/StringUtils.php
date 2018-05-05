@@ -48,8 +48,8 @@ final class StringUtils {
         return self::compareIgnoreCase($string1, $string2) === 0;
     }
 
-    public static function compareIgnoreCase($string1, $string2) {
-        return strcmp(strtolower(trim($string1)), strtolower(trim($string2)));
+    public static function compareIgnoreCase($string1, $string2) : int {
+        return strncasecmp(trim($string1), trim($string2), \strlen($string1));
     }
 
     public static function escapeSpecialChar($string): string {
