@@ -21,21 +21,17 @@ class ControllerClassHandler extends ClassHandler {
     }
 
     public function handleClass(ReflectionClass $classReflection) {
-        $defined = $this->controllerClassDefinition;
-
-        if ($classReflection->isSubclassOf($defined) && !$classReflection->isAbstract()) {
-            $className = $classReflection->getName();
-
-            $obj = new $className();
-            $this->getContainer()->register($className, $obj);
-        }
+        $className = $classReflection->getName();
+        $obj = new $className();
+        $this->getContainer()->register($className, $obj);
     }
 
     /**
-     * @param $class
+     * @param ReflectionClass $classReflection
      * @return bool
+     * @internal param $class
      */
-    protected function supports($class): bool {
-        return true;
+    protected function supports(ReflectionClass $classReflection): bool {
+        return $classReflection->isSubclassOf($this->controllerClassDefinition) && !$classReflection->isAbstract();
     }
 }

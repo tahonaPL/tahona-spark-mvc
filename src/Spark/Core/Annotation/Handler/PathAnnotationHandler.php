@@ -2,6 +2,7 @@
 
 namespace Spark\Core\Annotation\Handler;
 
+use Doctrine\DBAL\Exception\RetryableException;
 use ReflectionClass;
 use Spark\Common\Collection\FluentIterables;
 use Spark\Config;
@@ -71,9 +72,10 @@ class PathAnnotationHandler extends AnnotationHandler {
 
     }
 
-    protected function supports($class): bool {
-        $classAnnotations = ReflectionUtils::getClassAnnotations($class);
-        return FluentIterables::of(Objects::getClassNames($class))
+    protected function supports(ReflectionClass $class): bool {
+        $classAnnotations = ReflectionUtils::getAnnotationsFromReflectionClass($class);
+
+        return FluentIterables::of(Objects::getClassNames($class->name))
                 ->anyMatch(StringPredicates::equals(Controller::class))
             || FluentIterables::of($classAnnotations)
                 ->map(Functions::getClassName())

@@ -30,7 +30,7 @@ abstract class AnnotationHandler extends Handler {
     public function handleFieldAnnotations($annotations = array(), $class, ReflectionProperty $fieldReflection) {
     }
 
-    protected function supports($class): bool {
+    protected function supports(ReflectionClass $class): bool {
         return true;
     }
 

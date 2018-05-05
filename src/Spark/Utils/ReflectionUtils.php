@@ -11,6 +11,7 @@ namespace Spark\Utils;
 
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Annotations\AnnotationRegistry;
+use ReflectionClass;
 use Spark\Common\Optional;
 use Spark\Core\Annotation\Bean;
 use Spark\Utils\Collections;
@@ -82,7 +83,7 @@ class ReflectionUtils {
 
         $properties = Collections::stream($classNames)
             ->flatMap(function ($className) {
-                $classRef = new \ReflectionClass($className);
+                $classRef = new ReflectionClass($className);
                 return $classRef->getProperties();
             })
             ->get();
@@ -116,7 +117,7 @@ class ReflectionUtils {
 
 
         if (Objects::isString($bean)) {
-            $cls = new \ReflectionClass($bean);
+            $cls = new ReflectionClass($bean);
             $reflectionMethods = $cls->getMethods();
             $cls = $cls->getParentClass();
 
@@ -153,7 +154,7 @@ class ReflectionUtils {
      */
     public static function getPropertyAnnotation($fullClassName, $field, $annotationName) {
         $annotationReader = self::getReaderInstance();
-        $reflectionObject = new \ReflectionClass($fullClassName);
+        $reflectionObject = new ReflectionClass($fullClassName);
 
         if ($reflectionObject->hasProperty($field)) {
             $reflectionProperty = $reflectionObject->getProperty($field);
@@ -178,14 +179,21 @@ class ReflectionUtils {
     /**
      * @param $fullClassName
      * @return array
+     * @throws \ReflectionException
      */
     public static function getClassAnnotations($fullClassName) {
-        $annotationReader = self::getReaderInstance();
-        $reflectionObject = new \ReflectionClass($fullClassName);
-        return $annotationReader->getClassAnnotations($reflectionObject);
+        return self::getAnnotationsFromReflectionClass(new ReflectionClass($fullClassName));
     }
 
-    public static function hasConstructParameters(\ReflectionClass $reflectionClass): bool {
+
+    public static function getAnnotationsFromReflectionClass(ReflectionClass $class) {
+        $annotationReader = self::getReaderInstance();
+        return $annotationReader->getClassAnnotations($class);
+    }
+
+
+
+    public static function hasConstructParameters(ReflectionClass $reflectionClass): bool {
         return Optional::of($reflectionClass)
             ->map(Functions::get("constructor"))
             ->map(Functions::get("numberOfParameters"))

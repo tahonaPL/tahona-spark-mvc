@@ -158,7 +158,7 @@ class InitAnnotationProcessors extends AnnotationHandler {
 
             /** @var AnnotationHandler $handler */
             foreach ($handlers as $handler) {
-                $supports = $handler->supports($class);
+                $supports = $handler->supports($reflectionClass);
 
                 if ($supports) {
                     if (Collections::isNotEmpty($classAnnotations)) {
@@ -170,7 +170,6 @@ class InitAnnotationProcessors extends AnnotationHandler {
                         /** @var AnnotationHandler $handler */
                         $handler->handleMethodAnnotations($value['annotations'], $class, $value['method']);
                     }
-
 
                     //Field
                     foreach ($propertyCache as $value) {
@@ -235,10 +234,10 @@ class InitAnnotationProcessors extends AnnotationHandler {
     }
 
     public function processClass(ReflectionClass $rFClass) {
-
         /** @var ClassHandler $classHandler */
         foreach ($this->classHandlers as $classHandler) {
-            if ($classHandler->supports($rFClass->name)) {
+
+            if ($classHandler->supports($rFClass)) {
                 $classHandler->handleClass($rFClass);
             }
         }

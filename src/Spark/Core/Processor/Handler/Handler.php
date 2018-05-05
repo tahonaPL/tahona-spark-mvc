@@ -7,6 +7,7 @@
 namespace Spark\Core\Processor\Handler;
 
 
+use ReflectionClass;
 use Spark\Config;
 use Spark\Container;
 use Spark\Core\Annotation\Inject;
@@ -35,7 +36,7 @@ abstract class Handler {
      * @param $class
      * @return bool
      */
-    abstract protected function supports($class): bool;
+    abstract protected function supports(ReflectionClass $class): bool;
 
     protected function getContainer(): Container {
         return $this->container;
