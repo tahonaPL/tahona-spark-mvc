@@ -149,14 +149,12 @@ class Engine {
 
             $this->exceptionResolvers = $this->container->getByType(ExceptionResolver::class);
 
-//            if ($this->isApcuCacheEnabled()) {
             $this->contextLoader->save(
                 $this->config,
                 $this->container,
                 $this->route,
                 $this->exceptionResolvers
             );
-//            }
         }
 
         /** @var GlobalErrorHandler $globalErrorHandler */

@@ -18,19 +18,11 @@ use Spark\Core\Routing\RoutingDefinitionConverter;
  */
 class CoreConfig {
 
-
-    /**
-     * @PostConstruct()
-     */
-    public function init () {
-
-    }
-
     /**
      * @Bean
      * @return RoutingDefinitionConverter
      */
-    public function routingDefinitionConverter() {
+    public function routingDefinitionConverter(): RoutingDefinitionConverter {
         return new RoutingDefinitionConverter();
     }
 
