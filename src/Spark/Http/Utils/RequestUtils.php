@@ -59,10 +59,12 @@ class RequestUtils {
 
     public static function getOrCreateSession(): Session {
         //move to sessionUtils or something
-        if (false === isset($_SESSION)) {
+        if (Objects::isNull($_SESSION)) {
             Asserts::checkState(!headers_sent(), 'Session will not be updated if header sent or var_dump');
             Asserts::checkState(session_start(), 'Session could not be start');
-            session_regenerate_id();
+
+            //FIX ME - regenerating session
+//            session_regenerate_id();
         }
 
         if (false === Collections::hasKey($_SESSION, 'spark_session')) {
