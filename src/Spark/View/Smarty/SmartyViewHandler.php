@@ -78,14 +78,14 @@ class SmartyViewHandler extends ViewHandler {
 
 //            var_dump($this->smartyPlugins->path(array("path"=>"/admin"), null));
 
-            $smarty->force_compile = $config->getProperty(self::FORCE_COMPILE, true);
-            $smarty->compile_check = $config->getProperty(self::COMPILE_CHECK, true);
-            $smarty->caching = $config->getProperty(self::CACHE_ENABLED, false);
-            $smarty->cache_lifetime = $config->getProperty(self::CACHE_LIFE_TIME, 1800);
-            $smarty->merge_compiled_includes = $config->getProperty(self::MERGE_COMPILED_INCLUDES, false);
+            $smarty->setForceCompile($config->getProperty(self::FORCE_COMPILE, true));
+            $smarty->setCompileCheck($config->getProperty(self::COMPILE_CHECK, true));
+            $smarty->setCaching($this->getCachingType($config));
+            $smarty->setCacheLifetime($config->getProperty(self::CACHE_LIFE_TIME, 1800));
+            $smarty->setMergeCompiledIncludes($config->getProperty(self::MERGE_COMPILED_INCLUDES, false));
 
-            $smarty->debugging = $config->getProperty(self::DEBUGGING, false);
-            $smarty->error_reporting = $config->getProperty(self::ERROR_REPORTING, E_ALL & ~E_NOTICE);
+            $smarty->setDebugging($config->getProperty(self::DEBUGGING, false));
+            $smarty->setErrorReporting($config->getProperty(self::ERROR_REPORTING, E_ALL & ~E_NOTICE));
 
             $this->smarty = $smarty;
         }
@@ -141,5 +141,17 @@ class SmartyViewHandler extends ViewHandler {
         }
 
         return $this->removePrefix($viewPath);
+    }
+
+    /**
+     * @param $config
+     * @return mixed
+     */
+    private function getCachingType(Config $config) : int {
+        $isCaching = $config->getProperty(self::CACHE_ENABLED, false);
+        if ($isCaching){
+            return \Smarty::CACHING_LIFETIME_CURRENT;
+        }
+        return \Smarty::CACHING_OFF;
     }
 }
