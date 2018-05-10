@@ -667,7 +667,7 @@ composer dump-autoload -a
 
 ### Performance - Some numbers ###
 
-**Tested Case**: Real project with small database. 50 requests parallel.
+**Tested Case**: Real project with small database. AB(Apache benchmark) requests 10000 and 1000 parallel connections.
 
 * **Apcu**: only apcu installed, but with Smarty template rendering for each request (Development mode).
 * **Apcu and Smarty**: apcu installed, and smarty with production setup.
