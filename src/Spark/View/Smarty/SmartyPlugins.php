@@ -9,15 +9,12 @@
 namespace Spark\View\Smarty;
 
 
-use PHPUnit\Runner\Exception;
 use Spark\Core\Annotation\Inject;
 use Spark\Core\Annotation\PostConstruct;
+use Spark\Core\Lang\LangMessageResource;
 use Spark\Core\Provider\BeanProvider;
 use Spark\Routing;
 use Spark\Seo\SeoUrlFactory;
-use Spark\Seo\WithSeoUrl;
-use Spark\Core\Lang\LangMessageResource;
-use Spark\Utils\UrlUtils;
 use Spark\Utils\Collections;
 use Spark\Utils\StringUtils;
 

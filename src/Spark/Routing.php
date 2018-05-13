@@ -24,13 +24,13 @@ use Spark\Utils\UrlUtils;
 
 class Routing {
 
-    const CONTROLLER_NAME      = "controller";
-    const METHOD_NAME          = "method";
-    const REQUEST_METHODS_NAME = "requestMethods";
-    const REQUEST_HEADERS_NAME = "requestHeaders";
+    public const CONTROLLER_NAME      = 'controller';
+    public const METHOD_NAME          = 'method';
+    public const REQUEST_METHODS_NAME = 'requestMethods';
+    public const REQUEST_HEADERS_NAME = 'requestHeaders';
 
-    const ROLES  = "roles";
-    const PARAMS = "params";
+    public const ROLES  = 'roles';
+    public const PARAMS = 'params';
     private $routing = array();
     private $parametrizedRouting = array();
     private $definitions;
@@ -59,7 +59,7 @@ class Routing {
      * @param string $registeredHostPath
      * @return RequestData
      */
-    public function createRequest($registeredHostPath = ""):RequestData {
+    public function createRequest($registeredHostPath = ''):RequestData {
         $urlPath = $this->getPath();
 
         $routeDefinition = $this->getDefinition($urlPath);
@@ -144,11 +144,11 @@ class Routing {
         } else {
 
             $pathResultValues = array();
-            $urlElements = explode("/", $urlPath);
+            $urlElements = explode('/', $urlPath);
 
             $routingDefinitionParams = $routeDefinition->getParams();
 
-            foreach ($urlElements as $index => $urlElement) {
+            foreach ($urlElements as $index => $urlValue) {
                 $hasValue = Collections::hasKey($routingDefinitionParams, $index);
                 if ($hasValue) {
                     $key = $routingDefinitionParams[$index];
@@ -161,7 +161,7 @@ class Routing {
     }
 
     private function fillModuleData(Request $request, $controllerName) {
-        $controllerName = StringUtils::replace($controllerName, "\\controller", "");
+        $controllerName = StringUtils::replace($controllerName, "\\controller", '');
 
         $splittedPath = StringUtils::split($controllerName, "\\");
 
@@ -172,7 +172,7 @@ class Routing {
 
         $request->setNamespace($splittedPath[0]);
         $request->setModuleName($module);
-        $request->setControllerName(str_replace("Controller", "", end($splittedPath)));
+        $request->setControllerName(str_replace('Controller', '', end($splittedPath)));
     }
 
     /**
@@ -239,7 +239,7 @@ class Routing {
      */
     private function getPath() {
         $urlPath = UrlUtils::getPathInfo();
-        $urlPath = explode("?", $urlPath); //for params
+        $urlPath = explode('?', $urlPath); //for params
         $urlPath = $urlPath[0];
         return $urlPath;
     }
@@ -252,21 +252,21 @@ class Routing {
      * @return string|null
      */
     public function resolveRoute($path, array $params = array()):string {
-        if (StringUtils::contains($path, "@")) {
+        if (StringUtils::contains($path, '@')) {
 
-            $route = StringUtils::split($path, "@");
+            $route = StringUtils::split($path, '@');
             $controllerName = $route[0];
             $methodName = $route[1];
 
             if (Collections::size($route) > 2) {
                 $paramsAsString = $route[2];
-                $params = Collections::builder(StringUtils::split($paramsAsString, ","))
+                $params = Collections::builder(StringUtils::split($paramsAsString, ','))
                     ->convertToMap(function ($x) {
-                        $key = StringUtils::split($x, ":");
+                        $key = StringUtils::split($x, ':');
                         return $key[0];
                     })
                     ->map(function ($x) {
-                        $key = StringUtils::split($x, ":");
+                        $key = StringUtils::split($x, ':');
                         return $key[1];
                     })->get();
             }
