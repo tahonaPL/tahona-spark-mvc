@@ -152,7 +152,7 @@ class Routing {
                 $hasValue = Collections::hasKey($routingDefinitionParams, $index);
                 if ($hasValue) {
                     $key = $routingDefinitionParams[$index];
-                    $pathResultValues[$key] = $urlElement;
+                    $pathResultValues[$key] = urldecode($urlValue);
                 }
             }
 
