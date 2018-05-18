@@ -162,7 +162,7 @@ class Engine {
         $globalErrorHandler->setup($this->exceptionResolvers);
     }
 
-    public function run() {
+    public function run(): void {
         if (SystemUtils::isCommandLineInterface()) {
             $this->runCommand();
         } else {
@@ -170,24 +170,14 @@ class Engine {
         }
     }
 
-    private function runController() {
-        $registeredHostPath = $this->getRegisteredHostPath();
-        $urlName = UrlUtils::getPathInfo($registeredHostPath);
-
-        $this->handleRequest($urlName);
+    private function runController(): void {
+        $this->handleRequest();
     }
 
-    /**
-     * @return mixed
-     */
-    private function getRegisteredHostPath() {
-        return UrlUtils::getHost();
-    }
-
-    private function handleRequest($urlName, $responseParams = array()) {
+    private function handleRequest(array $responseParams = array()): void {
         $this->devToolsInit();
 
-        $registeredHostPath = $this->getRegisteredHostPath();
+        $registeredHostPath = UrlUtils::getHost();
         $requestData = $this->route->createRequest($registeredHostPath);
 
         $this->updateRequestProvider($requestData);
@@ -211,14 +201,14 @@ class Engine {
         $this->handleAction($requestData, $controller);
     }
 
-    private function devToolsInit() {
+    private function devToolsInit(): void {
         $enabled = $this->config->getProperty(Config::DEV_ENABLED);
         if ($enabled) {
             RequestUtils::setCookie('XDEBUG_SESSION', true);
         }
     }
 
-    private function addBaseServices() {
+    private function addBaseServices(): void {
         $this->container->register('cache', $this->beanCache);
         $this->container->registerObj(new CacheProvider());
         $this->container->registerObj(new CacheService());
@@ -247,7 +237,7 @@ class Engine {
         $this->addViewHandlersToService();
     }
 
-    private function afterAllBean() {
+    private function afterAllBean(): void {
         $resourcePaths = $this->container->getByType(LangResourcePath::class);
 
         /** @var LangMessageResource $resource */
@@ -255,7 +245,7 @@ class Engine {
         $resource->addResources($resourcePaths);
     }
 
-    private function addViewHandlersToService() {
+    private function addViewHandlersToService(): void {
         $smartyViewHandler = new SmartyViewHandler($this->appPath);
         $plainViewHandler = new PlainViewHandler();
         $jsonViewHandler = new JsonViewHandler();
@@ -275,7 +265,7 @@ class Engine {
      * @param $controller
      * @throws ErrorException
      */
-    private function handleAction(RequestData $requestData, $controller) {
+    private function handleAction(RequestData $requestData, $controller): void {
 
         /** @var $viewModel ViewModel */
         $methodName = $requestData->getMethodName();
@@ -295,7 +285,7 @@ class Engine {
      * @param ViewModel $viewModel
      * @param Request $request
      */
-    private function handleView($viewModel, $request) {
+    private function handleView($viewModel, $request): void {
         $handler = $this->container->get(ViewHandlerProvider::NAME);
 
         Asserts::notNull($handler, 'No handler found for response object' . Objects::getClassName($viewModel));
@@ -305,7 +295,7 @@ class Engine {
     }
 
 
-    private function executeFilter(Request $request) {
+    private function executeFilter(Request $request): void {
         $filters = $this->container->getByType(HttpFilter::class);
 
         if (Collections::isNotEmpty($filters)) {
@@ -320,7 +310,7 @@ class Engine {
         return $this->config->getProperty(EnableApcuAnnotationHandler::APCU_CACHE_ENABLED, false);
     }
 
-    private function preHandleInterceptor(Request $request) {
+    private function preHandleInterceptor(Request $request): void {
         $interceptors = $this->container->getByType(HandlerInterceptor::class);
 
         /** @var HandlerInterceptor $interceptor */
@@ -331,7 +321,7 @@ class Engine {
         }
     }
 
-    private function postHandleIntercetors(Request $request, Response $response) {
+    private function postHandleIntercetors(Request $request, Response $response): void {
         $interceptors = $this->container->getByType(HandlerInterceptor::class);
 
         /** @var HandlerInterceptor $interceptor */
@@ -348,7 +338,7 @@ class Engine {
      * @throws ErrorException
      * @throws Common\IllegalStateException
      */
-    public function handleViewModel(Request $request, $viewModel) {
+    public function handleViewModel(Request $request, $viewModel): void {
         Asserts::checkState($viewModel instanceof Response, 'Wrong controller action response type. Returned type from controller needs to be instance of Response.');
 
         $this->postHandleIntercetors($request, $viewModel);
@@ -365,13 +355,13 @@ class Engine {
      * @param $request
      * @throws \Exception
      */
-    public function updateRequestProvider(Request $request) {
+    public function updateRequestProvider(Request $request): void {
         /** @var RequestProvider $requestProvider */
         $requestProvider = $this->container->get(RequestProvider::NAME);
         $requestProvider->setRequest($request);
     }
 
-    private function runCommand() {
+    private function runCommand(): void {
         $input = new InputInterface();
         $out = new OutputInterface();
 
@@ -387,7 +377,7 @@ class Engine {
     }
 
 
-    private function getProfile() {
+    private function getProfile(): ?string {
         if (SystemUtils::isCommandLineInterface()) {
             return SystemUtils::getProfile();
         }

@@ -10,6 +10,12 @@ use Spark\Utils\StringUtils;
 
 class UrlUtils {
 
+    /**
+     * @var string - cached url
+     */
+    private static $url;
+    private static $pathInfo;
+
     public static function isResource($urlName, $array) {
         foreach ($array as $value) {
             if (strpos($urlName, $value) > 0) {
@@ -21,37 +27,42 @@ class UrlUtils {
 
     /**
      * Returning second part of url: /user/action
-     * @param null $host
      * @return mixed
+     * @internal param null $host
      */
-    public static function getPathInfo($host = null) {
+    public static function getPathInfo() {
+
+        if (!empty(self::$pathInfo)) {
+            return self::$pathInfo;
+        }
 
         $actualLink = self::getUrl();
         $host = self::getHost();
 
-        if (isset($host)) {
+        if ($host !== null) {
             $urlParts = StringUtils::split($actualLink, $host);
-            Asserts::checkArgument(Collections::size($urlParts) >= 2, "Wrong url setup? Check config. Looking for host: " . $host);
+            Asserts::checkArgument(Collections::size($urlParts) >= 2, 'Wrong url setup? Check config. Looking for host: ' . $host);
 
             $urlVal = $urlParts[1];
         } else {
-            if (isset($_SERVER["PATH_INFO"])) {
-                $urlVal = $_SERVER["PATH_INFO"];
+            if (isset($_SERVER['PATH_INFO'])) {
+                $urlVal = $_SERVER['PATH_INFO'];
             } else {
-                $urlName = str_replace("index.php", "", $_SERVER["SCRIPT_NAME"]);
-                $urlVal = str_replace($urlName, "/", $_SERVER["REQUEST_URI"]);
+                $urlName = str_replace('index.php', '', $_SERVER['SCRIPT_NAME']);
+                $urlVal = str_replace($urlName, '/', $_SERVER['REQUEST_URI']);
             }
         }
-        return str_replace("//", "/", $urlVal);
+        self::$pathInfo = str_replace('//', '/', $urlVal);
+        return self::$pathInfo;
     }
 
     public static function cleanPath($viewPath) {
         if (self::hasScheme($viewPath)) {
-            $urlParts = StringUtils::split($viewPath, "://");
-            return $urlParts[0] . "://" . str_replace("//", "/", $urlParts[1]);
-        } else {
-            return str_replace("//", "/", $viewPath);
+            $urlParts = StringUtils::split($viewPath, '://');
+            return $urlParts[0] . '://' . str_replace('//', '/', $urlParts[1]);
         }
+
+        return str_replace('//', '/', $viewPath);
     }
 
 
@@ -68,15 +79,15 @@ class UrlUtils {
         if (Collections::isNotEmpty($params)) {
             $parsedParams = http_build_query($params);
             if (StringUtils::isNotBlank($parsedParams)) {
-                return "?" . $parsedParams;
+                return '?' . $parsedParams;
             }
         }
-        return "";
+        return '';
     }
 
 
     public static function wrapHttpIfNeeded($link) {
-        $scheme = "http";
+        $scheme = 'http';
         return self::wrapRequestSchemeIfNeeded($link, $scheme);
     }
 
@@ -87,9 +98,9 @@ class UrlUtils {
     private static function removeHttpTags($host) {
 
         return Optional::ofNullable($host)
-            ->map(StringFunctions::replace("http://", ""))
-            ->map(StringFunctions::replace("https://", ""))
-            ->map(StringFunctions::replace("//", "/"))
+            ->map(StringFunctions::replace('http://', ''))
+            ->map(StringFunctions::replace('https://', ''))
+            ->map(StringFunctions::replace('//', '/'))
             ->getOrNull();
     }
 
@@ -97,7 +108,7 @@ class UrlUtils {
      * build full path with params. If "path" start with https or http returned is "path" value.
      */
     public static function getPath(string $path, $params = array()): string {
-        if (strpos($path, "http:") === 0 || StringUtils::startsWith($path, "https")) {
+        if (strpos($path, 'http:') === 0 || StringUtils::startsWith($path, 'https')) {
             return $path;
         } else {
             $url = self::getSite();
@@ -107,11 +118,13 @@ class UrlUtils {
 
     /**
      * Get full url
-     *
-     * @return string
      */
-    private static function getUrl() {
-        return RequestUtils::getRequestScheme() . "://" . $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"] . "";
+    private static function getUrl(): string {
+        if (self::$url === null) {
+            self::$url = RequestUtils::getRequestScheme() . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . '';
+        }
+
+        return self::$url;
     }
 
     /**
@@ -119,19 +132,6 @@ class UrlUtils {
      * @return string
      */
     public static function getHost() {
-//        $fullUrl = self::getUrl();
-//        if (StringUtils::contains($fullUrl, self::$webPage)) {
-//            $parts = StringUtils::split($fullUrl, self::$webPage);
-//            $prefix = self::removeHttpTags($parts[0]);
-//            $host = StringUtils::join("", array(
-//                $prefix, self::$webPage
-//            ));
-//
-//        } else {
-//            $host = self::$webPage;
-//        }
-//
-//        return UrlUtils::wrapRequestSchemeIfNeeded($host, RequestUtils::getRequestScheme());
         return $_SERVER['HTTP_HOST'];
     }
 
@@ -144,9 +144,9 @@ class UrlUtils {
     public static function wrapRequestSchemeIfNeeded($link, $scheme) {
         if (self::hasScheme($link)) {
             return $link;
-        } else {
-            return $scheme . "://" . $link;
         }
+
+        return $scheme . '://' . $link;
     }
 
     /**
@@ -154,7 +154,7 @@ class UrlUtils {
      * @return bool
      */
     private static function hasScheme($link) {
-        return strpos($link, "http://") === 0 || strpos($link, "https://") === 0 || empty($link);
+        return strpos($link, 'http://') === 0 || strpos($link, 'https://') === 0 || empty($link);
     }
 
     public static function getCurrentUrl() {
@@ -162,9 +162,9 @@ class UrlUtils {
     }
 
     public static function getSite() {
-        return StringUtils::join("", array(
+        return StringUtils::join('', array(
             self::getScheme(),
-            "://",
+            '://',
             self::getHost()));
     }
 
@@ -179,7 +179,7 @@ class UrlUtils {
     private static function removeLastCharacterIfNeeded($suffixUrlPart) {
         $suffix = $suffixUrlPart;
         $lastChar = StringUtils::substring($suffix, -1, 1);
-        return $lastChar === "/" ? StringUtils::substring($suffix, 0, strlen($suffix) - 1) : $suffix;
+        return $lastChar === '/' ? StringUtils::substring($suffix, 0, strlen($suffix) - 1) : $suffix;
     }
 
 }
