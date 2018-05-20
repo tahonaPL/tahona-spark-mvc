@@ -18,6 +18,10 @@ class ViewModel implements Response {
 
     private $viewName;
 
+    public function __construct($errors=[]) {
+        $this->addAll($errors);
+    }
+
 
     /**
      * @param $name
