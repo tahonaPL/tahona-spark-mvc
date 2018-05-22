@@ -9,12 +9,16 @@ use Spark\Utils\Collections;
 use Spark\Utils\StringUtils;
 
 class UrlUtils {
+    const HTTPS = 'https';
+    const HTTP = 'http';
 
     /**
      * @var string - cached url
      */
     private static $url;
     private static $pathInfo;
+
+    private static $scheme;
 
     public static function isResource($urlName, $array) {
         foreach ($array as $value) {
@@ -87,7 +91,7 @@ class UrlUtils {
 
 
     public static function wrapHttpIfNeeded($link) {
-        $scheme = 'http';
+        $scheme = self::HTTP;
         return self::wrapRequestSchemeIfNeeded($link, $scheme);
     }
 
@@ -108,7 +112,7 @@ class UrlUtils {
      * build full path with params. If "path" start with https or http returned is "path" value.
      */
     public static function getPath(string $path, $params = array()): string {
-        if (strpos($path, 'http:') === 0 || StringUtils::startsWith($path, 'https')) {
+        if (strpos($path, 'http:') === 0 || StringUtils::startsWith($path, self::HTTPS)) {
             return $path;
         } else {
             $url = self::getSite();
@@ -169,7 +173,16 @@ class UrlUtils {
     }
 
     public static function getScheme() {
-        return $_SERVER['REQUEST_SCHEME'];
+        if (Objects::isNull(self::$scheme)) {
+            $scheme = $_SERVER['REQUEST_SCHEME'];
+            if ($scheme === self::HTTPS
+                || Collections::getValue($_SERVER, 'HTTP_X_FORWARDED_PROTO') === self::HTTPS) {
+                self::$scheme = self::HTTPS;
+            } else {
+                self::$scheme = self::HTTP;
+            }
+        }
+        return self::$scheme;
     }
 
     /**
