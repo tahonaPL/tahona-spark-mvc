@@ -118,6 +118,7 @@ class Engine {
 
             if (isset($_GET[$resetParam])) {
                 $this->contextLoader->clear();
+                $this->beanCache->clearAll();
             }
         }
 
