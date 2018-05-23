@@ -17,6 +17,11 @@ class RequestUtils {
 
     const POST_REQUEST_METHOD = 'POST';
 
+    const HTTPS = 'https';
+    private static $isSSL;
+
+    const HTTP = 'http';
+
     public static function isPost(): bool {
         return $_SERVER['REQUEST_METHOD'] === self::POST_REQUEST_METHOD;
     }
@@ -92,11 +97,11 @@ class RequestUtils {
      * @return bool
      */
     private static function hasHttpPrefix($url): bool {
-        return self::hasPrefix($url, 'http');
+        return self::hasPrefix($url, self::HTTP);
     }
 
     private static function hasHttpsPrefix($url): bool {
-        return self::hasPrefix($url, 'https');
+        return self::hasPrefix($url, self::HTTPS);
     }
 
     /**
@@ -106,27 +111,26 @@ class RequestUtils {
      */
     private static function hasPrefix($url, $prefix): bool {
         return strpos($url, $prefix) >= 0
-            || strpos($url, 'http') >= 0;
+            || strpos($url, self::HTTP) >= 0;
     }
 
     public static function isSSL(): bool {
-        if (isset($_SERVER['HTTPS'])) {
-            if ('on' == strtolower($_SERVER['HTTPS']))
-                return true;
-            if ('1' == $_SERVER['HTTPS'])
-                return true;
-        } elseif (isset($_SERVER['SERVER_PORT']) && ('443' == $_SERVER['SERVER_PORT'])) {
-            return true;
+        if (Objects::isNull(self::$isSSL)) {
+            self::$isSSL = self::isForwardedHttps()
+                || self::isHttpsOn()
+                || self::isRequestSchemeHttps()
+                || self::isServerPort433();
         }
-        return false;
+        return self::$isSSL;
+
     }
 
     public static function getRequestScheme() {
         $isSSL = self::isSSL();
         if ($isSSL) {
-            return 'https';
+            return self::HTTPS;
         } else {
-            return 'http';
+            return self::HTTP;
         }
     }
 
@@ -184,5 +188,34 @@ class RequestUtils {
     public static function getBody() {
         $entityBody = stream_get_contents(fopen('php://input', 'r'));
         return $entityBody ? $entityBody : null;
+    }
+
+    public static function getSite(): string {
+        return RequestUtils::getRequestScheme() . '://' . $_SERVER['HTTP_HOST'];
+    }
+
+    /**
+     * @return bool
+     */
+    private static function isForwardedHttps(): bool {
+        return (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && Collections::getValue($_SERVER, 'HTTP_X_FORWARDED_PROTO') === self::HTTPS);
+    }
+
+    /**
+     * @return bool
+     */
+    private static function isHttpsOn(): bool {
+        return (isset($_SERVER['HTTPS']) && ('on' === strtolower($_SERVER['HTTPS']) || '1' == $_SERVER['HTTPS']));
+    }
+
+    /**
+     * @return bool
+     */
+    private static function isServerPort433(): bool {
+        return (isset($_SERVER['SERVER_PORT']) && ('443' == $_SERVER['SERVER_PORT']));
+    }
+
+    private static function isRequestSchemeHttps() {
+        return isset($_SERVER['REQUEST_SCHEME']) && $_SERVER['REQUEST_SCHEME'] === self::HTTPS;
     }
 }

@@ -3,6 +3,7 @@
 namespace Spark\Utils;
 
 use Spark\Common\Optional;
+use Spark\Http\Request;
 use Spark\Http\Utils\RequestUtils;
 use Spark\Utils\Asserts;
 use Spark\Utils\Collections;
@@ -125,7 +126,7 @@ class UrlUtils {
      */
     private static function getUrl(): string {
         if (self::$url === null) {
-            self::$url = RequestUtils::getRequestScheme() . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . '';
+            self::$url = RequestUtils::getSite() . $_SERVER['REQUEST_URI'] . '';
         }
 
         return self::$url;
@@ -165,24 +166,8 @@ class UrlUtils {
         return self::getUrl();
     }
 
-    public static function getSite() {
-        return StringUtils::join('', array(
-            self::getScheme(),
-            '://',
-            self::getHost()));
-    }
-
-    public static function getScheme() {
-        if (Objects::isNull(self::$scheme)) {
-            $scheme = $_SERVER['REQUEST_SCHEME'];
-            if ($scheme === self::HTTPS
-                || Collections::getValue($_SERVER, 'HTTP_X_FORWARDED_PROTO') === self::HTTPS) {
-                self::$scheme = self::HTTPS;
-            } else {
-                self::$scheme = self::HTTP;
-            }
-        }
-        return self::$scheme;
+    public static function getSite(): string {
+        return RequestUtils::getSite();
     }
 
     /**
