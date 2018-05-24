@@ -17,6 +17,7 @@ use Doctrine\Common\Annotations\Annotation\Target;
 final class Subscribe {
 
     /**
+     * Default value is concatenation of:
      *  1. annotation name
      *  2. Class Name type
      *  3. field name

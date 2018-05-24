@@ -35,12 +35,12 @@ final class StringUtils {
         return null;
     }
 
-    public static function isNotBlank(string $text = null): bool {
-        return (bool)preg_match('/\S/', (string)$text);
+    public static function isNotBlank(?string $text = null): bool {
+        return $text !== null && (bool)preg_match('/\S/', $text);
     }
 
-    public static function isBlank(string $text = null): bool {
-        return Objects::isNull($text) ||
+    public static function isBlank(?string $text = null): bool {
+        return $text === null ||
             !(bool)(preg_match('/\S/', (string)$text));
     }
 
@@ -48,7 +48,7 @@ final class StringUtils {
         return self::compareIgnoreCase($string1, $string2) === 0;
     }
 
-    public static function compareIgnoreCase($string1, $string2) : int {
+    public static function compareIgnoreCase($string1, $string2): int {
         return strncasecmp(trim($string1), trim($string2), \strlen($string1));
     }
 
