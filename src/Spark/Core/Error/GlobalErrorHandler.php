@@ -23,10 +23,10 @@ use Spark\Utils\Objects;
 
 class GlobalErrorHandler {
 
-    const NAME = "globalErrorHandler";
-    const EXCEPTION_HANDLER = "handleException";
-    const ERROR_HANDLER = "handleError";
-    const FATAL_HANDLER = "handleFatal";
+    public const NAME = 'globalErrorHandler';
+    public const EXCEPTION_HANDLER = 'handleException';
+    public const ERROR_HANDLER = 'handleError';
+    public const FATAL_HANDLER = 'handleFatal';
 
     /**
      * @var Engine
@@ -86,7 +86,7 @@ class GlobalErrorHandler {
     public function handleFatal() {
         $error = error_get_last();
 
-        if ($error["type"] == E_ERROR && error_reporting() && Objects::isNotNull($error)) {
+        if ($error['type'] == E_ERROR && error_reporting() && Objects::isNotNull($error)) {
             $errorException = $this->handleErrorAction($error);
             $this->handleException($errorException);
             return;
@@ -124,10 +124,10 @@ class GlobalErrorHandler {
     }
 
     private function handleErrorAction($error) {
-        $severity = $error["type"];
-        $filename = $error["file"];
-        $lineno = $error["line"];
-        $message = $error["message"];
+        $severity = $error['type'];
+        $filename = $error['file'];
+        $lineno = $error['line'];
+        $message = $error['message'];
 
         return new \ErrorException($message, 0, $severity, $filename, $lineno);
     }

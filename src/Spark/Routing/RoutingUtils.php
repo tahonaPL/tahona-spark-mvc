@@ -20,7 +20,7 @@ use Spark\Utils\StringUtils;
 class RoutingUtils {
 
     public static function hasExpression($route) {
-        return StringUtils::contains($route, "}") && StringUtils::contains($route, "{");
+        return StringUtils::contains($route, '}') && StringUtils::contains($route, '{');
     }
 
     public static function hasExpressionParams($route, $urlPath, $routeDefinitionParams = array()) {
@@ -28,8 +28,8 @@ class RoutingUtils {
             return false;
         }
         
-        $exRoute = explode("/", $route);
-        $exUrlPath = explode("/", $urlPath);
+        $exRoute = explode('/', $route);
+        $exUrlPath = explode('/', $urlPath);
         
         $paramsCount = count($routeDefinitionParams);
         $hasPathParams = $paramsCount > 0;
@@ -68,8 +68,8 @@ class RoutingUtils {
     }
 
     public static function clearRouteParamExpression($routeElement) {
-        $routeElement = StringUtils::replace($routeElement, "{", "");
-        $routeElement = StringUtils::replace($routeElement, "}", "");
+        $routeElement = StringUtils::replace($routeElement, '{', '');
+        $routeElement = StringUtils::replace($routeElement, '}', '');
         return $routeElement;
     }
 
@@ -77,19 +77,19 @@ class RoutingUtils {
         $error = array();
         if (StringUtils::isNotBlank($arr->getPath())) {
             $pathErrors = array();
-            if (! StringUtils::startsWith($arr->getPath(), "/")) {
-                $pathErrors[] = "routing.error.wrong.path";
+
+            if (! StringUtils::startsWith($arr->getPath(), '/')) {
+                $pathErrors[] = 'routing.error.wrong.path';
             }
             
-            if (StringUtils::contains($arr->getPath(), "{")) {
-                
-                if (! Collections::isEmpty($arr->getParams())) {
-                    $pathErrors[] = "routing.error.path.missing.param";
+            if (StringUtils::contains($arr->getPath(), '{')) {
+                if (Collections::isEmpty($arr->getParams())) {
+                    $pathErrors[] = 'routing.error.path.missing.param';
                 }
             }
             
             if (Collections::isNotEmpty($pathErrors)) {
-                $error["path"] = $pathErrors;
+                $error['path'] = $pathErrors;
             }
         }
         
@@ -130,8 +130,8 @@ class RoutingUtils {
     }
 
     public static function getParametrizedUrlKeys($parametrizedPath) {
-        $val = Optional::of($parametrizedPath)->map(StringFunctions::replace("\\", "/"))
-            ->map(StringFunctions::split("/"))
+        $val = Optional::of($parametrizedPath)->map(StringFunctions::replace("\\", '/'))
+            ->map(StringFunctions::split('/'))
             ->orElse(array());
         
         return Collections::stream($val)->filter(StringPredicates::notBlank())
@@ -151,7 +151,7 @@ class RoutingUtils {
         
         $newPath = $path;
         foreach ($params as $key => $value) {
-            $newPath = StringUtils::replace($newPath, "{" . $key . "}", $value);
+            $newPath = StringUtils::replace($newPath, '{' . $key . '}', $value);
         }
         
         return $newPath;
