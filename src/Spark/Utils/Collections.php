@@ -62,7 +62,7 @@ final class Collections {
     }
 
     public static function exist(array $collection, string $key): bool {
-        return in_array($key, $collection);
+        return self::isIn($key, $collection);
     }
 
     public static function insert(array $collection, $index, $element): array {
@@ -371,8 +371,11 @@ final class Collections {
         return array_merge($array1, $array2);
     }
 
-    public static function isIn($value, $array = array()) {
-        return array_search($value, $array);
+    /**
+     * Function use 'in_array' and when array is null it will return false.
+     */
+    public static function isIn($value, $array = array()): bool {
+        return BooleanUtils::isTrue(\in_array($value, $array, true));
     }
 
     public static function range($first, $last, $step = 1) {
