@@ -37,8 +37,7 @@ class RoutingDefinition {
      * @param $id
      */
     public function __construct() {
-        $this->id = uniqid("routing");
-        $this->actionMethodParameters = array();
+        $this->id = mt_rand();
     }
 
     /**
