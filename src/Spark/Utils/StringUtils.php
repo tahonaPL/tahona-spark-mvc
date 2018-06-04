@@ -29,7 +29,7 @@ final class StringUtils {
 
     public static function substring(string $string = null, int $indexFrom, int $length = null) {
         if (Objects::isNotNull($string)) {
-            $substr = substr($string, $indexFrom, $length);
+            $substr = mb_substr($string, $indexFrom, $length);
             return Objects::isString($substr) ? $substr : null;
         }
         return null;

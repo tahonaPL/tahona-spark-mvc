@@ -32,6 +32,11 @@ class RandomUtils {
     }
 
     public static function randomElements(int $resultCount, array $arr): array {
+        if ($resultCount === 0) {
+            return [];
+        }
+        --$resultCount;
+
         $elementsCount = \count($arr) - 1;
         $array = FluentIterables::of(Collections::range(0, $resultCount))
             ->map(function () use ($arr, $elementsCount) {
@@ -39,7 +44,12 @@ class RandomUtils {
                 $result = $arr[$indexToRemove];
                 return $result;
             })
-            ->convertToMap(Functions::splObjectHash())
+            ->convertToMap(function ($obj) {
+                if (Objects::isPrimitive($obj)) {
+                    return $obj;
+                }
+                return spl_object_hash($obj);
+            })
             ->getList();
 
         return $array;
