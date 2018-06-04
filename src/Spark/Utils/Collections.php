@@ -68,14 +68,14 @@ final class Collections {
     public static function insert(array $collection, $index, $element): array {
         $result = array();
         foreach ($collection as $v) {
-            if (Collections::size($result) === $index) {
+            if (self::size($result) === $index) {
                 $result[] = $element;
             }
             $result[] = $v;
         }
 
         //add as last element
-        if (Collections::size($collection) <= $index) {
+        if (self::size($collection) <= $index) {
             $result[] = $element;
         }
 
@@ -83,13 +83,13 @@ final class Collections {
     }
 
     public static function addAllAndGroup(&$collection, $addElements) {
-        $result = Collections::map($collection, function ($el) {
+        $result = self::map($collection, function ($el) {
             return array($el);
         });
 
         foreach ($addElements as $k => $el) {
             $key = "" . $k;
-            if (false === Collections::hasKey($result, $key)) {
+            if (false === self::hasKey($result, $key)) {
                 $result[$key] = array();
             }
             $result[$key][] = $el;
@@ -165,7 +165,7 @@ final class Collections {
 
     public static function removeAllByKeys(&$map, $keysToRemove = array()) {
         foreach ($keysToRemove as $key) {
-            if (Collections::hasKey($map, $key)) {
+            if (self::hasKey($map, $key)) {
                 unset($map[$key]);
             }
         }
@@ -199,7 +199,7 @@ final class Collections {
         $result = array();
         foreach ($array as $obj) {
             $key = $func($obj);
-            if (false === Collections::hasKey($result, $key)) {
+            if (false === self::hasKey($result, $key)) {
                 $result[$key] = array();
             }
 
@@ -215,8 +215,8 @@ final class Collections {
      * @return array
      */
     public static function flatMap($array = array(), \Closure $func, $mergeKeys = false) {
-        $map = Collections::map($array, $func);
-        return Collections::flat($map, $mergeKeys); // flat if in map are arrays
+        $map = self::map($array, $func);
+        return self::flat($map, $mergeKeys); // flat if in map are arrays
     }
 
     /**
@@ -227,9 +227,9 @@ final class Collections {
         foreach ($array as $subArray) {
             if (Objects::isArray($subArray)) {
                 if ($mergeKeys) {
-                    Collections::addAllOrReplace($result, $subArray);
+                    self::addAllOrReplace($result, $subArray);
                 } else {
-                    Collections::addAll($result, $subArray);
+                    self::addAll($result, $subArray);
                 }
             } else {
                 $result[] = $subArray;
@@ -250,17 +250,12 @@ final class Collections {
         }
     }
 
-    /**
-     * @param array $array
-     * @param $key
-     * @return array|null
-     */
     public static function getValue(array $array = array(), $key) {
         return self::getValueOrDefault($array, $key);
     }
 
     public static function getValueOrDefault(array $array = array(), $key, $default = null) {
-        if (Collections::hasKey($array, $key)) {
+        if (self::hasKey($array, $key)) {
             return $array[$key];
         }
 
@@ -336,21 +331,23 @@ final class Collections {
     }
 
     public static function containsAny($array1 = array(), $array2 = array()) {
-        return Collections::anyMatch($array1, function ($ann) use ($array2) {
+        return self::anyMatch($array1, function ($ann) use ($array2) {
             return Collections::contains($ann, $array2);
         });
     }
 
     public static function removeByKey(&$array, $key) {
-        if (Collections::hasKey($array, $key)) {
+        if (self::hasKey($array, $key)) {
             unset($array[$key]);
         }
     }
 
     public static function removeValue(&$array, $value) {
         $k = array_search($value, $array, true);
-        Collections::removeByKey($observerList, $k);
-        return $observerList;
+        if (!BooleanUtils::isFalse($k)) {
+            self::removeByKey($array, $k);
+        }
+        return $array;
     }
 
     public static function asArray($array = array()) {

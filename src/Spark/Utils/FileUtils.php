@@ -183,4 +183,8 @@ final class FileUtils {
         file_put_contents($absolutePath, $content);
     }
 
+    public static function readFileToString($filePath) {
+        return file_get_contents(self::getAbsolutePath($filePath));
+    }
+
 }

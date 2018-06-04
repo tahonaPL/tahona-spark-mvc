@@ -88,5 +88,11 @@ class Functions {
         };
     }
 
+    public static function splObjectHash() {
+        return function ($x) {
+            return spl_object_hash($x);
+        };
+    }
+
 
 }
