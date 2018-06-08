@@ -52,4 +52,9 @@ class DateUtils {
     public static function getYearsBetween(DateTime $from, DateTime $to) {
         return date_diff($from, $to)->y;
     }
+
+    public static function setTime($hours, $minuts, $seconds) : DateTime{
+        return self::now()
+            ->setTime($hours, $minuts, $seconds);
+    }
 }
