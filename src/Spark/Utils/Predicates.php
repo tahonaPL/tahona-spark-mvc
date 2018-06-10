@@ -70,6 +70,12 @@ class Predicates {
         };
     }
 
+    public static function isFalse(): \Closure {
+        return function ($x) {
+            return BooleanUtils::isFalse($x);
+        };
+    }
+
     public static function testOR(array $predicatesArray): callable {
         return function ($x) use ($predicatesArray) {
             foreach ($predicatesArray as $pred) {
