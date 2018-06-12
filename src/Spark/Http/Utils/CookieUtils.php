@@ -31,8 +31,8 @@ class CookieUtils {
         return self::hasCookie($key) ? $_COOKIE[$key] : null;
     }
 
-    public static function setCookie(string $key, string $value, $expire = 0): void {
-        setcookie($key, $value, $expire);
+    public static function setCookie(string $key, string $value, $expire = 0, $path = "", $domain = "", $secure = false, $httponly = false): void {
+        setcookie($key, $value, $expire, $path, $domain, $secure, $httponly);
     }
 
     public static function getAllCookies(): array {

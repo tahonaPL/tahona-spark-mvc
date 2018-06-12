@@ -17,29 +17,31 @@ use Traversable;
 class Objects {
 
     public static function isNotNull($obj): bool {
-        return isset($obj) && null !== $obj;
+        return null !== $obj;
     }
 
     public static function isNull($obj): bool {
-        return null === $obj || !isset($obj);
+        return null === $obj;
     }
 
     public static function isArray($obj): bool {
-        return is_array($obj) || ($obj instanceof Traversable);
+        return \is_array($obj) || ($obj instanceof Traversable);
     }
 
     public static function isString($obj): bool {
-        return is_string($obj);
+        return \is_string($obj);
     }
 
     public static function invokeMethod($obj, $methodName, $args = array()) {
-        return call_user_func_array(array($obj, $methodName), $args);
+//        return \call_user_func_array(array($obj, $methodName), $args);
+
+        return $obj->$methodName(...$args);
     }
 
     public static function invokeGetMethod($obj, $propertyName) {
         $getMethod = $propertyName;
-        if (!StringUtils::startsWith($propertyName, "get")) {
-            $getMethod = "get" . ucfirst($propertyName);
+        if (!StringUtils::startsWith($propertyName, 'get')) {
+            $getMethod = 'get' . ucfirst($propertyName);
         }
         return $obj->$getMethod();
     }
@@ -54,11 +56,11 @@ class Objects {
 
     public static function getSimpleClassName($obj) {
         Asserts::notNull($obj);
-        return StringUtils::join('', array_slice(StringUtils::split(get_class($obj), '\\'), -1));
+        return StringUtils::join('', \array_slice(StringUtils::split(\get_class($obj), '\\'), -1));
     }
 
     public static function getClassName($obj) {
-        return get_class($obj);
+        return \get_class($obj);
     }
 
     public static function getClassNames($objOrClass) {
