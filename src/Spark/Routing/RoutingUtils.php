@@ -30,7 +30,7 @@ class RoutingUtils {
         
         $exRoute = explode('/', $route);
         $exUrlPath = explode('/', $urlPath);
-        
+
         $paramsCount = count($routeDefinitionParams);
         $hasPathParams = $paramsCount > 0;
         

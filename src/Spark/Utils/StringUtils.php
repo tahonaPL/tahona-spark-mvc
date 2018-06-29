@@ -45,7 +45,8 @@ final class StringUtils {
     }
 
     public static function equalsIgnoreCase($string1, $string2): bool {
-        return self::compareIgnoreCase($string1, $string2) === 0;
+        return self::compareIgnoreCase($string1, $string2) === 0 &&
+            strlen($string1) === strlen($string2);
     }
 
     public static function compareIgnoreCase($string1, $string2): int {

@@ -24,12 +24,12 @@ use Spark\Utils\UrlUtils;
 
 class Routing {
 
-    public const CONTROLLER_NAME      = 'controller';
-    public const METHOD_NAME          = 'method';
+    public const CONTROLLER_NAME = 'controller';
+    public const METHOD_NAME = 'method';
     public const REQUEST_METHODS_NAME = 'requestMethods';
     public const REQUEST_HEADERS_NAME = 'requestHeaders';
 
-    public const ROLES  = 'roles';
+    public const ROLES = 'roles';
     public const PARAMS = 'params';
     private $routing = array();
     private $parametrizedRouting = array();
@@ -59,7 +59,7 @@ class Routing {
      * @param string $registeredHostPath
      * @return RequestData
      */
-    public function createRequest($registeredHostPath = ''):RequestData {
+    public function createRequest($registeredHostPath = ''): RequestData {
         $urlPath = $this->getPath();
 
         $routeDefinition = $this->getDefinition($urlPath);
@@ -251,7 +251,7 @@ class Routing {
      * @param array $params
      * @return string|null
      */
-    public function resolveRoute($path, array $params = array()):string {
+    public function resolveRoute($path, array $params = array()): string {
         if (StringUtils::contains($path, '@')) {
 
             $route = StringUtils::split($path, '@');
@@ -282,9 +282,9 @@ class Routing {
                 ->findFirst(function ($d) use ($controllerName, $methodName, $paramsKeys) {
                     /* @var RoutingDefinition $d */
                     return StringUtils::contains($d->getControllerClassName(), $controllerName)
-                    && StringUtils::contains($d->getActionMethod(), $methodName)
-                    && Collections::size($paramsKeys) === Collections::size($d->getParams())
-                    && Collections::containsAll($paramsKeys, $d->getParams());
+                        && StringUtils::contains($d->getActionMethod(), $methodName)
+                        && Collections::size($paramsKeys) === Collections::size($d->getParams())
+                        && Collections::containsAll($paramsKeys, $d->getParams());
                 })
                 ->map(function ($d) use ($params) {
                     $fillParametrizedPath = RoutingUtils::fillParametrizedPath($d->getPath(), $params);

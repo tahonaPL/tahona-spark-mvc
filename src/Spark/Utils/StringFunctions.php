@@ -9,6 +9,8 @@
 namespace Spark\Utils;
 
 
+use function foo\func;
+
 class StringFunctions {
 
     /**
@@ -27,6 +29,7 @@ class StringFunctions {
             return StringUtils::replace($x, $search, $replacement);
         };
     }
+
     public static function replaceWithRegExp($regExp, $replacement): callable {
         return function ($x) use ($regExp, $replacement) {
             return StringUtils::replaceWithRegExp($x, $regExp, $replacement);
@@ -73,6 +76,12 @@ class StringFunctions {
     public static function capitalize(): callable {
         return function ($s) {
             return StringUtils::capitalize($s);
+        };
+    }
+
+    public static function concat(string $string): callable {
+        return function ($s) use ($string) {
+            return $s . $string;
         };
     }
 }

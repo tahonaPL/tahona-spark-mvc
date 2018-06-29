@@ -18,9 +18,9 @@ class RequestUtils {
     const POST_REQUEST_METHOD = 'POST';
 
     const HTTPS = 'https';
-    private static $isSSL;
-
     const HTTP = 'http';
+
+    private static $isSSL;
 
     public static function isPost(): bool {
         return $_SERVER['REQUEST_METHOD'] === self::POST_REQUEST_METHOD;
@@ -179,10 +179,28 @@ class RequestUtils {
     }
 
     public static function getHeaders() {
-        //TODO
-        return array();
+        if (!\function_exists('getallheaders')) {
+            return self::getallheaders();
+        }
+        return \getallheaders();
+    }
 
-        //return getallheaders();
+    /**
+     * Workaround for FastCGI
+     * @return array
+     */
+    private static function getallheaders() {
+        if (!\is_array($_SERVER)) {
+            return array();
+        }
+
+        $headers = array();
+        foreach ($_SERVER as $name => $value) {
+            if (0 === strpos($name, 'HTTP_')) {
+                $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+            }
+        }
+        return $headers;
     }
 
     public static function getBody() {
