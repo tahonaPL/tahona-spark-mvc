@@ -58,6 +58,7 @@ use Spark\View\Smarty\SmartyPlugins;
 use Spark\View\Smarty\SmartyViewHandler;
 use Spark\View\ViewHandlerProvider;
 use Spark\View\ViewModel;
+use Spark\Core\CoreConfig;
 
 class Engine {
 
@@ -90,18 +91,21 @@ class Engine {
      */
     private $beanCache;
 
-
     private $exceptionResolvers;
+
     private $profile;
+    private $contextLoader;
 
 
-    public function __construct($appName, $profile, $rootAppPath) {
-        Asserts::checkState(extension_loaded('apcu'), 'Apcu Cache enable is mandatory!');
-        Asserts::notNull($rootAppPath, "Engine configuration: did you forget root project path('s) field: 'root' e.g 'path'");
+    public function __construct(string $appName, $profile, array $rootAppPath) {
+        Asserts::checkState(\extension_loaded('apcu'), 'Apcu Cache enable is mandatory!');
+        Asserts::notNull($rootAppPath[0], "Engine configuration: did you forget root project path('s) field: 'root' e.g 'path'");
 
         $this->appName = $appName;
         $this->profile = $profile;
-        $this->appPath = $rootAppPath;
+
+        $appPaths = $rootAppPath;
+        $this->appPath = $appPaths[0];
 
         $this->beanCache = new ApcuBeanCache();
 //        $this->contextLoader = new CacheContextLoader($this->appName, $this->beanCache);
@@ -131,13 +135,17 @@ class Engine {
 
             $this->config->set('app.profile', $this->getProfile());
             $this->config->set('app.path', $this->appPath);
+            $this->config->set('app.paths', $appPaths);
             $this->config->set('src.path', $this->getSourcePath());
 
             $initAnnotationProcessors = new InitAnnotationProcessors($this->route, $this->config, $this->container);
 
             $beanLoader = new BeanLoader($initAnnotationProcessors, $this->config, $this->container);
-            $beanLoader->addFromPath($this->getSourcePath(), array('proxy'));
-            $beanLoader->addClass("Spark\\Core\\CoreConfig");
+            foreach ($appPaths as $path) {
+                $beanLoader->addFromPath($path . '/src', array('proxy'));
+            }
+
+            $beanLoader->addClass(CoreConfig::class);
             $beanLoader->process();
 
             $this->addBaseServices();

@@ -16,7 +16,7 @@
   ],
 
   "require": {
-    "php": ">=5.3",
+    "php": ">=7.1",
     "doctrine/common": ">=v2.5.3",
     "doctrine/annotations": ">=v1.4.0"
   },

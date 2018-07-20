@@ -11,6 +11,7 @@ namespace Spark\Core\Library;
 
 use function foo\func;
 use ReflectionClass;
+use Spark\Common\Collection\FluentIterables;
 use Spark\Config;
 use Spark\Container;
 use Spark\Core\Annotation\Configuration;
@@ -85,15 +86,17 @@ class BeanLoader {
 
     public function addFromPath($src, $excludeDir = array()) {
         $this->classesInSrc = Collections::stream(FileUtils::getAllClassesInPath($src))
-            ->addAll($this->classesInSrc)
             ->filter(function ($cls) use ($excludeDir) {
                 return !Collections::builder($excludeDir)->anyMatch(function ($x) use ($cls) {
+                    /** @var ReflectionClass $cls */
                     return StringUtils::startsWith($cls, $x);
                 });
-            })->convertToMap(Functions::getSameObject())
-            ->map(function($name) {
+            })
+            ->map(function ($name) {
                 return new ReflectionClass($name);
             })
+            ->addAll($this->classesInSrc)
+            ->convertToMap(Functions::field('name'))
             ->get();
     }
 

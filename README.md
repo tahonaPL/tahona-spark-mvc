@@ -303,8 +303,9 @@ The heart of Spark Framework.
 $this->config
 
 Base parameters:
-app.path - ścieżka do katalogu /app
+app.path - pierwsza ścieżka do katalogu /app
 src.path - ścieżka do katalogu /app/src
+app.paths - ścieżka albo ścieżki do katalogu /app w różnych kontekstach
 
 to fetch parameters:
 ```php

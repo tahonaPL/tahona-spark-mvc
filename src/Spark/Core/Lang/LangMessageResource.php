@@ -9,6 +9,7 @@
 namespace Spark\Core\Lang;
 
 
+use Spark\Common\Collection\FluentIterables;
 use Spark\Common\Optional;
 use Spark\Config;
 use Spark\Core\Annotation\Inject;
@@ -26,7 +27,7 @@ use Spark\Utils\StringUtils;
 
 class LangMessageResource {
 
-    const NAME = "langMessageResource";
+    public const NAME = 'langMessageResource';
 
     /**
      * @Inject
@@ -61,9 +62,9 @@ class LangMessageResource {
     public function get($code, $params = array()) {
         if (!$this->hasCode($code)) {
             return $this->messageErrorCode($code);
-        } else {
-            return $this->handleMessage($code, $params);
         }
+
+        return $this->handleMessage($code, $params);
     }
 
     /**
@@ -124,13 +125,23 @@ class LangMessageResource {
     }
 
     public function addResources($resourcePaths = array()) {
+        $appPaths = $this->config->getProperty('app.paths');
+
         /** @var LangResourcePath $resourcePath */
         foreach ($resourcePaths as $resourcePath) {
             $paths = $resourcePath->getPaths();
 
             foreach ($paths as $key => $pathArr) {
                 foreach ($pathArr as $path) {
-                    $elements = parse_ini_file($this->config->getProperty("src.path") . "" . $path);
+                    $elements = FluentIterables::of($appPaths)
+                        ->findFirst(function ($rootPath) use ($path) {
+                            return FileUtils::exist($rootPath . '/src' . $path);
+                        })
+                        ->map(function ($rootPath) use ($path) {
+                            return parse_ini_file($rootPath . '/src' . $path);
+                        })
+                        ->get();
+
                     Collections::addAllOrReplace($this->messages[$key], $elements);
                 }
             }

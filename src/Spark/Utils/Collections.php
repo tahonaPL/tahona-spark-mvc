@@ -350,7 +350,7 @@ final class Collections {
         return $array;
     }
 
-    public static function asArray($array = array()) {
+    public static function asArray($array = array()) : array {
         if (Objects::isArray($array)) {
             return $array;
         }

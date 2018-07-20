@@ -1,10 +1,4 @@
 <?php
-/**
- *
- *
- * Date: 06.07.14
- * Time: 17:42
- */
 
 namespace Spark\View\Smarty;
 
@@ -13,9 +7,10 @@ use Spark\Core\Annotation\Inject;
 use Spark\Core\Annotation\PostConstruct;
 use Spark\Core\Lang\LangKeyProvider;
 use Spark\Core\Provider\BeanProvider;
-use Spark\Http\Request;
 use Spark\Core\Routing\RequestData;
+use Spark\Utils\Collections;
 use Spark\Utils\Objects;
+use Spark\Utils\StringFunctions;
 use Spark\Utils\StringUtils;
 use Spark\View\Utils\ViewUrlUtils;
 use Spark\View\ViewHandler;
@@ -34,6 +29,10 @@ class SmartyViewHandler extends ViewHandler {
     public const MERGE_COMPILED_INCLUDES = 'spark.view.cache.merge.compiled.includes';
 
     private $rootAppPath;
+
+    /**
+     * @var  \Smarty
+     */
     private $smarty;
     /**
      * @Inject
@@ -64,7 +63,13 @@ class SmartyViewHandler extends ViewHandler {
             $smarty = new \Smarty();
             $smarty->setCacheDir($this->rootAppPath . '/view/cache');
             $smarty->setCompileDir($this->rootAppPath . '/view/compile');
-            $smarty->setTemplateDir($this->rootAppPath . '/view');
+
+            $appPaths = $this->config->getProperty('app.paths');
+            $templatePaths = Collections::stream($appPaths)
+                ->map(StringFunctions::concat('/view'))
+                ->get();
+
+            $smarty->setTemplateDir($templatePaths);
 
             $smarty->registerPlugin('function', 'invoke', array($this->smartyPlugins, 'invoke'));
             $smarty->registerPlugin('function', 'path', array($this->smartyPlugins, 'path'));
@@ -89,7 +94,6 @@ class SmartyViewHandler extends ViewHandler {
 
             $this->smarty = $smarty;
         }
-        return $this->smarty;
     }
 
     public function isView($viewModel) {
@@ -130,7 +134,7 @@ class SmartyViewHandler extends ViewHandler {
     }
 
     /**
-     * @param $viewModel
+     * @param ViewModel $viewModel
      * @param RequestData $request
      * @return string
      */
@@ -147,9 +151,9 @@ class SmartyViewHandler extends ViewHandler {
      * @param $config
      * @return mixed
      */
-    private function getCachingType(Config $config) : int {
+    private function getCachingType(Config $config): int {
         $isCaching = $config->getProperty(self::CACHE_ENABLED, false);
-        if ($isCaching){
+        if ($isCaching) {
             return \Smarty::CACHING_LIFETIME_CURRENT;
         }
         return \Smarty::CACHING_OFF;
