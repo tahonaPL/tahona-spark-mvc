@@ -12,8 +12,8 @@ use Spark\Http\Utils\CookieUtils;
 
 class CookieImpl implements Cookie {
 
-    public function set($key, $value): Cookie {
-        CookieUtils::setCookie($key, $value);
+    public function set($key, $value, $expire=0): Cookie {
+        CookieUtils::setCookie($key, $value, $expire);
         return $this;
     }
 

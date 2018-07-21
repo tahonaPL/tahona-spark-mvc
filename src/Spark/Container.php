@@ -71,14 +71,12 @@ class Container {
             return new CacheableServiceBeanProxy($bean);
         }
         return $bean;
-
     }
 
-    public function register($name, $object) {
-        Asserts::checkState(!isset($this->beanContainer[$name]),
-            "Bean already added: " . $name);
+    public function register($name, $object, $replace = false, $canBeReplaced = false) {
+        Asserts::checkState($replace || !isset($this->beanContainer[$name]), 'Bean already added: ' . $name);
 
-        $beanDefinition = new BeanDefinition($name, $object, $this->getClassNames($object));
+        $beanDefinition = new BeanDefinition($name, $object, $this->getClassNames($object), $canBeReplaced);
         $this->addToContainer($beanDefinition);
 
         if ($this->initialized) {
@@ -103,7 +101,6 @@ class Container {
             return FluentIterables::of()
                 //InjectTo Cached Bean
                 ->addAll($this->injectTo(new BeanDefinition($beanDef->getName(), $variable, $beanDef->getClassNames())))
-
                 //Inject To Proxy
                 ->addAll($this->injectToBeanOnly(new BeanDefinition($beanDef->getName(), $bean, $beanDef->getClassNames())))
                 ->filter(Predicates::notNull())
@@ -138,9 +135,10 @@ class Container {
             ->getBean();
     }
 
+    private $arr= [];
+
     public function hasBean($name) {
-        return isset($this->beanContainer[$name])
-            && Objects::isNotNull($this->beanContainer[$name]);
+        return isset($this->beanContainer[$name]) && Objects::isNotNull($this->beanContainer[$name]);
     }
 
     /**
@@ -415,7 +413,11 @@ class Container {
     private function addToContainer(BeanDefinition $beanDefinition) {
         $beanName = $beanDefinition->getName();
 
-        Asserts::checkState(!Collections::hasKey($this->beanContainer, $beanName), "Cannot add same bean twice! ($beanName)");
+        if (Collections::hasKey($this->beanContainer, $beanName)) {
+            if (!$this->beanContainer[$beanName]->canBeReplaced()) {
+                throw  new IllegalStateException("Cannot add same bean twice! ($beanName)");
+            }
+        }
 
         $this->beanContainer[$beanDefinition->getName()] = $beanDefinition;
         $this->addToTypeContainer($beanDefinition);

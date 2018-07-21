@@ -23,17 +23,22 @@ class BeanDefinition {
 
     private $classNames;
     private $ready = false;
+    /**
+     * @var bool
+     */
+    private $canBeReplaced;
 
     /**
      * BeanDefinition constructor.
      * @param $name
      * @param $bean
      */
-    public function __construct($name, &$bean, array $classNames) {
+    public function __construct($name, &$bean, array $classNames, $canBeReplaced = false) {
         $this->name = $name;
         $this->bean = $bean;
 
         $this->classNames = $classNames;
+        $this->canBeReplaced = $canBeReplaced;
     }
 
     public function ready() {
@@ -67,6 +72,10 @@ class BeanDefinition {
 
     public function isReady() {
         return $this->ready;
+    }
+
+    public function canBeReplaced(): bool {
+        return $this->canBeReplaced;
     }
 
 

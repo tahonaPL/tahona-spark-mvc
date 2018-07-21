@@ -12,6 +12,6 @@ namespace Spark\Common\Exception;
 class UnsupportedOperationException extends AbstractException {
 
     protected function getAlternativeMessage() {
-        return "Unsupported operation or method invocation.";
+        return 'Unsupported operation or method invocation.';
     }
 }

@@ -25,7 +25,7 @@ class BaseSessionProvider implements SessionProvider {
         }
 
         if (false === Collections::hasKey($_SESSION, 'spark_session')) {
-            $_SESSION['spark_session'] = new Session();
+            $_SESSION['spark_session'] = new SessionImpl();
         }
 
         return $_SESSION['spark_session'];

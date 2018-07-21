@@ -43,6 +43,7 @@ use Spark\Http\RequestProvider;
 use Spark\Http\Response;
 use Spark\Http\Session\BaseSessionProvider;
 use Spark\Http\Session\SessionProvider;
+use Spark\Http\Session\SessionProviderProxy;
 use Spark\Http\Utils\RequestUtils;
 use Spark\Routing\RoutingInfo;
 use Spark\Utils\Asserts;
@@ -221,7 +222,7 @@ class Engine {
     }
 
     private function addBaseServices(): void {
-        $this->container->register('cache', $this->beanCache);
+        $this->register('cache', $this->beanCache);
         $this->container->registerObj(new CacheProvider());
         $this->container->registerObj(new CacheService());
 
@@ -229,13 +230,15 @@ class Engine {
         $this->container->registerObj(new EventBus());
         $this->container->registerObj(new SubscribeAnnotationHandler());
 
-        $this->container->register(LangMessageResource::NAME, new LangMessageResource(array()));
-        $this->container->register(LangKeyProvider::NAME, new CookieLangKeyProvider('lang'));
+        $this->register(LangMessageResource::NAME, new LangMessageResource(array()));
+        $this->register(LangKeyProvider::NAME, new CookieLangKeyProvider('lang'));
 
-        $this->container->register(SmartyPlugins::NAME, new SmartyPlugins());
-        $this->container->register(RequestProvider::NAME, new RequestProvider());
-        $this->container->register(RoutingInfo::NAME, new RoutingInfo($this->route));
-        $this->container->register('sessionProvider', new BaseSessionProvider());
+        $this->register(SmartyPlugins::NAME, new SmartyPlugins());
+        $this->register(RequestProvider::NAME, new RequestProvider());
+        $this->register(RoutingInfo::NAME, new RoutingInfo($this->route));
+        $this->register('sessionProvider', new SessionProviderProxy());
+        $this->register('defaultSessionProvider', new BaseSessionProvider());
+
         $this->container->registerObj(new RequestDataFactory());
         $this->container->registerObj(new BeanProvider($this->container));
 
@@ -259,7 +262,6 @@ class Engine {
         $resource = $this->container->get(LangMessageResource::NAME);
         $resource->addResources($resourcePaths);
 
-
         $sessionProvider = $this->container->get('sessionProvider');
         $this->route->setSessionProvider($sessionProvider);
     }
@@ -271,12 +273,12 @@ class Engine {
         $redirectViewHandler = new RedirectViewHandler();
 
         $provider = new ViewHandlerProvider();
-        $this->container->register(ViewHandlerProvider::NAME, $provider);
-        $this->container->register('defaultViewHandler', $smartyViewHandler);
-        $this->container->register(SmartyViewHandler::NAME, $smartyViewHandler);
-        $this->container->register(PlainViewHandler::NAME, $plainViewHandler);
-        $this->container->register(JsonViewHandler::NAME, $jsonViewHandler);
-        $this->container->register(RedirectViewHandler::NAME, $redirectViewHandler);
+        $this->register(ViewHandlerProvider::NAME, $provider);
+        $this->register('defaultViewHandler', $smartyViewHandler);
+        $this->register(SmartyViewHandler::NAME, $smartyViewHandler);
+        $this->register(PlainViewHandler::NAME, $plainViewHandler);
+        $this->register(JsonViewHandler::NAME, $jsonViewHandler);
+        $this->register(RedirectViewHandler::NAME, $redirectViewHandler);
     }
 
     /**
@@ -445,6 +447,10 @@ class Engine {
      */
     private function getSourcePath(): string {
         return $this->appPath . '/src';
+    }
+
+    private function register($beanName, $class) {
+        $this->container->register($beanName, $class, false, true);
     }
 
 
