@@ -15,10 +15,10 @@ use Spark\Utils\Predicates;
 
 class RequestUtils {
 
-    const POST_REQUEST_METHOD = 'POST';
+    public const POST_REQUEST_METHOD = 'POST';
 
-    const HTTPS = 'https';
-    const HTTP = 'http';
+    public const HTTPS = 'https';
+    public const HTTP = 'http';
 
     private static $isSSL;
 
@@ -60,27 +60,6 @@ class RequestUtils {
             return $_FILES[$name];
         }
         return null;
-    }
-
-    public static function getOrCreateSession(): Session {
-        //move to sessionUtils or something
-        if (Objects::isNull($_SESSION)) {
-            Asserts::checkState(!headers_sent(), 'Session will not be updated if header sent or var_dump');
-            Asserts::checkState(session_start(), 'Session could not be start');
-
-            //FIX ME - regenerating session
-//            session_regenerate_id();
-        }
-
-        if (false === Collections::hasKey($_SESSION, 'spark_session')) {
-            $_SESSION['spark_session'] = new Session();
-        }
-
-        return $_SESSION['spark_session'];
-    }
-
-    public static function getSession(): Session {
-        return self::getOrCreateSession();
     }
 
     public static function redirect($url, $statusCode = 303): void {

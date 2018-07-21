@@ -34,12 +34,15 @@ use Spark\Core\Processor\InitAnnotationProcessors;
 use Spark\Core\Processor\Loader\CacheContextLoader;
 use Spark\Core\Processor\Loader\StaticClassContextLoader;
 use Spark\Core\Provider\BeanProvider;
+use Spark\Core\Routing\Factory\RequestDataFactory;
 use Spark\Core\Routing\RequestData;
 use Spark\Core\Routing\RoutingDefinition;
 use Spark\Core\Utils\SystemUtils;
 use Spark\Http\Request;
 use Spark\Http\RequestProvider;
 use Spark\Http\Response;
+use Spark\Http\Session\BaseSessionProvider;
+use Spark\Http\Session\SessionProvider;
 use Spark\Http\Utils\RequestUtils;
 use Spark\Routing\RoutingInfo;
 use Spark\Utils\Asserts;
@@ -232,7 +235,10 @@ class Engine {
         $this->container->register(SmartyPlugins::NAME, new SmartyPlugins());
         $this->container->register(RequestProvider::NAME, new RequestProvider());
         $this->container->register(RoutingInfo::NAME, new RoutingInfo($this->route));
+        $this->container->register('sessionProvider', new BaseSessionProvider());
+        $this->container->registerObj(new RequestDataFactory());
         $this->container->registerObj(new BeanProvider($this->container));
+
         $this->container->registerObj($this->config);
         $this->container->registerObj($this->route);
         $this->container->registerObj(new GlobalErrorHandler($this));
@@ -252,6 +258,10 @@ class Engine {
         /** @var LangMessageResource $resource */
         $resource = $this->container->get(LangMessageResource::NAME);
         $resource->addResources($resourcePaths);
+
+
+        $sessionProvider = $this->container->get('sessionProvider');
+        $this->route->setSessionProvider($sessionProvider);
     }
 
     private function addViewHandlersToService(): void {

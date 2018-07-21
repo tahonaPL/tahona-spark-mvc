@@ -6,6 +6,7 @@ namespace Spark\Core\Routing;
 use Spark\Common\Optional;
 use Spark\Http\HeadersWrapper;
 use Spark\Http\Session;
+use Spark\Http\Session\SessionProvider;
 use Spark\Http\Utils\CookieUtils;
 use Spark\Http\Utils\RequestUtils;
 use Spark\Utils\UrlUtils;
@@ -32,11 +33,17 @@ class RequestData implements Request {
     //headers
     private $headers;
 
+    /**
+     * @var SessionProvider
+     */
+    private $sessionProvider;
+
     //url + Get params
     private $cachedGetParams;
 
-    public function __construct() {
+    public function __construct(SessionProvider $sessionProvider) {
         $this->headers = new HeadersWrapper(RequestUtils::getHeaders());
+        $this->sessionProvider = $sessionProvider;
     }
 
     public function getMethodName() {
@@ -105,7 +112,7 @@ class RequestData implements Request {
     }
 
     public function getSession(): Session {
-        return RequestUtils::getOrCreateSession();
+        return $this->sessionProvider->getOrCreateSession();
     }
 
 

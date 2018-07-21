@@ -2,23 +2,17 @@
 
 namespace Spark;
 
-use Spark\Common\Collection\FluentIterables;
 use Spark\Common\IllegalStateException;
-use Spark\Common\Optional;
 use Spark\Core\Routing\Exception\RouteNotFoundException;
-use Spark\Core\Routing\RoutingDefinition;
-use Spark\Core\Routing\Exception\RoutingException;
-use Spark\Http\Request;
-use Spark\Http\Utils\RequestUtils;
 use Spark\Core\Routing\RequestData;
+use Spark\Core\Routing\RoutingDefinition;
+use Spark\Http\Request;
+use Spark\Http\Session\SessionProvider;
+use Spark\Http\Utils\RequestUtils;
 use Spark\Routing\RoutingUtils;
 use Spark\Utils\Asserts;
 use Spark\Utils\Collections;
-
 use Spark\Utils\Functions;
-use Spark\Utils\Objects;
-use Spark\Utils\Predicates;
-use Spark\Utils\StringFunctions;
 use Spark\Utils\StringUtils;
 use Spark\Utils\UrlUtils;
 
@@ -34,6 +28,9 @@ class Routing {
     private $routing = array();
     private $parametrizedRouting = array();
     private $definitions;
+
+    private $sessionProvider;
+
 
     public function __construct($routing) {
         $this->definitions = $routing;
@@ -64,7 +61,7 @@ class Routing {
 
         $routeDefinition = $this->getDefinition($urlPath);
 
-        $request = new RequestData();
+        $request = new RequestData($this->sessionProvider);
         $request->setRouteDefinition($routeDefinition);
         $request->setHostPath($registeredHostPath);
         $request->setMethodName($routeDefinition->getActionMethod());
@@ -125,6 +122,10 @@ class Routing {
 
             return $dev;
         }
+    }
+
+    public function setSessionProvider(SessionProvider $sessionProvider) {
+        $this->sessionProvider = $sessionProvider;
     }
 
     /**

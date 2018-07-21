@@ -12,7 +12,9 @@ namespace Spark\Core\Error;
 use ErrorException;
 use Spark\Container;
 use Spark\Core\Annotation\Inject;
+use Spark\Core\Annotation\PostConstruct;
 use Spark\Core\Provider\BeanProvider;
+use Spark\Core\Routing\Factory\RequestDataFactory;
 use Spark\Core\Routing\RequestData;
 use Spark\Engine;
 use Spark\Http\HttpCode;
@@ -33,6 +35,12 @@ class GlobalErrorHandler {
      */
     private $engine;
     private $exceptionResolvers;
+
+    /**
+     * @Inject()
+     * @var RequestDataFactory
+     */
+    private $requestDataFactory;
 
     /**
      * GlobalErrorHandler constructor.
@@ -76,7 +84,9 @@ class GlobalErrorHandler {
 
         if ($errorReporting == 0) {
             return;
-        } else if ($errorReporting && Objects::isNotNull($error)) {
+        }
+
+        if ($errorReporting && Objects::isNotNull($error)) {
             $errorException = $this->handleErrorAction($error);
             $this->handleException($errorException);
         }
@@ -108,7 +118,7 @@ class GlobalErrorHandler {
                 /** @var ExceptionResolver $resolver */
                 $viewModel = $resolver->doResolveException($error);
                 if (Objects::isNotNull($viewModel)) {
-                    $request = new RequestData();
+                    $request = $this->requestDataFactory->createRequestData();
                     $this->engine->updateRequestProvider($request);
                     $this->engine->handleViewModel($request, $viewModel);
 
@@ -131,7 +141,6 @@ class GlobalErrorHandler {
 
         return new \ErrorException($message, 0, $severity, $filename, $lineno);
     }
-
 
 
 }

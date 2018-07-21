@@ -5,13 +5,18 @@ namespace Spark\Core\Filler;
 
 
 use Spark\Http\Session;
-use Spark\Http\Utils\RequestUtils;
+use Spark\Http\Session\SessionProvider;
 
 class SessionFiller implements Filler {
 
+    /**
+     * @var SessionProvider
+     */
+    private $sessionProvider;
+
     public function getValue($name, $type) {
         if ($name === "session" || $type === Session::class) {
-            return RequestUtils::getSession();
+            return $this->sessionProvider->getOrCreateSession();
         }
         return null;
     }

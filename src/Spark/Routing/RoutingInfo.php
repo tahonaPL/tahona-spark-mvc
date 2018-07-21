@@ -15,7 +15,7 @@ use Spark\Utils\Collections;
 
 class RoutingInfo {
 
-    const NAME = "routingInfo";
+    public const NAME = 'routingInfo';
     /**
      * @var Routing
      */
