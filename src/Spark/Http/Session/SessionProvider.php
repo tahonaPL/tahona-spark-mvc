@@ -11,6 +11,8 @@ use Spark\Http\Session;
 
 interface SessionProvider {
     public function getOrCreateSession(): Session;
+
     public function getSession(): Session;
-    public function hasSession(): bool ;
+
+    public function hasSession(): bool;
 }

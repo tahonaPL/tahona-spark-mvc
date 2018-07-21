@@ -7,7 +7,6 @@ use Spark\Cache\Service\CacheableServiceBeanProxy;
 use Spark\Common\Collection\FluentIterables;
 use Spark\Common\IllegalStateException;
 use Spark\Common\Type\Orderable;
-use Spark\Core\Annotation\Bean;
 use Spark\Core\Definition\BeanConstructorFactory;
 use Spark\Core\Definition\BeanDefinition;
 use Spark\Core\Definition\BeanProxy;
@@ -21,7 +20,6 @@ use Spark\Utils\Objects;
 use Spark\Utils\Predicates;
 use Spark\Utils\Reflection\PropertyAnnotation;
 use Spark\Utils\ReflectionUtils;
-use Spark\Utils\StringPredicates;
 use Spark\Utils\StringUtils;
 
 class Container {
