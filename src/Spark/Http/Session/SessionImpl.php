@@ -42,7 +42,7 @@ class SessionImpl implements Session {
     }
 
     public function remove($key): Session {
-        $this->remove($key);
+        $this->data->remove($key);
         return $this;
     }
 }
