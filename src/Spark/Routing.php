@@ -295,6 +295,6 @@ class Routing {
                 ->orElse(StringUtils::EMPTY);
         }
 
-        return StringUtils::EMPTY;
+        return $path;
     }
 }

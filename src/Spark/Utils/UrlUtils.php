@@ -166,6 +166,10 @@ class UrlUtils {
         return self::getUrl();
     }
 
+    /**
+     * Method not working in non request context.
+     * @return string
+     */
     public static function getSite(): string {
         return RequestUtils::getSite();
     }
