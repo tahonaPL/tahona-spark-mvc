@@ -87,7 +87,7 @@ class SmartyViewHandler extends ViewHandler {
             $smarty->setCompileCheck($config->getProperty(self::COMPILE_CHECK, true));
             $smarty->setCaching($this->getCachingType($config));
             $smarty->setCacheLifetime($config->getProperty(self::CACHE_LIFE_TIME, 1800));
-            $smarty->setMergeCompiledIncludes($config->getProperty(self::MERGE_COMPILED_INCLUDES, false));
+            $smarty->setMergeCompiledIncludes($config->getProperty(self::MERGE_COMPILED_INCLUDES, true));
 
             $smarty->setDebugging($config->getProperty(self::DEBUGGING, false));
             $smarty->setErrorReporting($config->getProperty(self::ERROR_REPORTING, E_ALL & ~E_NOTICE));
@@ -100,6 +100,11 @@ class SmartyViewHandler extends ViewHandler {
         return $viewModel instanceof ViewModel;
     }
 
+    /**
+     * @param $viewModel
+     * @param RequestData $request
+     * @throws SmartyException
+     */
     public function handleView($viewModel, RequestData $request) {
         $this->smarty->setCacheId($this->config->getProperty(self::CACHE_ID, 'TAHONA_ROCKS') . '' . $this->getLang());
 
@@ -109,7 +114,12 @@ class SmartyViewHandler extends ViewHandler {
         }
 
         $viewPath = $this->getViewPath($viewModel, $request);
-        $this->smarty->display($viewPath . '.tpl');
+        $output = $this->smarty->fetch($viewPath . '.tpl');
+
+        if (StringUtils::contains($output, 'SmartyNoCache')) {
+            throw new SmartyException('View render error !');
+        }
+        echo $output;
     }
 
     /**
