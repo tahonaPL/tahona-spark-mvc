@@ -20,6 +20,8 @@ abstract class  AbstractException extends \Exception {
         }
     }
 
-    abstract protected function getAlternativeMessage();
+    protected function getAlternativeMessage(){
+        return 'Error occurred';
+    }
 
 }

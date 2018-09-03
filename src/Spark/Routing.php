@@ -247,14 +247,9 @@ class Routing {
 
     /**
      * FIXME: Very slow resolve all methods in pre compile
-     *
-     * @param $path
-     * @param array $params
-     * @return string|null
      */
-    public function resolveRoute($path, array $params = array()): string {
+    public function resolveRoute(string $path, array $params = array()): string {
         if (StringUtils::contains($path, '@')) {
-
             $route = StringUtils::split($path, '@');
             $controllerName = $route[0];
             $methodName = $route[1];
@@ -277,7 +272,7 @@ class Routing {
             }
             $paramsKeys = Collections::getKeys($params);
 
-            return Collections::builder()
+            return Collections::stream()
                 ->addAll($this->getDefinitions())
                 ->flatMap(Functions::getSameObject())
                 ->findFirst(function ($d) use ($controllerName, $methodName, $paramsKeys) {
@@ -288,9 +283,7 @@ class Routing {
                         && Collections::containsAll($paramsKeys, $d->getParams());
                 })
                 ->map(function ($d) use ($params) {
-                    $fillParametrizedPath = RoutingUtils::fillParametrizedPath($d->getPath(), $params);
-//                    var_dump($d, $fillParametrizedPath, $params);exit;
-                    return $fillParametrizedPath;
+                    return RoutingUtils::fillParametrizedPath($d->getPath(), $params);
                 })
                 ->orElse(StringUtils::EMPTY);
         }

@@ -13,11 +13,11 @@ class CookieLangKeyProvider implements LangKeyProvider {
     public $cookieKey;
 
     public function __construct($cookieKey) {
-        Asserts::checkState(Objects::isString($cookieKey), "Cookie key need to be a string.");
+        Asserts::checkState(Objects::isString($cookieKey), 'Cookie key need to be a string.');
         $this->cookieKey = $cookieKey;
     }
 
-    public function getLang() {
-        return CookieUtils::getCookieValue($this->cookieKey);
+    public function getLang(): string {
+        return CookieUtils::getCookieValue($this->cookieKey, '');
     }
 }

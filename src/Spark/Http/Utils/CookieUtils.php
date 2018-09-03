@@ -27,12 +27,12 @@ class CookieUtils {
         return false;
     }
 
-    public static function getCookieValue($key) {
-        return self::hasCookie($key) ? $_COOKIE[$key] : null;
+    public static function getCookieValue($key, $default = null) {
+        return self::hasCookie($key) ? $_COOKIE[$key] : $default;
     }
 
     public static function setCookie(string $key, string $value, $expire = 0, $path = '/', $domain = '', $secure = false, $httponly = false): void {
-        if ($expire> 0) {
+        if ($expire > 0) {
             $expire += time();
         }
         setcookie($key, $value, $expire, $path, $domain, $secure, $httponly);

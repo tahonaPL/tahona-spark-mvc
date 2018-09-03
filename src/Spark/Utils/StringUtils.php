@@ -88,7 +88,7 @@ final class StringUtils {
      * @param $delimiter
      * @return array
      */
-    public static function split(string $string, $delimiter = null) {
+    public static function split(string $string, $delimiter = null): array {
         if (Objects::isNull($delimiter)) {
             return str_split($string);
         }

@@ -6,9 +6,9 @@ namespace Spark\Core\Lang;
 
 interface LangKeyProvider {
 
-    const NAME ="langKeyProvider";
-    const D_LANG ="lang";
+    public const NAME = 'langKeyProvider';
+    public const D_LANG = 'lang';
 
-    public function getLang();
+    public function getLang() : string ;
 }
 

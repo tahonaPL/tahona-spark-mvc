@@ -49,6 +49,10 @@ class SmartyViewHandler extends ViewHandler {
      * @var BeanProvider
      */
     private $beanProvider;
+    /**
+     * @var string cacheIdPrefix
+     */
+    private $cacheIdPrefix;
 
     public function __construct($rootAppPath) {
         $this->rootAppPath = $rootAppPath;
@@ -57,9 +61,12 @@ class SmartyViewHandler extends ViewHandler {
     /**
      * @PostConstruct()
      */
-    private function init() {
+    private function init(): void {
         if (Objects::isNull($this->smarty)) {
             $config = $this->config;
+            $this->cacheIdPrefix = $this->config->getProperty(self::CACHE_ID, 'TAHONA_ROCKS');
+
+
             $smarty = new \Smarty();
             $smarty->setCacheDir($this->rootAppPath . '/view/cache');
             $smarty->setCompileDir($this->rootAppPath . '/view/compile');
@@ -106,7 +113,7 @@ class SmartyViewHandler extends ViewHandler {
      * @throws SmartyException
      */
     public function handleView($viewModel, RequestData $request) {
-        $this->smarty->setCacheId($this->config->getProperty(self::CACHE_ID, 'TAHONA_ROCKS') . '' . $this->getLang());
+        $this->smarty->setCacheId($this->cacheIdPrefix . '' . $this->getLang());
 
         /** @var ViewModel $viewModel */
         foreach ($viewModel->getParams() as $key => $value) {
@@ -117,7 +124,7 @@ class SmartyViewHandler extends ViewHandler {
         $output = $this->smarty->fetch($viewPath . '.tpl');
 
         if (StringUtils::contains($output, 'SmartyNoCache')) {
-            throw new SmartyException('View render error !');
+            throw new SmartyException('View render error!');
         }
         echo $output;
     }
@@ -127,17 +134,14 @@ class SmartyViewHandler extends ViewHandler {
      * @param $viewPath
      * @return string
      */
-    private function removePrefix($viewPath) {
+    private function removePrefix($viewPath): string {
         if (StringUtils::startsWith($viewPath, '/')) {
             return StringUtils::substring($viewPath, 1, StringUtils::length($viewPath));
         }
         return $viewPath;
     }
 
-    /**
-     * @return string
-     */
-    private function getLang() {
+    private function getLang(): string {
         /** @var LangKeyProvider $langKeyProvider */
         $langKeyProvider = $this->beanProvider->getBean(LangKeyProvider::NAME);
         return $langKeyProvider->getLang();
