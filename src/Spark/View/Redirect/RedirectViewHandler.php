@@ -20,7 +20,7 @@ use Spark\View\ViewHandler;
 
 class RedirectViewHandler extends ViewHandler {
 
-    const NAME = "redirectViewHandler";
+    public const NAME = 'redirectViewHandler';
 
     /**
      * @Inject
@@ -29,7 +29,7 @@ class RedirectViewHandler extends ViewHandler {
     private $routing;
 
 
-    public function isView($viewModel) {
+    public function isView($viewModel): bool {
         return $viewModel instanceof RedirectViewModel;
     }
 
@@ -37,14 +37,14 @@ class RedirectViewHandler extends ViewHandler {
      * @param RedirectViewModel $viewModel
      * @param Request|RequestData $request
      */
-    public function handleView($viewModel, RequestData $request) {
+    public function handleView($viewModel, RequestData $request): void {
         if ($this->isView($viewModel)) {
 
             $redirect = $viewModel->getUrl();
             if (StringUtils::isNotBlank($redirect)) {
 
                 $resolved = $this->routing->resolveRoute($redirect, $viewModel->getParams());
-                if (StringUtils::isNotBlank($resolved)) {
+                if ($resolved !== $redirect) {
                     $request->instantRedirect($resolved);
                 } else {
 

@@ -2,11 +2,14 @@
 
 namespace Spark;
 
+use Doctrine\Common\Annotations\AnnotationReader;
+use Doctrine\Common\Annotations\SimpleAnnotationReader;
 use ErrorException;
 use Spark\Cache\ApcuBeanCache;
 use Spark\Cache\BeanCache;
 use Spark\Cache\Service\CacheProvider;
 use Spark\Cache\Service\CacheService;
+use Spark\Common\Collection\FluentIterables;
 use Spark\Core\Annotation\Handler\EnableApcuAnnotationHandler;
 use Spark\Core\Command\Command;
 use Spark\Core\Command\Input\InputInterface;
@@ -19,8 +22,10 @@ use Spark\Core\Filler\BeanFiller;
 use Spark\Core\Filler\CookieFiller;
 use Spark\Core\Filler\FileObjectFiller;
 use Spark\Core\Filler\Filler;
+use Spark\Core\Filler\MultiFiller;
 use Spark\Core\Filler\RequestFiller;
 use Spark\Core\Filler\SessionFiller;
+use Spark\Core\Filler\SimpleMultiFiller;
 use Spark\Core\Filter\FilterChain;
 use Spark\Core\Filter\HttpFilter;
 use Spark\Core\Interceptor\HandlerInterceptor;
@@ -38,6 +43,7 @@ use Spark\Core\Routing\Factory\RequestDataFactory;
 use Spark\Core\Routing\RequestData;
 use Spark\Core\Routing\RoutingDefinition;
 use Spark\Core\Utils\SystemUtils;
+use Spark\Form\Validator\AnnotationValidator;
 use Spark\Http\Request;
 use Spark\Http\RequestProvider;
 use Spark\Http\Response;
@@ -52,6 +58,7 @@ use Spark\Utils\Collections;
 use Spark\Utils\Functions;
 use Spark\Utils\Objects;
 use Spark\Utils\Predicates;
+use Spark\Utils\ReflectionUtils;
 use Spark\Utils\StringUtils;
 use Spark\Utils\UrlUtils;
 use Spark\View\Json\JsonViewHandler;
@@ -230,7 +237,8 @@ class Engine {
         $this->container->registerObj(new EventBus());
         $this->container->registerObj(new SubscribeAnnotationHandler());
 
-        $this->register(LangMessageResource::NAME, new LangMessageResource(array()));
+        $langResource = new LangMessageResource(array());
+        $this->register(LangMessageResource::NAME, $langResource);
         $this->register(LangKeyProvider::NAME, new CookieLangKeyProvider('lang'));
 
         $this->register(SmartyPlugins::NAME, new SmartyPlugins());
@@ -242,10 +250,15 @@ class Engine {
         $this->container->registerObj(new RequestDataFactory());
         $this->container->registerObj(new BeanProvider($this->container));
 
+        $validator = new AnnotationValidator($langResource, ReflectionUtils::getReaderInstance());
+        $validator->addDefaultValidators();
+        $this->container->register('annotationValidator', $validator);
+
         $this->container->registerObj($this->config);
         $this->container->registerObj($this->route);
         $this->container->registerObj(new GlobalErrorHandler($this));
 
+        $this->container->registerObj(new SimpleMultiFiller());
         $this->container->registerObj(new RequestFiller());
         $this->container->registerObj(new SessionFiller());
         $this->container->registerObj(new FileObjectFiller());
@@ -406,28 +419,33 @@ class Engine {
     }
 
     private function executeFillers(RoutingDefinition $rf): array {
-        $params = array();
         $parameters = $rf->getActionMethodParameters();
+        $simpleFiller = $this->container->getByType(MultiFiller::class);
 
-        $filers = $this->container->getByType(Filler::class);
 
-        if (Collections::isNotEmpty($parameters)) {
-            foreach ($parameters as $paramName => $type) {
-                $params[] = $this->getFillerValue($filers, $paramName, $type);
+        $tmpParameters = $parameters;
+
+        $results = [];
+        /** @var MultiFiller $filler */
+        foreach ($simpleFiller as $filler) {
+            $filedParams = $filler->filter($tmpParameters);
+
+            $newParams  = [];
+            foreach ($filedParams as $k => $filedParam) {
+
+                if (Objects::isNotNull($filedParam) && !Collections::hasKey($results, $k)) {
+                    $results[$k] = $filedParam;
+                } else {
+                    $newParams[$k]=$parameters[$k];
+                }
             }
+            $tmpParameters = $newParams;
         }
-        return $params;
-    }
 
-    private function getFillerValue($fillers, $paramName, $type) {
-        /** @var Filler $filler */
-        foreach ($fillers as $filler) {
-            $value = $filler->getValue($paramName, $type);
-            if (Objects::isNotNull($value)) {
-                return $value;
-            }
-        }
-        return null;
+        return FluentIterables::of(Collections::getKeys($parameters))
+            ->map(function($key) use ($results) {
+                return Collections::getValue($results, $key);
+            })->getList();
     }
 
     private function isRestController(RoutingDefinition $routeDef): bool {

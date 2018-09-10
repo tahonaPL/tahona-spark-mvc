@@ -16,13 +16,13 @@ use Spark\View\ViewModel;
 
 class PlainViewHandler extends ViewHandler {
 
-    const NAME = "plainViewHandler";
+    public const NAME = 'plainViewHandler';
 
-    public function isView($viewModel) {
+    public function isView($viewModel): bool {
         return $viewModel instanceof PlainViewModel;
     }
 
-    public function handleView($viewModel, RequestData $request) {
+    public function handleView($viewModel, RequestData $request): void {
         if ($viewModel instanceof PlainViewModel) {
             echo $viewModel->getContent();
         }

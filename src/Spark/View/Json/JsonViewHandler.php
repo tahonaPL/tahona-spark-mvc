@@ -20,13 +20,13 @@ use Spark\View\ViewModel;
 
 class JsonViewHandler extends ViewHandler {
 
-    const NAME = "jsonViewHandler";
+    public const NAME = 'jsonViewHandler';
 
-    public function isView($viewModel) {
+    public function isView($viewModel): bool {
         return $viewModel instanceof JsonViewModel;
     }
 
-    public function handleView($viewModel, RequestData $request) {
+    public function handleView($viewModel, RequestData $request): void {
         ResponseHelper::setCode(HttpCode::OK);
         ResponseHelper::setContentType(ContentType::APPLICATION_JSON);
 

@@ -13,8 +13,8 @@ use Spark\Core\Routing\RequestData;
 
 abstract class ViewHandler {
 
-    abstract public function isView($viewModel);
+    abstract public function isView($viewModel) : bool ;
 
-    abstract public function handleView($viewModel, RequestData $request);
+    abstract public function handleView($viewModel, RequestData $request) : void;
 
 }

@@ -103,7 +103,7 @@ class SmartyViewHandler extends ViewHandler {
         }
     }
 
-    public function isView($viewModel) {
+    public function isView($viewModel): bool {
         return $viewModel instanceof ViewModel;
     }
 
@@ -112,7 +112,7 @@ class SmartyViewHandler extends ViewHandler {
      * @param RequestData $request
      * @throws SmartyException
      */
-    public function handleView($viewModel, RequestData $request) {
+    public function handleView($viewModel, RequestData $request): void {
         $this->smarty->setCacheId($this->cacheIdPrefix . '' . $this->getLang());
 
         /** @var ViewModel $viewModel */
