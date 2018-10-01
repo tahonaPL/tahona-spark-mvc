@@ -159,7 +159,7 @@ class FluentIterables {
         $array = $this->collection;
         $array[] = $element;
 
-        return self::of($array);;
+        return self::of($array);
     }
 
     /**

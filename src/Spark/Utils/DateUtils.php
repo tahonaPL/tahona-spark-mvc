@@ -11,8 +11,12 @@ class DateUtils {
         return new DateTime();
     }
 
-    public static function isAfter(DateTime $date, DateTime $afterDate): bool {
-        return $date > $afterDate;
+    public static function getLaterDate(DateTime $date1, DateTime $date2): DateTime {
+        return self::isAfter($date1, $date2) ? $date1 : $date2;
+    }
+
+    public static function isAfter(DateTime $date1, DateTime $date2): bool {
+        return $date1 > $date2;
     }
 
     public static function isAfterEqual(DateTime $date, DateTime $afterDate): bool {
@@ -53,8 +57,9 @@ class DateUtils {
         return date_diff($from, $to)->y;
     }
 
-    public static function setTime($hours, $minuts, $seconds) : DateTime{
+    public static function setTime($hours, $minuts, $seconds): DateTime {
         return self::now()
             ->setTime($hours, $minuts, $seconds);
     }
+
 }

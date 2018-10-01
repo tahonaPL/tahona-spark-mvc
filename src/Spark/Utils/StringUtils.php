@@ -13,7 +13,7 @@ final class StringUtils {
     private function __construct() {
     }
 
-    public static function startsWith($text, $prefix) {
+    public static function startsWith($text, $prefix): bool {
         return strpos($text, $prefix) === 0;
     }
 
@@ -103,33 +103,33 @@ final class StringUtils {
         return null;
     }
 
-    public static function wordWrap($value, $breakCharacter, $length) {
+    public static function wordWrap($value, $breakCharacter, $length): string {
         return wordwrap($value, $length, $breakCharacter, true);
     }
 
 
-    public static function capitalize($string) {
+    public static function capitalize($string): string {
         return self::betterUcFirst(self::trim($string));
     }
 
 
-    private static function betterUcFirst($in) {
-        $x = explode(" ", $in);
-        $x[0] = mb_convert_case($x[0], MB_CASE_TITLE, "UTF-8");
-        return implode(" ", $x);
+    private static function betterUcFirst($in): string {
+        $x = explode(' ', $in);
+        $x[0] = mb_convert_case($x[0], MB_CASE_TITLE, 'UTF-8');
+        return implode(' ', $x);
 
     }
 
 
-    public static function length($value) {
+    public static function length($value): int {
         return strlen($value);
     }
 
-    public static function lowerCase($str) {
+    public static function lowerCase($str): string {
         return strtolower($str);
     }
 
-    public static function upperCase($str) {
+    public static function upperCase($str): string {
         return strtoupper($str);
     }
 
