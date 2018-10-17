@@ -83,7 +83,7 @@ class Functions {
      * @return \Closure
      */
     public static function none() {
-        return function($x) {
+        return function ($x) {
 
         };
     }
@@ -91,6 +91,12 @@ class Functions {
     public static function splObjectHash() {
         return function ($x) {
             return spl_object_hash($x);
+        };
+    }
+
+    public static function executeOn(object $obj, string $method): \Closure{
+        return function ($x) use ($obj, $method) {
+            return Objects::invokeMethod($obj, $method, [$x]);
         };
     }
 

@@ -38,8 +38,8 @@ final class Collections {
         }
     }
 
-    public static function size(array $collection) {
-        return count($collection);
+    public static function size(array $collection) : int {
+        return \count($collection);
     }
 
     public static function isNotEmpty(?array $collection): bool {

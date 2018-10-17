@@ -62,4 +62,8 @@ class DateUtils {
             ->setTime($hours, $minuts, $seconds);
     }
 
+    public static function compare(DateTime $date1, DateTime $date2): int {
+        return $date1->getTimestamp() - $date2->getTimestamp();
+    }
+
 }
