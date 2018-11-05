@@ -6,7 +6,7 @@
  * Time: 20:18
  */
 
-namespace Spark\Core\Annotation;
+namespace Spark\Cache\Annotation;
 
 use Doctrine\Common\Annotations\Annotation\Target;
 
@@ -18,9 +18,9 @@ use Doctrine\Common\Annotations\Annotation\Target;
 final class Cache {
 
     /** @var string */
-    public $cache = "cache";
+    public $cache = 'cache';
     /** @var string */
-    public $key = "";
+    public $key = '';
     /**
      * @var integer
      */

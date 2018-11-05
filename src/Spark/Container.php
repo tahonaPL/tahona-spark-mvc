@@ -2,14 +2,14 @@
 
 namespace Spark;
 
-use Spark\Cache\Cache;
-use Spark\Cache\Service\CacheableServiceBeanProxy;
 use Spark\Common\Collection\FluentIterables;
 use Spark\Common\IllegalStateException;
 use Spark\Common\Type\Orderable;
 use Spark\Core\Definition\BeanConstructorFactory;
 use Spark\Core\Definition\BeanDefinition;
+use Spark\Core\Definition\BeanFactory;
 use Spark\Core\Definition\BeanProxy;
+use Spark\Core\Definition\SimpleBeanFactory;
 use Spark\Core\Definition\ToInjectObserver;
 use Spark\Core\Library\Annotations;
 use Spark\Core\Service\ServiceHelper;
@@ -32,6 +32,13 @@ class Container {
 
     private $waitingList = array();
 
+    private $beanFactories = [];
+    private $defaultBeanFactory;
+
+    public function __construct() {
+        $this->defaultBeanFactory = new SimpleBeanFactory();
+    }
+
     public function registerObj($obj) {
         $this->register(lcfirst(Objects::getSimpleClassName($obj)), $obj);
     }
@@ -42,7 +49,7 @@ class Container {
 
         if (ReflectionUtils::hasConstructParameters($reflectionClass)) {
             $methodParameters = FluentIterables::of($reflectionClass->getConstructor()->getParameters())
-                ->convertToMap(Functions::field("name"))
+                ->convertToMap(Functions::field('name'))
                 ->map(function ($param) {
                     return $param->getClass();
                 })
@@ -58,19 +65,9 @@ class Container {
     }
 
     private function getCreateBean($class) {
-        $bean = new $class;
-
-        $cacheDefinition = array();
-        ReflectionUtils::handleMethodAnnotation($bean, Annotations::CACHE, function ($bean, $reflectionProperty, $annotation) use (&$cacheDefinition) {
-            /** @var Cache $annotation */
-            /** @var \ReflectionMethod $reflectionProperty */
-            $cacheDefinition[$reflectionProperty->getName()] = $annotation;
-        });
-
-        if (Collections::isNotEmpty($cacheDefinition)) {
-            return new CacheableServiceBeanProxy($bean);
-        }
-        return $bean;
+        /** @var BeanFactory $beanFactory */
+        $beanFactory = Collections::getValueOrDefault($this->beanFactories, $class, $this->defaultBeanFactory);
+        return $beanFactory->createNewBean($class);
     }
 
     public function register($name, $object, $replace = false, $canBeReplaced = false) {
@@ -83,7 +80,7 @@ class Container {
             $waiting = $this->initLifeCycle($beanDefinition);
 
             if (Collections::isNotEmpty($waiting)) {
-                throw new IllegalStateException("Problem with injection");
+                throw new IllegalStateException('Problem with injection');
             }
         }
     }
@@ -254,7 +251,7 @@ class Container {
      * @return int
      */
     private function getName($waitingBeansNames = array()) {
-        return StringUtils::join(",", $waitingBeansNames);
+        return StringUtils::join(',', $waitingBeansNames);
     }
 
     private function updateRelations(string $newBeanName) {
@@ -448,7 +445,7 @@ class Container {
      * @return BeanDefinition
      */
     private function getBeanDefinition($name) {
-        Asserts::checkState($this->hasBean($name), "No bean with name: " . $name);
+        Asserts::checkState($this->hasBean($name), 'No bean with name: ' . $name);
         return $this->beanContainer[$name];
     }
 
@@ -500,6 +497,10 @@ class Container {
             ->get();
 
         return $waitingList;
+    }
+
+    public function registerFactory($class, BeanFactory $factory) {
+        $this->beanFactories[$class] =  $factory;
     }
 
 }

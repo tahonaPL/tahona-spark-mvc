@@ -18,12 +18,12 @@ abstract class PrefixedRouting {
     /**
      * @return array
      */
-    protected abstract function  getDefaultRoutes();
+    abstract protected function  getDefaultRoutes();
 
     /**
      * @return string
      */
-    protected  abstract function  getDefaultPrefix();
+    abstract protected function  getDefaultPrefix();
 
     public function getRouting($prefix = null) {
         $defaultRoutes = $this->getDefaultRoutes();

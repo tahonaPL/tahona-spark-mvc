@@ -5,7 +5,7 @@ namespace Spark\Core\Annotation\Handler;
 use Spark\Cache\Service\CacheableServiceBeanProxy;
 use Spark\Cache\Service\CacheService;
 use Spark\Common\Optional;
-use Spark\Core\Annotation\Cache;
+use Spark\Cache\Annotation\Cache;
 use Spark\Core\Annotation\Handler\AnnotationHandler;
 use Spark\Core\Definition\BeanConstructorFactory;
 use Spark\Core\Library\Annotations;

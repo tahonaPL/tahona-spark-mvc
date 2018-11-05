@@ -16,7 +16,7 @@ use Spark\Utils\Collections;
 
 class RoutingDefinitionConverter {
 
-    public function toDefinitions($routing = array()) {
+    public function toDefinitions(array $routing = array()) {
         $result = [];
         foreach ($routing as $key => $value) {
             $definition = new RoutingDefinition();

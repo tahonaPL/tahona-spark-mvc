@@ -656,6 +656,17 @@ class SomeListener {
 
 ```
 
+### AnnotationHandler ### 
+Add Your own annotation 
+
+
+``` 
+class NewAnnotationHandler extends AnnotationHandler{
+    ...
+}
+
+```
+
 
 
 ### Installation - Composer - Speed up ###

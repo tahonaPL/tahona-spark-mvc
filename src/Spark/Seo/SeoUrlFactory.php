@@ -18,21 +18,21 @@ use Spark\Utils\StringUtils;
 
 class SeoUrlFactory {
 
-    const SEO_CLASS = "WithSeoUrl";
+    const SEO_CLASS = 'WithSeoUrl';
 
     public static function getSeo($parts = array()) {
         $params = Collections::builder($parts)
             ->map(StringFunctions::trim())
-            ->map(StringFunctions::replace(StringUtils::SPACE, "-"))
+            ->map(StringFunctions::replace(StringUtils::SPACE, '-'))
             ->map(StringFunctions::lowercase())
             ->map(StringFunctions::escapeSpecialChars())
             ->get();
 
-        return StringUtils::join("/", $params);
+        return StringUtils::join('/', $params);
     }
 
     public static function getSeoUrlFromSeoObject($seoObject) {
-        Asserts::checkArgument(false == Objects::isArray($seoObject), "Object or string needed");
+        Asserts::checkArgument(false == Objects::isArray($seoObject), 'Object or string needed');
         Asserts::notNull($seoObject);
 
         $class_uses = class_uses($seoObject);
@@ -42,9 +42,9 @@ class SeoUrlFactory {
         });
 
         if ($anyMatch) {
-            return "/".$seoObject->getSeoUrl();
+            return '/' .$seoObject->getSeoUrl();
         } else {
-            return "";
+            return '';
         }
     }
 }

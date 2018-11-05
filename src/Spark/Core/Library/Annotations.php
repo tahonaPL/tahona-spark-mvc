@@ -11,7 +11,7 @@ namespace Spark\Core\Library;
 
 use Spark\Common\Exception\NotImplementedException;
 use Spark\Common\Optional;
-use Spark\Core\Annotation\Cache;
+use Spark\Cache\Annotation\Cache;
 use Spark\Utils\Collections;
 use Spark\Utils\Functions;
 use Spark\Utils\Objects;
@@ -30,7 +30,6 @@ class Annotations {
     const OVERRIDE_INJECT           = "Spark\\Core\\Annotation\\OverrideInject";
     const PROFILE                   = "Spark\\Core\\Annotation\\Profile";
     const BEAN                      = "Spark\\Core\\Annotation\\Bean";
-    const CACHE                     = "Spark\\Core\\Annotation\\Cache";
     const DEBUG                     = "Spark\\Core\\Annotation\\Debug";
     const ENABLE_APCU_BEAN_CACHE    = "Spark\\Core\\Annotation\\EnableApcuBeanCache";
     const PATH                      = "Spark\\Core\\Annotation\\Path";
@@ -58,15 +57,5 @@ class Annotations {
         return Collections::builder(ReflectionUtils::getClassAnnotation($className, self::OVERRIDE_INJECT))
             ->convertToMap(Functions::field("oldName"))
             ->get();
-    }
-
-    public static function hasCacheAnnotations($class) {
-        $cacheDefinition = [];
-        ReflectionUtils::handleMethodAnnotation($class, Annotations::CACHE, function ($class, $reflectionProperty, $Annotation) use (&$cacheDefinition) {
-            /** @var Cache $Annotation */
-            /** @var \ReflectionMethod $reflectionProperty */
-            $cacheDefinition[$reflectionProperty->getName()] = $Annotation;
-        });
-        return Collections::isNotEmpty($cacheDefinition);
     }
 }

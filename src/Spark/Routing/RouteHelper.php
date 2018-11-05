@@ -62,10 +62,7 @@ class RouteHelper {
     private $params = array();
     private $roles = array();
 
-    /**
-     * @return RouteHelper
-     */
-    public static function create() {
+    public static function create() : RouteHelper{
         return new RouteHelper();
     }
 
@@ -74,8 +71,8 @@ class RouteHelper {
      * @return $this
      */
     public function withController($controllerPackage) {
-        $controllerPackage= StringUtils::replace($controllerPackage, "/", "\\");
-        $this->controller = StringUtils::replace($controllerPackage, ".", "\\");
+        $controllerPackage= StringUtils::replace($controllerPackage, '/', "\\");
+        $this->controller = StringUtils::replace($controllerPackage, '.', "\\");
         return $this;
     }
 
@@ -128,7 +125,7 @@ class RouteHelper {
         $path = $this->buildFullPath($this->basePath);
 
         if (Collections::hasElement($this->paths, $path))  {
-            throw new IllegalArgumentException("Routing already exist: ". $path);
+            throw new IllegalArgumentException('Routing already exist: ' . $path);
         }
 
         $arr = array();
@@ -167,7 +164,7 @@ class RouteHelper {
      * @return mixed
      */
     private function buildFullPath($basePath) {
-        return StringUtils::replace($basePath.$this->path, "//", "/");
+        return StringUtils::replace($basePath.$this->path, '//', '/');
     }
 
 }

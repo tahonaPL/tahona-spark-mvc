@@ -2,8 +2,6 @@
 
 namespace Spark;
 
-use Doctrine\Common\Annotations\AnnotationReader;
-use Doctrine\Common\Annotations\SimpleAnnotationReader;
 use ErrorException;
 use Spark\Cache\ApcuBeanCache;
 use Spark\Cache\BeanCache;
@@ -14,6 +12,7 @@ use Spark\Core\Annotation\Handler\EnableApcuAnnotationHandler;
 use Spark\Core\Command\Command;
 use Spark\Core\Command\Input\InputInterface;
 use Spark\Core\Command\Output\OutputInterface;
+use Spark\Core\CoreConfig;
 use Spark\Core\Error\ExceptionResolver;
 use Spark\Core\Error\GlobalErrorHandler;
 use Spark\Core\Event\EventBus;
@@ -21,7 +20,6 @@ use Spark\Core\Event\Handler\SubscribeAnnotationHandler;
 use Spark\Core\Filler\BeanFiller;
 use Spark\Core\Filler\CookieFiller;
 use Spark\Core\Filler\FileObjectFiller;
-use Spark\Core\Filler\Filler;
 use Spark\Core\Filler\MultiFiller;
 use Spark\Core\Filler\RequestFiller;
 use Spark\Core\Filler\SessionFiller;
@@ -36,7 +34,6 @@ use Spark\Core\Lang\LangResourcePath;
 use Spark\Core\Library\Annotations;
 use Spark\Core\Library\BeanLoader;
 use Spark\Core\Processor\InitAnnotationProcessors;
-use Spark\Core\Processor\Loader\CacheContextLoader;
 use Spark\Core\Processor\Loader\StaticClassContextLoader;
 use Spark\Core\Provider\BeanProvider;
 use Spark\Core\Routing\Factory\RequestDataFactory;
@@ -48,7 +45,6 @@ use Spark\Http\Request;
 use Spark\Http\RequestProvider;
 use Spark\Http\Response;
 use Spark\Http\Session\BaseSessionProvider;
-use Spark\Http\Session\SessionProvider;
 use Spark\Http\Session\SessionProviderProxy;
 use Spark\Http\Utils\RequestUtils;
 use Spark\Routing\RoutingInfo;
@@ -69,7 +65,6 @@ use Spark\View\Smarty\SmartyPlugins;
 use Spark\View\Smarty\SmartyViewHandler;
 use Spark\View\ViewHandlerProvider;
 use Spark\View\ViewModel;
-use Spark\Core\CoreConfig;
 
 class Engine {
 

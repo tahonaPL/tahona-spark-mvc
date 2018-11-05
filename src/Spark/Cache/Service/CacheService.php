@@ -19,7 +19,7 @@ use Spark\Utils\StringFunctions;
 use Spark\Utils\StringUtils;
 
 class CacheService {
-    const NAME = "cacheService";
+    const NAME = 'cacheService';
 
     /**
      * @Inject()
@@ -33,14 +33,14 @@ class CacheService {
 
     public function addDefinition($className, $methodName, $cache, $key, $time = null) {
         $definition = [];
-        $definition["cache"] = $cache;
-        $definition["key"] = $key;
+        $definition['cache'] = $cache;
+        $definition['key'] = $key;
 
         if (Objects::isNotNull($time)) {
-            $definition["time"] = $time;
+            $definition['time'] = $time;
         }
 
-        $key = $className . "#" . $methodName;
+        $key = $className . '#' . $methodName;
         $this->cacheDefinitions[$key] = $definition;
     }
 
@@ -55,7 +55,7 @@ class CacheService {
                 $cachedResults = $this->localCache[$key];
             } else {
                 /** @var CachedResult $cachedResults */
-                $cacheName = $definition["cache"];
+                $cacheName = $definition['cache'];
                 $cacheInstance = $this->cacheProvider->getCache($cacheName);
                 $cachedResults = $cacheInstance->get($key);
 
@@ -73,16 +73,16 @@ class CacheService {
 
     private function buildKey($key, $arguments = array()) {
         $cleared = Optional::of($key)
-            ->map(StringFunctions::replace("{", " "))
-            ->map(StringFunctions::replace("}", ""))
+            ->map(StringFunctions::replace('{', ' '))
+            ->map(StringFunctions::replace('}', ''))
             ->map(StringFunctions::trim())
             ->get();
 
-        $splitted = StringUtils::split($cleared, " ");
+        $splitted = StringUtils::split($cleared, ' ');
 
-        $key = "";
+        $key = '';
         foreach ($splitted as $val) {
-            $accessor = StringUtils::split($val, ".");
+            $accessor = StringUtils::split($val, '.');
             $size = Collections::size($accessor);
 
             $objIndex = $accessor[0];
@@ -105,7 +105,7 @@ class CacheService {
         $definition = $this->getDefinition($methodName);
         $key = $methodName.$this->getKey($arguments, $definition);
 
-        $cacheName = $definition["cache"];
+        $cacheName = $definition['cache'];
         $this->cacheProvider->getCache($cacheName)->put($key, new CachedResult(DateUtils::now(), $result));
         return $result;
     }
@@ -124,11 +124,11 @@ class CacheService {
      * @return string
      */
     private function getKey($arguments, $definition) {
-        return $this->buildKey($definition["key"], $arguments);
+        return $this->buildKey($definition['key'], $arguments);
     }
 
     private function isNotExpired($definition, CachedResult $cachedResults) {
-        $time = Collections::getValue($definition, "time");
+        $time = Collections::getValue($definition, 'time');
         if (Objects::isNotNull($time)) {
             $expireDate = $cachedResults->getCreateDate()->modify("+ $time minutes");
 

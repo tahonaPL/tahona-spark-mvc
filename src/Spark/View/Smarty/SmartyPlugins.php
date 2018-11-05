@@ -17,6 +17,7 @@ use Spark\Routing;
 use Spark\Seo\SeoUrlFactory;
 use Spark\Utils\Collections;
 use Spark\Utils\StringUtils;
+use Spark\Utils\UrlUtils;
 
 class SmartyPlugins {
     const NAME = 'smartyPlugins';
@@ -112,9 +113,9 @@ class SmartyPlugins {
         $newPath = $this->routing->resolveRoute($path, Collections::getValueOrDefault($params, 'params', array()));
 
         if (StringUtils::isNotBlank($newPath)) {
-            return $newPath;
+            return UrlUtils::getPath($newPath);
         }
-        return $path;
+        return UrlUtils::getPath($path) ;
     }
 
 } 

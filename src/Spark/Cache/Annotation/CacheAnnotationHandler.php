@@ -6,11 +6,13 @@
  * Time: 03:03
  */
 
-namespace Spark\Core\Annotation\Handler;
+namespace Spark\Cache\Annotation;
 
 
 use ReflectionMethod;
+use Spark\Cache\Factory\CachedBeanFactory;
 use Spark\Cache\Service\CacheService;
+use Spark\Core\Annotation\Handler\AnnotationHandler;
 use Spark\Core\Library\Annotations;
 use Spark\Utils\Collections;
 use Spark\Utils\Functions;
@@ -28,9 +30,8 @@ class CacheAnnotationHandler extends AnnotationHandler {
     private $cacheService;
 
     public function __construct() {
-        $this->annotationName = Annotations::CACHE;
+        $this->annotationName = "Spark\\Cache\\Annotation\\Cache";
     }
-
 
     public function handleMethodAnnotations($annotations = array(), $class, ReflectionMethod $methodReflection) {
 
@@ -40,6 +41,9 @@ class CacheAnnotationHandler extends AnnotationHandler {
 
             $cacheService = $this->getCacheService();
             foreach ($cacheAnnotation as $annotation) {
+
+                $this->getContainer()->registerFactory($class, new CachedBeanFactory());
+
                 $cacheService->addDefinition(
                     $class,
                     $methodReflection->name,
@@ -48,10 +52,8 @@ class CacheAnnotationHandler extends AnnotationHandler {
                     $annotation->time
                 );
             }
-
         }
     }
-
 
     private function getClassName() {
         return Functions::getClassName();

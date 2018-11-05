@@ -5,7 +5,7 @@ namespace Spark\Core\Annotation\Handler;
 use Spark\Cache\Service\CacheableServiceBeanProxy;
 use Spark\Cache\Service\CacheService;
 use Spark\Common\Optional;
-use Spark\Core\Annotation\Cache;
+use Spark\Cache\Annotation\Cache;
 use Spark\Core\Annotation\Handler\AnnotationHandler;
 use Spark\Core\Library\Annotations;
 use Spark\Utils\Collections;
@@ -33,21 +33,8 @@ class ControllerAnnotationHandler extends AnnotationHandler {
 
         if ($annotation->isPresent()) {
             $className = $classReflection->getName();
-
-            $this->getContainer()->register($className, $this->getCreateBean($class));
+            $this->getContainer()->registerClass($className, $class);
         }
     }
-
-    private function getCreateBean($class) {
-        $bean = new $class;
-
-        if (Annotations::hasCacheAnnotations($class)) {
-            return new CacheableServiceBeanProxy($bean);
-        } else {
-            return new $bean;
-        }
-
-    }
-
 
 }
