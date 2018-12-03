@@ -9,10 +9,8 @@
 namespace Spark\Common\Exception;
 
 
-use Spark\Utils\Objects;
-
 class NotImplementedException extends AbstractException {
     protected function getAlternativeMessage() {
-        return "Method is not implemented.";
+        return 'Method is not implemented.';
     }
 }

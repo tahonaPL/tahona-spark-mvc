@@ -141,8 +141,8 @@ class FluentIterables {
      * @return FluentIterables
      */
     public function each(\Closure $func) {
-        foreach ($this->collection as $element) {
-            $func($element);
+        foreach ($this->collection as $k=>$element) {
+            $func($element, $k);
         }
         return $this;
     }
