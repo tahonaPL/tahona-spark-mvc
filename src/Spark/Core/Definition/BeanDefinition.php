@@ -15,8 +15,8 @@ use Spark\Utils\StringUtils;
  */
 class BeanDefinition {
 
-    const D_BEAN = "bean";
-    const D_NAME = "name";
+    public const D_BEAN = 'bean';
+    public const D_NAME = 'name';
 
     private $name;
     private $bean;

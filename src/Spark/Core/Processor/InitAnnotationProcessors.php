@@ -55,6 +55,8 @@ class InitAnnotationProcessors extends AnnotationHandler {
             new SmartyViewConfigurationAnnotationHandler(),
             new DebugAnnotationHandler(),
             new ControllerAnnotationHandler(),
+
+            new CacheAnnotationHandler()
         );
 
         $this->classHandlers = [
@@ -71,15 +73,15 @@ class InitAnnotationProcessors extends AnnotationHandler {
 
         /** @var AnnotationHandler $handler */
         foreach ($this->handlers as $handler) {
-            $this->updateHanlder($handler);
+            $this->updateHandler($handler);
         }
 
         foreach ($this->classHandlers as $handler) {
-            $this->updateHanlder($handler);
+            $this->updateHandler($handler);
         }
 
         foreach ($this->postHandlers as $handler) {
-            $this->updateHanlder($handler);
+            $this->updateHandler($handler);
         }
 
         $this->annotationReader = ReflectionUtils::getReaderInstance();
@@ -87,13 +89,13 @@ class InitAnnotationProcessors extends AnnotationHandler {
 
     public function addHandler($handler) {
         Collections::addAll($this->handlers, array($handler));
-        $this->updateHanlder($handler);
+        $this->updateHandler($handler);
     }
 
     /**
      * @param $handler
      */
-    private function updateHanlder(Handler $handler): void {
+    private function updateHandler(Handler $handler): void {
         $handler->setConfig($this->config);
         $handler->setRouting($this->routing);
         $handler->setContainer($this->container);
@@ -101,7 +103,7 @@ class InitAnnotationProcessors extends AnnotationHandler {
 
     public function addPostHandler($handler) {
         Collections::addAll($this->postHandlers, array($handler));
-        $this->updateHanlder($handler);
+        $this->updateHandler($handler);
     }
 
     public function processAnnotations($class) {
@@ -232,7 +234,6 @@ class InitAnnotationProcessors extends AnnotationHandler {
     public function processClass(ReflectionClass $rFClass) {
         /** @var ClassHandler $classHandler */
         foreach ($this->classHandlers as $classHandler) {
-
             if ($classHandler->supports($rFClass)) {
                 $classHandler->handleClass($rFClass);
             }

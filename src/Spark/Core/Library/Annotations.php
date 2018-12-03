@@ -19,26 +19,26 @@ use Spark\Utils\ReflectionUtils;
 
 class Annotations {
 
-    const CONTROLLER                = "Spark\\Core\\Annotation\\Controller";
-    const REST_CONTROLLER           = "Spark\\Core\\Annotation\\RestController";
-    const SERVICE                   = "Spark\\Core\\Annotation\\Service";
-    const REPOSITORY                = "Spark\\Core\\Annotation\\Repository";
-    const CONFIGURATION             = "Spark\\Core\\Annotation\\Configuration";
-    const COMPONENT                 = "Spark\\Core\\Annotation\\Component";
-    const SCOPE                     = "Spark\\Core\\Annotation\\Scope";
-    const INJECT                    = "Spark\\Core\\Annotation\\Inject";
-    const OVERRIDE_INJECT           = "Spark\\Core\\Annotation\\OverrideInject";
-    const PROFILE                   = "Spark\\Core\\Annotation\\Profile";
-    const BEAN                      = "Spark\\Core\\Annotation\\Bean";
-    const DEBUG                     = "Spark\\Core\\Annotation\\Debug";
-    const ENABLE_APCU_BEAN_CACHE    = "Spark\\Core\\Annotation\\EnableApcuBeanCache";
-    const PATH                      = "Spark\\Core\\Annotation\\Path";
-    const SMARTY_VIEW_CONFIGURATION = "Spark\\Core\\Annotation\\SmartyViewConfiguration";
-    const POST_CONSTRUCT            = "Spark\\Core\\Annotation\\PostConstruct";
+    public const CONTROLLER                = "Spark\\Core\\Annotation\\Controller";
+    public const REST_CONTROLLER           = "Spark\\Core\\Annotation\\RestController";
+    public const SERVICE                   = "Spark\\Core\\Annotation\\Service";
+    public const REPOSITORY                = "Spark\\Core\\Annotation\\Repository";
+    public const CONFIGURATION             = "Spark\\Core\\Annotation\\Configuration";
+    public const COMPONENT                 = "Spark\\Core\\Annotation\\Component";
+    public const SCOPE                     = "Spark\\Core\\Annotation\\Scope";
+    public const INJECT                    = "Spark\\Core\\Annotation\\Inject";
+    public const OVERRIDE_INJECT           = "Spark\\Core\\Annotation\\OverrideInject";
+    public const PROFILE                   = "Spark\\Core\\Annotation\\Profile";
+    public const BEAN                      = "Spark\\Core\\Annotation\\Bean";
+    public const DEBUG                     = "Spark\\Core\\Annotation\\Debug";
+    public const ENABLE_APCU_BEAN_CACHE    = "Spark\\Core\\Annotation\\EnableApcuBeanCache";
+    public const PATH                      = "Spark\\Core\\Annotation\\Path";
+    public const SMARTY_VIEW_CONFIGURATION = "Spark\\Core\\Annotation\\SmartyViewConfiguration";
+    public const POST_CONSTRUCT            = "Spark\\Core\\Annotation\\PostConstruct";
 
     public static function getScopeByClass($className) {
         return Optional::ofNullable(ReflectionUtils::getClassAnnotation($className, self::SCOPE))
-            ->map(Functions::field("value"))
+            ->map(Functions::field('value'))
             ->getOrNull();
     }
 
@@ -55,7 +55,7 @@ class Annotations {
      */
     public static function getOverrideInjections($className) {
         return Collections::builder(ReflectionUtils::getClassAnnotation($className, self::OVERRIDE_INJECT))
-            ->convertToMap(Functions::field("oldName"))
+            ->convertToMap(Functions::field('oldName'))
             ->get();
     }
 }
