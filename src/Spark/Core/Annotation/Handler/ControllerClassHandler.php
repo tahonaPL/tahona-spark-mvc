@@ -23,7 +23,7 @@ class ControllerClassHandler extends ClassHandler {
     public function handleClass(ReflectionClass $classReflection) {
         $className = $classReflection->getName();
         $obj = new $className();
-        $this->getContainer()->register($className, $obj);
+        $this->getContainer()->addBean($className, $obj);
     }
 
     /**

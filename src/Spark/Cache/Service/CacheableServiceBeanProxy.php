@@ -27,7 +27,6 @@ class CacheableServiceBeanProxy implements BeanProxy {
     private $cacheService;
 
     /**
-     *
      * @param $bean
      */
     public function __construct($bean) {

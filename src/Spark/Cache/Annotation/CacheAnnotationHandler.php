@@ -42,15 +42,21 @@ class CacheAnnotationHandler extends AnnotationHandler {
             $cacheService = $this->getCacheService();
             foreach ($cacheAnnotation as $annotation) {
 
-                $this->getContainer()->registerFactory($class, new CachedBeanFactory());
 
-                $cacheService->addDefinition(
-                    $class,
-                    $methodReflection->name,
-                    $annotation->cache,
-                    $annotation->key,
-                    $annotation->time
-                );
+                if (Objects::isNotNull($cacheService)) {
+                    //will be executed as post action
+                    $cacheService->addDefinition(
+                        $class,
+                        $methodReflection->name,
+                        $annotation->cache,
+                        $annotation->key,
+                        $annotation->time
+                    );
+                } else {
+                    // init action
+                    $this->getContainer()->registerFactory($class, new CachedBeanFactory());
+
+                }
             }
         }
     }
@@ -66,8 +72,10 @@ class CacheAnnotationHandler extends AnnotationHandler {
      */
     private function getCacheService() {
         /** @var CacheService $securityManager */
-        if (Objects::isNull($this->cacheService)) {
-            $this->cacheService = $this->getContainer()->get(CacheService::NAME);
+        $container = $this->getContainer();
+
+        if (Objects::isNull($this->cacheService) && $container->hasBean(CacheService::NAME)) {
+            $this->cacheService = $container->get(  CacheService::NAME);
         }
         return $this->cacheService;
     }

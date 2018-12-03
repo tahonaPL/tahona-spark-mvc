@@ -247,7 +247,7 @@ class Engine {
 
         $validator = new AnnotationValidator($langResource, ReflectionUtils::getReaderInstance());
         $validator->addDefaultValidators();
-        $this->container->register('annotationValidator', $validator);
+        $this->container->addBean('annotationValidator', $validator);
 
         $this->container->registerObj($this->config);
         $this->container->registerObj($this->route);
@@ -463,7 +463,7 @@ class Engine {
     }
 
     private function register($beanName, $class) {
-        $this->container->register($beanName, $class, false, true);
+        $this->container->addBean($beanName, $class, false, true);
     }
 
 

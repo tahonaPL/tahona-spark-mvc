@@ -17,18 +17,18 @@ use Spark\Utils\StringUtils;
  */
 class Config {
 
-    const SECURITY_PARAM = "security.enabled";
-    const ERROR_HANDLING_ENABLED ="error.errorHandling" ;
+    public const SECURITY_PARAM = 'security.enabled';
+    public const ERROR_HANDLING_ENABLED = 'error.errorHandling';
 
-    const DEV = "dev";
-    const DEV_ENABLED = "dev.enable";
-    const DEV_XDEBUG = "dev.xdebug";
+    public const DEV = 'dev';
+    public const DEV_ENABLED = 'dev.enable';
+    public const DEV_XDEBUG = 'dev.xdebug';
 
-    const MAIL_FROM_TITLE_KEY = "mail.from.title";
-    const MAIL_FROM_EMAIL_KEY = "mail.from.email";
+    public const MAIL_FROM_TITLE_KEY = 'mail.from.title';
+    public const MAIL_FROM_EMAIL_KEY = 'mail.from.email';
 
-    const WEB_PAGE = "web.page";
-    const APCU_CACHE_ENABLED = "";
+    public const WEB_PAGE = 'web.page';
+    public const APCU_CACHE_ENABLED = '';
 
 
     private $cache = array();
@@ -52,7 +52,7 @@ class Config {
     }
 
     public function add($code, $value = array()) {
-        Asserts::checkArray($value, "Value must be array");
+        Asserts::checkArray($value, 'Value must be array');
 
         if (isset($this->cache[$code])) {
             $this->cache[$code] = Collections::builder($this->cache[$code])
@@ -80,7 +80,7 @@ class Config {
     private function cacheProperty($prefix, $properties) {
         if (Objects::isArray($properties)) {
             foreach ($properties as $key => $prop) {
-                $joined = StringUtils::join(".", array($prefix, $key), true);
+                $joined = StringUtils::join('.', array($prefix, $key), true);
                 $this->cacheProperty($joined, $prop);
             }
         }
