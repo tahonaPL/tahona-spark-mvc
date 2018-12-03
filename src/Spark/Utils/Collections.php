@@ -38,7 +38,7 @@ final class Collections {
         }
     }
 
-    public static function size(array $collection) : int {
+    public static function size(array $collection): int {
         return \count($collection);
     }
 
@@ -289,7 +289,7 @@ final class Collections {
     public static function filter($array, \Closure $func) {
         $resultArray = array();
         foreach ($array as $k => $el) {
-            if ($func($el)) {
+            if ($func($el, $k)) {
                 $resultArray[$k] = $el;
             }
         }
@@ -350,7 +350,7 @@ final class Collections {
         return $array;
     }
 
-    public static function asArray($array = array()) : array {
+    public static function asArray($array = array()): array {
         if (Objects::isArray($array)) {
             return $array;
         }
