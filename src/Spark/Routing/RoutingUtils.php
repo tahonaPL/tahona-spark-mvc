@@ -5,6 +5,7 @@
  * Date: 19.01.15
  * Time: 21:07
  */
+
 namespace Spark\Routing;
 
 use Spark\Common\Optional;
@@ -23,47 +24,49 @@ class RoutingUtils {
         return StringUtils::contains($route, '}') && StringUtils::contains($route, '{');
     }
 
-    public static function hasExpressionParams($route, $urlPath, $routeDefinitionParams = array()) {
+    public static function hasExpressionParams($route, $urlPath, $routeDefinitionParams = array()): bool {
         if (StringUtils::isBlank($route) || StringUtils::isBlank($urlPath)) {
             return false;
         }
-        
-        $exRoute = explode('/', $route);
-        $exUrlPath = explode('/', $urlPath);
+
+        $routeParts = explode('/', $route);
+        $urlPathParts = explode('/', $urlPath);
 
         $paramsCount = count($routeDefinitionParams);
         $hasPathParams = $paramsCount > 0;
-        
-        $routeElementsCount = count($exRoute);
-        $routeStaticElementsCount = $routeElementsCount - $paramsCount;
-        
+
+        $definitionRouteElementsCount = count($routeParts);
+        $routeStaticElementsCount = $definitionRouteElementsCount - $paramsCount;
+
         if (!$hasPathParams) {
             return false;
         }
-        
-        $isPathElementsCountEqual = ($routeElementsCount === count($exUrlPath));
-        
-        if ($isPathElementsCountEqual) {
-            for ($i = 0; $i < $routeElementsCount; $i ++) {
-                $routeExpressionKey = $exRoute[$i];
-                $urlElement = $exUrlPath[$i];
-                
+
+        $hasEndDefinedParam = self::hasEndDefinedParam($routeDefinitionParams);
+
+        $isPathElementsCountEqual = ($definitionRouteElementsCount === count($urlPathParts));
+
+        if ($isPathElementsCountEqual || $hasEndDefinedParam) {
+            for ($i = 0; $i < $definitionRouteElementsCount; $i++) {
+                $routeExpressionKey = $routeParts[$i];
+                $urlElement = $urlPathParts[$i];
+
                 if (StringUtils::equalsIgnoreCase($urlElement, $routeExpressionKey)) {
-                    $routeStaticElementsCount --;
+                    $routeStaticElementsCount--;
                 } else if (!StringUtils::equalsIgnoreCase($urlElement, $routeExpressionKey)) {
                     $routeExpressionKey = self::clearRouteParamExpression($routeExpressionKey);
-                    
+
                     if (Collections::exist($routeDefinitionParams, $routeExpressionKey)) {
-                        $paramsCount --;
+                        $paramsCount--;
                     }
                 } else if (!StringUtils::equals($routeExpressionKey, $urlElement)) {
                     return false;
                 }
             }
-            
+
             return $paramsCount === 0 && $routeStaticElementsCount === 0;
         }
-        
+
         return false;
     }
 
@@ -78,21 +81,21 @@ class RoutingUtils {
         if (StringUtils::isNotBlank($arr->getPath())) {
             $pathErrors = array();
 
-            if (! StringUtils::startsWith($arr->getPath(), '/')) {
+            if (!StringUtils::startsWith($arr->getPath(), '/')) {
                 $pathErrors[] = 'routing.error.wrong.path';
             }
-            
+
             if (StringUtils::contains($arr->getPath(), '{')) {
                 if (Collections::isEmpty($arr->getParams())) {
                     $pathErrors[] = 'routing.error.path.missing.param';
                 }
             }
-            
+
             if (Collections::isNotEmpty($pathErrors)) {
                 $error['path'] = $pathErrors;
             }
         }
-        
+
         return $error;
     }
 
@@ -108,39 +111,47 @@ class RoutingUtils {
     public static function findRouteDefinition($routes = array(), $ignoreEmptyRequestMethod = true) {
         $requestMethod = RequestUtils::getMethod();
         $headers = RequestUtils::getHeaders();
-        
+
         /** @var RoutingDefinition $item */
-        
+
         foreach ($routes as $item) {
             $requestMethods = $item->getRequestMethods();
-            
+
             if (Collections::contains($requestMethod, $requestMethods)) {
                 $hasHeaders = Collections::isEmpty($item->getRequestHeaders());
                 if ($hasHeaders || Collections::containsAll($item->getRequestHeaders(), Collections::getKeys($headers))) {
                     return Optional::of($item);
                 }
             }
-            
+
             if ($ignoreEmptyRequestMethod && Collections::isEmpty($requestMethods)) {
                 return Optional::of($item);
             }
         }
-        
+
         return Optional::absent();
     }
 
+    /**
+     * Element has:
+     *  index - place of Param in url path
+     *  key -  key of param
+     *
+     * @param $parametrizedPath
+     * @return array
+     */
     public static function getParametrizedUrlKeys($parametrizedPath) {
         $val = Optional::of($parametrizedPath)->map(StringFunctions::replace("\\", '/'))
             ->map(StringFunctions::split('/'))
             ->orElse(array());
-        
+
         return Collections::stream($val)->filter(StringPredicates::notBlank())
             ->filter(function ($x) {
-            return RoutingUtils::hasExpression($x);
-        })
+                return RoutingUtils::hasExpression($x);
+            })
             ->map(function ($x) {
-            return RoutingUtils::clearRouteParamExpression($x);
-        })
+                return RoutingUtils::clearRouteParamExpression($x);
+            })
             ->get();
     }
 
@@ -148,12 +159,21 @@ class RoutingUtils {
         if (Collections::isEmpty($params)) {
             return $path;
         }
-        
+
         $newPath = $path;
         foreach ($params as $key => $value) {
             $newPath = StringUtils::replace($newPath, '{' . $key . '}', $value);
         }
-        
+
         return $newPath;
+    }
+
+    private static function hasEndDefinedParam(array $routeDefinitionParams): bool {
+        $count = \count($routeDefinitionParams);
+        if ($count > 0) {
+            $routeDefParamSchema = end($routeDefinitionParams);
+            return StringUtils::contains($routeDefParamSchema, '...');
+        }
+        return false;
     }
 } 

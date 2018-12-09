@@ -2,6 +2,7 @@
 
 namespace Spark;
 
+use foo\bar;
 use Spark\Common\IllegalStateException;
 use Spark\Core\Routing\Exception\RouteNotFoundException;
 use Spark\Core\Routing\RequestData;
@@ -25,31 +26,17 @@ class Routing {
 
     public const ROLES = 'roles';
     public const PARAMS = 'params';
-    private $routing = array();
-    private $parametrizedRouting = array();
-    private $definitions;
 
+    private $routing;
+    private $parametrizedRouting = array();
+
+    private $definitions;
     private $sessionProvider;
 
-
-    public function __construct($routing) {
+    public function __construct(array $routing) {
         $this->definitions = $routing;
-
-        //Check is key->definiton map or definitions array
-        if (isset($routing[0])) {
-            $tmpRouting = array();
-
-            Collections::builder($routing)
-                ->map(function ($e) use (&$tmpRouting) {
-                    $tmpRouting = array_replace($tmpRouting, $e);
-                });
-
-        } else {
-            $tmpRouting = $routing;
-            $this->routing = $tmpRouting;
-        }
-
-        $this->addAll($tmpRouting);
+        $this->routing = $routing;
+        $this->addAll($this->routing);
     }
 
     /**
@@ -58,7 +45,6 @@ class Routing {
      */
     public function createRequest($registeredHostPath = ''): RequestData {
         $urlPath = $this->getPath();
-
         $routeDefinition = $this->getDefinition($urlPath);
 
         $request = new RequestData($this->sessionProvider);
@@ -71,7 +57,6 @@ class Routing {
         $request->setUrlParams($urlParams);
 
         $this->fillModuleData($request, $routeDefinition->getControllerClassName());
-
         return $request;
     }
 
@@ -99,7 +84,7 @@ class Routing {
 
             $ctx = $this;
 
-            $routeDefinition = Collections::builder($this->parametrizedRouting)
+            $routeDefinition = Collections::stream($this->parametrizedRouting)
                 ->flatMap(function ($def) {
                     return $def;
                 })
@@ -111,16 +96,16 @@ class Routing {
                     return null;
                 });
 
-            /** @var RoutingDefinition $dev */
-            $dev = $routeDefinition->orElseThrow(new RouteNotFoundException(RequestUtils::getMethod(), $urlPath));
+            /** @var RoutingDefinition $definition */
+            $definition = $routeDefinition->orElseThrow(new RouteNotFoundException(RequestUtils::getMethod(), $urlPath));
 
-            $definitionsWithSamePath = $this->parametrizedRouting[$dev->getPath()];
+            $definitionsWithSamePath = $this->parametrizedRouting[$definition->getPath()];
             $size = Collections::size($definitionsWithSamePath);
             if ($size > 1) {
-                $dev = RoutingUtils::findRouteDefinition($definitionsWithSamePath, false)->orElse($dev);
+                $definition = RoutingUtils::findRouteDefinition($definitionsWithSamePath, false)->orElse($definition);
             }
 
-            return $dev;
+            return $definition;
         }
     }
 
@@ -139,26 +124,29 @@ class Routing {
     }
 
     private function extractUrlParameters($urlPath, RoutingDefinition $routeDefinition) {
-        if (isset($this->routing[$urlPath])) {
+        if ($this->isStaticRoute($urlPath)) {
             return array();
-
-        } else {
-
-            $pathResultValues = array();
-            $urlElements = explode('/', $urlPath);
-
-            $routingDefinitionParams = $routeDefinition->getParams();
-
-            foreach ($urlElements as $index => $urlValue) {
-                $hasValue = Collections::hasKey($routingDefinitionParams, $index);
-                if ($hasValue) {
-                    $key = $routingDefinitionParams[$index];
-                    $pathResultValues[$key] = urldecode($urlValue);
-                }
-            }
-
-            return $pathResultValues;
         }
+
+        $definitionPath = $routeDefinition->getPath();
+        $definitionElements = explode('/', $definitionPath);
+        $definitionElementsCount = \count($definitionElements);
+
+        $pathResultValues = array();
+        $urlElements = explode('/', $urlPath, $definitionElementsCount);
+
+        $routingDefinitionParams = $routeDefinition->getParams();
+
+        foreach ($urlElements as $index => $urlValue) {
+            $hasValue = Collections::hasKey($routingDefinitionParams, $index);
+
+            if ($hasValue) {
+                $key = $routingDefinitionParams[$index];
+                $pathResultValues[$key] = urldecode($urlValue);
+            }
+        }
+
+        return $pathResultValues;
     }
 
     private function fillModuleData(Request $request, $controllerName) {
@@ -289,5 +277,13 @@ class Routing {
         }
 
         return $path;
+    }
+
+    /**
+     * @param $urlPath
+     * @return bool
+     */
+    private function isStaticRoute($urlPath): bool {
+        return isset($this->routing[$urlPath]);
     }
 }

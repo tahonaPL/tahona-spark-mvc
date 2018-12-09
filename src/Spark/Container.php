@@ -199,20 +199,12 @@ class Container {
                 ));
             });
 
-
-//
-//        if (StringUtils::contains($definition->getName(), 'HouseSecurityConfig')){
-//            var_dump($this->getName());
-//        }
-
         $this->initLifeCyclesAndUpdateWaitingList($this->beanContainer);
 
         Collections::stream($this->beanContainer)
             ->each(function ($beanDef) {
                 $this->invokePostConstruct($beanDef);
             });
-
-//        var_dump($this->getByType(CsrfSecurityViewSmartyPlugin::class));exit;
 
         if (Collections::isNotEmpty($this->waitingList)) {
             $message = "Missing Beans for:\n \n";
@@ -236,7 +228,7 @@ class Container {
         }
 
         $this->sortOrderableTypes();
-
+        $this->cleanTmpCollections();
     }
 
     /**
@@ -494,5 +486,11 @@ class Container {
                 $this->waitingList[$beanDef->getName()]= $waitingList;
             }
         }
+    }
+
+    private function cleanTmpCollections() {
+        $this->beanFactories = [];
+        $this->beanNames = [];
+        $this->waitingList = [];
     }
 }

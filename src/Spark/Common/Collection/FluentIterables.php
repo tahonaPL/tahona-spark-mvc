@@ -16,9 +16,6 @@ use Spark\Utils\Objects;
 
 class FluentIterables {
 
-    /**
-     * @var array
-     */
     private $collection = array();
 
     private function __construct(array $collection) {

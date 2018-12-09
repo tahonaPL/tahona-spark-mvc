@@ -27,6 +27,13 @@ final class StringUtils {
         return $pos > 0 || $pos === 0;
     }
 
+    public static function abbreviateText($text, $size): string {
+        $text = StringUtils::substring($text, 0, $size);
+        $elements = StringUtils::split($text, ' ');
+        Collections::removeValue($elements, Collections::size($elements)-1);
+        return StringUtils::join(' ', $elements);
+
+    }
     public static function substring(string $string = null, int $indexFrom, int $length = null) {
         if (Objects::isNotNull($string)) {
             $substr = mb_substr($string, $indexFrom, $length);
@@ -57,8 +64,8 @@ final class StringUtils {
         return preg_replace('/[^A-Za-z0-9\-]/', '', $string);
     }
 
-    public static function replace($text, $searchText, $replacement) {
-        return str_replace($searchText, $replacement, $text);
+    public static function replace($text, $searchText, $replacement, $count=null) {
+        return str_replace($searchText, $replacement, $text, $count);
     }
 
     public static function replaceWithRegExp($text, $regExp, $replacement) {
@@ -93,6 +100,10 @@ final class StringUtils {
             return str_split($string);
         }
         return explode($delimiter, $string);
+    }
+
+    public static function splitWithRegEx(string $value, $delimiterPattern) : array {
+        return preg_split($delimiterPattern, $value);
     }
 
 
@@ -132,5 +143,6 @@ final class StringUtils {
     public static function upperCase($str): string {
         return strtoupper($str);
     }
+
 
 }

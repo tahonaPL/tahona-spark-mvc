@@ -42,6 +42,12 @@ class StringFunctions {
         };
     }
 
+    public static function splitWithRegEx($regEx): callable {
+        return function ($x) use ($regEx) {
+            return StringUtils::splitWithRegEx($x, $regEx);
+        };
+    }
+
     public static function join($joiner): callable {
         return function ($x) use ($joiner) {
             return StringUtils::join($joiner, $x);
@@ -66,8 +72,11 @@ class StringFunctions {
         };
     }
 
-    public static function substring($indexFrom, $length): callable {
+    public static function substring($indexFrom, $length = null): callable {
+        $indexFrom = $indexFrom ?: 0;
+
         return function ($v) use ($indexFrom, $length) {
+            $length = $length ?: \strlen($v);
             return StringUtils::substring($v, $indexFrom, $length);
         };
     }
@@ -82,6 +91,11 @@ class StringFunctions {
     public static function concat(string $string): callable {
         return function ($s) use ($string) {
             return $s . $string;
+        };
+    }
+    public static function prefix(string $string): callable {
+        return function ($s) use ($string) {
+            return $string. $s ;
         };
     }
 }

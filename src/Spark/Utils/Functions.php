@@ -28,22 +28,29 @@ class Functions {
      * @param $propertyName
      * @return callable
      */
-    public static function invokeGetMethod($propertyName) {
+    public static function invokeGetMethod($propertyName): \Closure {
         return function ($obj) use ($propertyName) {
             return Objects::invokeGetMethod($obj, $propertyName);
         };
     }
+
+    public static function invokeMethod($propertyName): \Closure {
+        return function ($obj) use ($propertyName) {
+            return Objects::invokeMethod($obj, $propertyName);
+        };
+    }
+
 
     /**
      * Synaptic sugar
      * @param $propertyName
      * @return callable
      */
-    public static function get($propertyName) {
+    public static function get($propertyName): \Closure {
         return self::invokeGetMethod($propertyName);
     }
 
-    public static function field($field) {
+    public static function field($field): \Closure {
         return function ($obj) use ($field) {
             if (isset($obj->$field)) {
                 return $obj->$field;
@@ -52,7 +59,7 @@ class Functions {
         };
     }
 
-    public static function count() {
+    public static function count(): \Closure {
         return function ($obj) {
             if (Objects::isArray($obj)) {
                 return Collections::size($obj);
@@ -61,19 +68,19 @@ class Functions {
         };
     }
 
-    public static function getSameObject() {
+    public static function getSameObject(): \Closure {
         return function ($o) {
             return $o;
         };
     }
 
-    public static function getClassName() {
+    public static function getClassName(): \Closure {
         return function ($x) {
             return Objects::getClassName($x);
         };
     }
 
-    public static function hasClassName($fullClassName) {
+    public static function hasClassName($fullClassName): \Closure {
         return function ($x) use ($fullClassName) {
             return StringUtils::equals(Objects::getClassName($x), $fullClassName);
         };
@@ -82,23 +89,23 @@ class Functions {
     /**
      * @return \Closure
      */
-    public static function none() {
+    public static function none(): \Closure {
         return function ($x) {
-
+            //do nothing
+            return null;
         };
     }
 
-    public static function splObjectHash() {
+    public static function splObjectHash(): \Closure {
         return function ($x) {
             return spl_object_hash($x);
         };
     }
 
-    public static function executeOn(object $obj, string $method): \Closure{
+    public static function executeOn(object $obj, string $method): \Closure {
         return function ($x) use ($obj, $method) {
             return Objects::invokeMethod($obj, $method, [$x]);
         };
     }
-
 
 }
