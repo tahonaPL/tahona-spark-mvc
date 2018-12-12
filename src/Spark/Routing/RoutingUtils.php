@@ -13,6 +13,7 @@ use Spark\Core\Routing\RoutingDefinition;
 use Spark\Http\HttpRequestMethod;
 use Spark\Http\Utils\RequestUtils;
 use Spark\Utils\Collections;
+use Spark\Utils\Objects;
 use Spark\Utils\Predicates;
 use Spark\Utils\StringFunctions;
 use Spark\Utils\StringPredicates;
@@ -24,7 +25,7 @@ class RoutingUtils {
         return StringUtils::contains($route, '}') && StringUtils::contains($route, '{');
     }
 
-    public static function hasExpressionParams($route, $urlPath, $routeDefinitionParams = array()): bool {
+    public static function hasExpressionParams($route, $urlPath, array $routeDefinitionParams = array()): bool {
         if (StringUtils::isBlank($route) || StringUtils::isBlank($urlPath)) {
             return false;
         }
@@ -32,21 +33,17 @@ class RoutingUtils {
         $routeParts = explode('/', $route);
         $urlPathParts = explode('/', $urlPath);
 
-        $paramsCount = count($routeDefinitionParams);
+        $paramsCount = \count($routeDefinitionParams);
         $hasPathParams = $paramsCount > 0;
 
-        $definitionRouteElementsCount = count($routeParts);
+        $definitionRouteElementsCount = \count($routeParts);
         $routeStaticElementsCount = $definitionRouteElementsCount - $paramsCount;
 
-        if (!$hasPathParams) {
-            return false;
-        }
+        if ($hasPathParams
+            && ($definitionRouteElementsCount === \count($urlPathParts)
+                || (self::hasEndDefinedParam($routeDefinitionParams)
+                    && self::hasUrlMoreElementsThanDefinition($urlPathParts, $definitionRouteElementsCount)))) {
 
-        $hasEndDefinedParam = self::hasEndDefinedParam($routeDefinitionParams);
-
-        $isPathElementsCountEqual = ($definitionRouteElementsCount === count($urlPathParts));
-
-        if ($isPathElementsCountEqual || $hasEndDefinedParam) {
             for ($i = 0; $i < $definitionRouteElementsCount; $i++) {
                 $routeExpressionKey = $routeParts[$i];
                 $urlElement = $urlPathParts[$i];
@@ -175,5 +172,9 @@ class RoutingUtils {
             return StringUtils::contains($routeDefParamSchema, '...');
         }
         return false;
+    }
+
+    private static function hasUrlMoreElementsThanDefinition(array $urlPathParts, $definitionRouteElementsCount): bool {
+        return $definitionRouteElementsCount <= \count($urlPathParts);
     }
 } 
