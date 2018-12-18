@@ -332,7 +332,12 @@ class Container {
     }
 
     private function invokePostConstruct(BeanDefinition $beanDefinition) {
-        ReflectionUtils::handleMethodAnnotation($beanDefinition->getBean(), Annotations::POST_CONSTRUCT,
+        $bean = $beanDefinition->getBean();
+        if ($bean instanceof BeanProxy) {
+            $bean = $bean->getBean();
+        }
+
+        ReflectionUtils::handleMethodAnnotation($bean, Annotations::POST_CONSTRUCT,
             function ($bean, \ReflectionMethod $method, $annotation) {
                 $method->setAccessible(true);
                 $method->invoke($bean);

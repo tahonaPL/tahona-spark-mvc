@@ -15,6 +15,7 @@ use Spark\Core\Lang\LangMessageResource;
 use Spark\Core\Provider\BeanProvider;
 use Spark\Routing;
 use Spark\Seo\SeoUrlFactory;
+use Spark\Utils\Asserts;
 use Spark\Utils\Collections;
 use Spark\Utils\StringUtils;
 use Spark\Utils\UrlUtils;
@@ -110,6 +111,8 @@ class SmartyPlugins {
      */
     private function getPath($params) {
         $path = $params['path'];
+        Asserts::notNull($path);
+
         $newPath = $this->routing->resolveRoute($path, Collections::getValueOrDefault($params, 'params', array()));
 
         if (StringUtils::isNotBlank($newPath)) {

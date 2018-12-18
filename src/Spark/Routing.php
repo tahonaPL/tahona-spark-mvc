@@ -3,6 +3,7 @@
 namespace Spark;
 
 use foo\bar;
+use Spark\Common\Collection\FluentIterables;
 use Spark\Common\IllegalStateException;
 use Spark\Core\Routing\Exception\RouteNotFoundException;
 use Spark\Core\Routing\RequestData;
@@ -172,14 +173,10 @@ class Routing {
         return null;
     }
 
-    /**
-     * @return array
-     */
-    public function getDefinitions() {
-        return Collections::builder()
+    public function getDefinitions() : FluentIterables{
+        return Collections::stream()
             ->addAll($this->parametrizedRouting)
-            ->addAll($this->routing)
-            ->get();
+            ->addAll($this->routing);
     }
 
     public function addDefinition(RoutingDefinition $routingDefinition) {
@@ -260,8 +257,7 @@ class Routing {
             }
             $paramsKeys = Collections::getKeys($params);
 
-            return Collections::stream()
-                ->addAll($this->getDefinitions())
+            return $this->getDefinitions()
                 ->flatMap(Functions::getSameObject())
                 ->findFirst(function ($d) use ($controllerName, $methodName, $paramsKeys) {
                     /* @var RoutingDefinition $d */

@@ -29,8 +29,8 @@ class Predicates {
     }
 
     public static function not(\Closure $pred) {
-        return function ($obj) use ($pred) {
-            return false === $pred($obj);
+        return function ($obj, $k) use ($pred) {
+            return false === $pred($obj, $k);
         };
     }
 

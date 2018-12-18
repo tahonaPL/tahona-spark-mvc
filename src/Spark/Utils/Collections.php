@@ -106,7 +106,7 @@ final class Collections {
     public static function map($array = array(), \Closure $func = null) {
         $resultArray = array();
         foreach ($array as $k => $el) {
-            $resultArray[$k] = $func($el);
+            $resultArray[$k] = $func($el, $k);
         }
         return $resultArray;
     }

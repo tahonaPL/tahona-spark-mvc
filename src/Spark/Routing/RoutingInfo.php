@@ -9,6 +9,7 @@
 namespace Spark\Routing;
 
 
+use Spark\Common\Collection\FluentIterables;
 use Spark\Core\Routing\RoutingDefinition;
 use Spark\Routing;
 use Spark\Utils\Collections;
@@ -25,7 +26,7 @@ class RoutingInfo {
         $this->routing = $routing;
     }
 
-    public function getRoutingDefinitions() {
+    public function getRoutingDefinitions() : FluentIterables {
         return $this->routing->getDefinitions();
     }
 
