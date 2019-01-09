@@ -8,6 +8,7 @@ use Spark\Core\Annotation\PostConstruct;
 use Spark\Core\Lang\LangKeyProvider;
 use Spark\Core\Provider\BeanProvider;
 use Spark\Core\Routing\RequestData;
+use Spark\Core\Service\PropertyHelper;
 use Spark\Utils\Collections;
 use Spark\Utils\Objects;
 use Spark\Utils\StringFunctions;
@@ -39,11 +40,21 @@ class SmartyViewHandler extends ViewHandler {
      * @var SmartyPlugins
      */
     private $smartyPlugins;
+
+
     /**
-     * @Inject()
+     * @Inject
      * @var Config
      */
     private $config;
+
+
+    /**
+     * @Inject
+     * @var PropertyHelper;
+     */
+    private $smartyConfig;
+
     /**
      * @Inject
      * @var BeanProvider
@@ -63,9 +74,8 @@ class SmartyViewHandler extends ViewHandler {
      */
     private function init(): void {
         if (Objects::isNull($this->smarty)) {
-            $config = $this->config;
-            $this->cacheIdPrefix = $this->config->getProperty(self::CACHE_ID, 'TAHONA_ROCKS');
-
+            $smartyConfig = $this->smartyConfig;
+            $this->cacheIdPrefix = $smartyConfig->get(self::CACHE_ID, 'TAHONA_ROCKS');
 
             $smarty = new \Smarty();
             $smarty->setCacheDir($this->rootAppPath . '/view/cache');
@@ -90,14 +100,14 @@ class SmartyViewHandler extends ViewHandler {
 
 //            var_dump($this->smartyPlugins->path(array("path"=>"/admin"), null));
 
-            $smarty->setForceCompile($config->getProperty(self::FORCE_COMPILE, true));
-            $smarty->setCompileCheck($config->getProperty(self::COMPILE_CHECK, true));
-            $smarty->setCaching($this->getCachingType($config));
-            $smarty->setCacheLifetime($config->getProperty(self::CACHE_LIFE_TIME, 1800));
-            $smarty->setMergeCompiledIncludes($config->getProperty(self::MERGE_COMPILED_INCLUDES, true));
+            $smarty->setForceCompile($smartyConfig->get(self::FORCE_COMPILE, true));
+            $smarty->setCompileCheck($smartyConfig->get(self::COMPILE_CHECK, true));
+            $smarty->setCaching($this->getCachingType($smartyConfig));
+            $smarty->setCacheLifetime($smartyConfig->get(self::CACHE_LIFE_TIME, 1800));
+            $smarty->setMergeCompiledIncludes($smartyConfig->get(self::MERGE_COMPILED_INCLUDES, true));
 
-            $smarty->setDebugging($config->getProperty(self::DEBUGGING, false));
-            $smarty->setErrorReporting($config->getProperty(self::ERROR_REPORTING, E_ALL & ~E_NOTICE));
+            $smarty->setDebugging($smartyConfig->get(self::DEBUGGING, false));
+            $smarty->setErrorReporting($smartyConfig->get(self::ERROR_REPORTING, E_ALL & ~E_NOTICE));
 
             $this->smarty = $smarty;
         }
@@ -108,8 +118,6 @@ class SmartyViewHandler extends ViewHandler {
     }
 
     /**
-     * @param $viewModel
-     * @param RequestData $request
      * @throws SmartyException
      */
     public function handleView($viewModel, RequestData $request): void {
@@ -129,11 +137,6 @@ class SmartyViewHandler extends ViewHandler {
         echo $output;
     }
 
-    /**
-     *
-     * @param $viewPath
-     * @return string
-     */
     private function removePrefix($viewPath): string {
         if (StringUtils::startsWith($viewPath, '/')) {
             return StringUtils::substring($viewPath, 1, StringUtils::length($viewPath));
@@ -147,12 +150,7 @@ class SmartyViewHandler extends ViewHandler {
         return $langKeyProvider->getLang();
     }
 
-    /**
-     * @param ViewModel $viewModel
-     * @param RequestData $request
-     * @return string
-     */
-    private function getViewPath($viewModel, RequestData $request): string {
+    private function getViewPath(ViewModel $viewModel, RequestData $request): string {
         $viewPath = $viewModel->getViewName();
         if (Objects::isNull($viewPath)) {
             $viewPath = ViewUrlUtils::createFullViewPath($request);
@@ -161,12 +159,8 @@ class SmartyViewHandler extends ViewHandler {
         return $this->removePrefix($viewPath);
     }
 
-    /**
-     * @param $config
-     * @return mixed
-     */
-    private function getCachingType(Config $config): int {
-        $isCaching = $config->getProperty(self::CACHE_ENABLED, false);
+    private function getCachingType(PropertyHelper $config): int {
+        $isCaching = $config->get(self::CACHE_ENABLED, false);
         if ($isCaching) {
             return \Smarty::CACHING_LIFETIME_CURRENT;
         }

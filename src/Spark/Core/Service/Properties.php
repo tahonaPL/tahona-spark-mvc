@@ -2,6 +2,7 @@
 
 namespace Spark\Core\Service;
 
+use Spark\Utils\Collections;
 use Spark\Utils\FilterUtils;
 use Spark\View\ViewModel;
 
@@ -37,8 +38,8 @@ trait Properties {
         return isset($this->properties[$key]);
     }
 
-    public function get($key) {
-        return $this->properties[$key];
+    public function get($key, $def = null) {
+        return Collections::getValueOrDefault($this->properties, $key, $def);
     }
 
 
