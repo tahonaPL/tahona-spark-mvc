@@ -44,6 +44,7 @@ class LangMessageResource {
     private $messages = array();
 
     private $filePath;
+    private $languages;
 
     public function __construct($filePath = array()) {
         $this->filePath = $filePath;
@@ -76,14 +77,10 @@ class LangMessageResource {
         $message = $this->messages[$this->getLang()][$code];
 
         if (Objects::isNull($message)) {
-            $optionalLang = Collections::builder()
-                ->addAll(Collections::getKeys($this->messages))
-                ->filter(function ($lang) use ($code) {
-                    $m = $this->messages[$lang][$code];
-                    return Objects::isNotNull($m);
-                })
-                ->findFirst();
-
+            $optionalLang = Collections::stream($this->languages)
+                ->findFirst(function ($lang) use ($code) {
+                    return null !== $this->messages[$lang][$code];
+                });
 
             if ($optionalLang->isPresent()) {
                 $message = $this->messages[$optionalLang->get()][$code];
@@ -94,7 +91,7 @@ class LangMessageResource {
 
         if (Collections::isNotEmpty($params)) {
             foreach ($params as $k => $v) {
-                $replaceTag = StringUtils::join("", array("{", $k, "}"));
+                $replaceTag = StringUtils::join('', array('{', $k, '}'));
                 $message = StringUtils::replace($message, $replaceTag, $v);
             }
             return $message;
@@ -108,12 +105,12 @@ class LangMessageResource {
      * @return bool
      */
     private function hasCode($code) {
-        $codes = Collections::builder($this->messages)
-            ->filter(function ($array) use ($code) {
+        $code = Collections::stream($this->messages)
+            ->findFirst(function ($array) use ($code) {
                 return Collections::hasKey($array, $code);
-            })->get();
+            });
 
-        return Collections::isNotEmpty($codes);
+        return $code->isPresent();
     }
 
     /**
@@ -121,7 +118,7 @@ class LangMessageResource {
      * @return string
      */
     private function messageErrorCode($code) {
-        return "!" . $code . "!";
+        return '!' . $code . '!';
     }
 
     public function addResources($resourcePaths = array()) {
@@ -146,6 +143,7 @@ class LangMessageResource {
                 }
             }
         }
+        $this->languages = Collections::getKeys($this->messages);
     }
 
     private function getLang() {
