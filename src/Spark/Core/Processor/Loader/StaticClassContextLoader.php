@@ -53,24 +53,11 @@ class StaticClassContextLoader implements ContextLoader {
     public function save($config, $container, $route, $exceptionResolvers) {
         $fileTemplate = $this->getFileTemplate();
 
-//        $content = Optional::of($fileTemplate)
-//            ->map(StringFunctions::replace('{123_CONTAINER}', StringUtils::replace(serialize($container), "'", "\'")))
-//            ->map(StringFunctions::replace('{123_ROUTE}', StringUtils::replace(serialize($route), "'", "\'")))
-//            ->map(StringFunctions::replace('{123_CONFIG}', StringUtils::replace(serialize($config), "'", "\'")))
-//            ->map(StringFunctions::replace('{123_EXCEPTIONS}', StringUtils::replace(serialize($exceptionResolvers), "'", "\'")))
-//            ->get();
-//
-//
-
-        $all = [
-            'container' => $container,
-            'route' => $route,
-            'config' => $config,
-            'exceptionResolvers'=>$exceptionResolvers
-        ];
-
         $content = Optional::of($fileTemplate)
-            ->map(StringFunctions::replace('{123_ALL}', StringUtils::replace(serialize($all), "'", "\'")))
+            ->map(StringFunctions::replace('{123_CONTAINER}', StringUtils::replace(serialize($container), "'", "\'")))
+            ->map(StringFunctions::replace('{123_ROUTE}', StringUtils::replace(serialize($route), "'", "\'")))
+            ->map(StringFunctions::replace('{123_CONFIG}', StringUtils::replace(serialize($config), "'", "\'")))
+            ->map(StringFunctions::replace('{123_EXCEPTIONS}', StringUtils::replace(serialize($exceptionResolvers), "'", "\'")))
             ->get();
 
         FileUtils::writeToFile($content, $this->getFilePath(), true);
@@ -88,31 +75,33 @@ namespace context;
 
 class DataLoader {
 
-    private $all;
     private $container;
     private $route;
     private $config;
     private $exceptionResolvers;
 
     public function __construct() {
-        $this->all = unserialize(\'{123_ALL}\');
+        $this->container = unserialize(\'{123_CONTAINER}\');
+        $this->route = unserialize(\'{123_ROUTE}\');
+        $this->config = unserialize(\'{123_CONFIG}\');
+        $this->exceptionResolvers = unserialize(\'{123_EXCEPTIONS}\');
     }
 
 
     public function getContainer() {
-        return $this->all[\'container\'];
+        return $this->container;
     }
 
     public function getRoute() {
-        return $this->all[\'route\'];
+        return $this->route;
     }
 
     public function getConfig() {
-        return $this->all[\'config\'];
+        return $this->config;
     }
 
     public function getExceptionResolvers() {
-        return $this->all[\'exceptionResolvers\'];
+        return $this->exceptionResolvers;
     }
 }';
         return $fileTemplate;
