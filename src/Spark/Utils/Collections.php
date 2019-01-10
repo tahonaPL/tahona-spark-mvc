@@ -111,11 +111,8 @@ final class Collections {
         return $resultArray;
     }
 
-    public static function hasKey($collection = array(), $key) {
-        if (Objects::isNotNull($collection)) {
-            return true === array_key_exists($key, $collection);
-        }
-        return false;
+    public static function hasKey($collection = array(), $key) : bool {
+        return true === array_key_exists($key, (array)$collection);
     }
 
     public static function removeByIndex(&$collection = array(), $index) {

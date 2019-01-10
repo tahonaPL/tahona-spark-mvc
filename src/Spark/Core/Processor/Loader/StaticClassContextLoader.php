@@ -16,7 +16,7 @@ class StaticClassContextLoader implements ContextLoader {
 
     private $dataLoader;
 
-    private const FILE_NAME = "DataLoader.php";
+    private const FILE_NAME = 'DataLoader.php';
 
     public function __construct() {
 
@@ -47,17 +47,30 @@ class StaticClassContextLoader implements ContextLoader {
     }
 
     public function clear() {
-        FileUtils::removeFile("/app/src/context/" . self::FILE_NAME);
+        FileUtils::removeFile('/app/src/context/' . self::FILE_NAME);
     }
 
     public function save($config, $container, $route, $exceptionResolvers) {
         $fileTemplate = $this->getFileTemplate();
 
+//        $content = Optional::of($fileTemplate)
+//            ->map(StringFunctions::replace('{123_CONTAINER}', StringUtils::replace(serialize($container), "'", "\'")))
+//            ->map(StringFunctions::replace('{123_ROUTE}', StringUtils::replace(serialize($route), "'", "\'")))
+//            ->map(StringFunctions::replace('{123_CONFIG}', StringUtils::replace(serialize($config), "'", "\'")))
+//            ->map(StringFunctions::replace('{123_EXCEPTIONS}', StringUtils::replace(serialize($exceptionResolvers), "'", "\'")))
+//            ->get();
+//
+//
+
+        $all = [
+            'container' => $container,
+            'route' => $route,
+            'config' => $config,
+            'exceptionResolvers'=>$exceptionResolvers
+        ];
+
         $content = Optional::of($fileTemplate)
-            ->map(StringFunctions::replace("{123_CONTAINER}", StringUtils::replace(serialize($container), "'", "\'")))
-            ->map(StringFunctions::replace("{123_ROUTE}", StringUtils::replace(serialize($route), "'", "\'")))
-            ->map(StringFunctions::replace("{123_CONFIG}", StringUtils::replace(serialize($config), "'", "\'")))
-            ->map(StringFunctions::replace("{123_EXCEPTIONS}", StringUtils::replace(serialize($exceptionResolvers), "'", "\'")))
+            ->map(StringFunctions::replace('{123_ALL}', StringUtils::replace(serialize($all), "'", "\'")))
             ->get();
 
         FileUtils::writeToFile($content, $this->getFilePath(), true);
@@ -75,33 +88,31 @@ namespace context;
 
 class DataLoader {
 
+    private $all;
     private $container;
     private $route;
     private $config;
     private $exceptionResolvers;
 
     public function __construct() {
-        $this->container = unserialize(\'{123_CONTAINER}\');
-        $this->route = unserialize(\'{123_ROUTE}\');
-        $this->config = unserialize(\'{123_CONFIG}\');
-        $this->exceptionResolvers = unserialize(\'{123_EXCEPTIONS}\');
+        $this->all = unserialize(\'{123_ALL}\');
     }
 
 
     public function getContainer() {
-        return $this->container;
+        return $this->all[\'container\'];
     }
 
     public function getRoute() {
-        return $this->route;
+        return $this->all[\'route\'];
     }
 
     public function getConfig() {
-        return $this->config;
+        return $this->all[\'config\'];
     }
 
     public function getExceptionResolvers() {
-        return $this->exceptionResolvers;
+        return $this->all[\'exceptionResolvers\'];
     }
 }';
         return $fileTemplate;

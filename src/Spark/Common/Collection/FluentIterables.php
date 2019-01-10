@@ -14,12 +14,12 @@ use Spark\Common\Optional;
 use Spark\Utils\Collections;
 use Spark\Utils\Objects;
 
-class FluentIterables {
+class FluentIterables{
 
-    private $collection = array();
+    private $collection = [];
 
-    private function __construct(array $collection) {
-        Collections::addAllOrReplace($this->collection, $collection);
+    private function __construct($collection = array()) {
+        $this->collection = $collection;
     }
 
     public static function of($arr = array()): FluentIterables {
