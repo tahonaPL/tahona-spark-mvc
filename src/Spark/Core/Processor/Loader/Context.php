@@ -34,7 +34,8 @@ class Context {
                                 $langResources, $langResourcePaths,
                                 $sessionProvider,
                                 $viewHandlers,
-                                $fillers, $requestProvider) {
+                                $fillers,
+                                $requestProvider) {
         $this->config = $config;
         $this->route = $route;
         $this->httpFilters = $httpFilters;

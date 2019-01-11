@@ -8,6 +8,7 @@ namespace Spark\Core\Processor\Loader;
 
 
 use Spark\Common\Collection\FluentIterables;
+use Spark\Common\IllegalStateException;
 use Spark\Common\Optional;
 use Spark\Config;
 use Spark\Container;
@@ -25,6 +26,7 @@ use Spark\Http\Session\SessionProvider;
 use Spark\Http\Utils\RequestUtils;
 use Spark\Routing;
 use Spark\Routing\RoutingUtils;
+use Spark\Utils\Asserts;
 use Spark\Utils\Collections;
 use Spark\Utils\FileUtils;
 use Spark\Utils\Functions;
@@ -50,7 +52,8 @@ class StaticClassContextLoader implements ContextLoader {
             $path = UrlUtils::getSimplePath();
 
             if (Collections::hasKey($this->contexts, $path)) {
-                return StaticClassFactory::getObject($this->contexts[$path][0]['context']);
+                $contextName = $this->contexts[$path][0]['context'];
+                return StaticClassFactory::getObject($contextName);
             } else {
                 $headers = RequestUtils::getHeaders();
                 $method = RequestUtils::getMethod();
@@ -62,7 +65,9 @@ class StaticClassContextLoader implements ContextLoader {
                             && RoutingUtils::isDefinitionCorrect($def['methods'], $def['headers'], $headers, $method);
                     })->orElse(null);
 
-                return StaticClassFactory::getObject($def['context']);
+                $name = $def['context'];
+
+                return StaticClassFactory::getObject($name);
             }
         }
     }

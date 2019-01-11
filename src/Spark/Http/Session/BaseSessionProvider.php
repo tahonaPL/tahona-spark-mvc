@@ -21,7 +21,7 @@ class BaseSessionProvider implements SessionProvider {
             Asserts::checkState(session_start(), 'Session could not be start');
 
             //FIX ME - regenerating session
-//            session_regenerate_id();
+            session_regenerate_id();
         }
 
         if (false === Collections::hasKey($_SESSION, 'spark_session')) {
@@ -36,6 +36,6 @@ class BaseSessionProvider implements SessionProvider {
     }
     
     public function hasSession(): bool {
-        return Objects::isNotNull($_SESSION);
+        return isset($_SESSION);
     }
 }
