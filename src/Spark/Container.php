@@ -2,7 +2,6 @@
 
 namespace Spark;
 
-use function foo\func;
 use Spark\Common\Collection\FluentIterables;
 use Spark\Common\IllegalStateException;
 use Spark\Common\Type\Orderable;
@@ -13,8 +12,6 @@ use Spark\Core\Definition\BeanProxy;
 use Spark\Core\Definition\SimpleBeanFactory;
 use Spark\Core\Definition\ToInjectObserver;
 use Spark\Core\Library\Annotations;
-use Spark\Core\Service\ServiceHelper;
-use Spark\Security\Csrf\View\CsrfSecurityViewSmartyPlugin;
 use Spark\Utils\Asserts;
 use Spark\Utils\Collections;
 use Spark\Utils\Functions;
@@ -107,9 +104,6 @@ class Container {
                 ->get();
         }
 
-        if ($bean instanceof ServiceHelper) {
-            $bean->setContainer($this);
-        }
         if ($bean instanceof Core\ConfigAware) {
             $bean->setConfig($this->getConfig());
         }
@@ -154,8 +148,6 @@ class Container {
     final public function initServices() {
         if (!$this->initialized) {
 
-            //register self
-            $this->registerObj($this);
 
             // initialized flag must be before "injectAndCreate" for register bean in @PostConstruct block
             $this->initialized = true;
@@ -488,7 +480,7 @@ class Container {
             $waitingList = $this->initLifeCycle($beanDef);
 
             if (Collections::isNotEmpty($waitingList)) {
-                $this->waitingList[$beanDef->getName()]= $waitingList;
+                $this->waitingList[$beanDef->getName()] = $waitingList;
             }
         }
     }
@@ -497,5 +489,13 @@ class Container {
         $this->beanFactories = [];
         $this->beanNames = [];
         $this->waitingList = [];
+    }
+
+    public function register($beanName, $class) {
+        $this->addBean($beanName, $class, false, true);
+    }
+
+    public function getAll() : array {
+        return $this->beanContainer;
     }
 }

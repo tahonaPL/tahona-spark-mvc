@@ -35,16 +35,16 @@ class LangMessageResource {
      */
     private $config;
 
-    /**
-     * @Inject()
-     * @var BeanProvider
-     */
-    private $beanProvider;
-
     private $messages = array();
 
     private $filePath;
     private $languages;
+
+    /**
+     * @Inject()
+     * @var LangKeyProvider
+     */
+    private $langKeyProvider;
 
     public function __construct($filePath = array()) {
         $this->filePath = $filePath;
@@ -147,10 +147,7 @@ class LangMessageResource {
     }
 
     private function getLang() {
-        /** @var LangKeyProvider $langKeyProvider */
-        $langKeyProvider = $this->beanProvider->getBean(LangKeyProvider::NAME);
-
-        return Optional::of($langKeyProvider)
+        return Optional::of($this->langKeyProvider)
             ->map(Functions::get(LangKeyProvider::D_LANG))
             ->orElse($this->getFirstResourceKey());
     }

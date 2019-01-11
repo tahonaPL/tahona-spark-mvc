@@ -9,6 +9,7 @@ namespace Spark\Core\Processor\Loader;
 
 use Spark\Common\Optional;
 use Spark\Utils\FileUtils;
+use Spark\Utils\Objects;
 use Spark\Utils\StringFunctions;
 use Spark\Utils\StringUtils;
 
@@ -62,6 +63,45 @@ class {CLASS_NAME} {
         $className = "\context\\$name";
         $wrapper = new $className;
         return $wrapper->getObject();
+    }
+
+    private const ARR_FILE_TEMPLATE = '<?php
+namespace context;
+
+
+class {CLASS_NAME} {
+
+    private $object;
+
+    public function __construct() {
+        $this->object = {ARRAY};
+    }
+    
+    public function getObject() {
+        return $this->object;
+    }
+}';
+
+    public static function createArrayClass($name, array $array) {
+        $content = Optional::of(self::ARR_FILE_TEMPLATE)
+            ->map(StringFunctions::replace('{CLASS_NAME}', $name))
+            ->map(StringFunctions::replace('{ARRAY}', self::createProperties($array)))
+            ->get();
+
+        FileUtils::writeToFile($content, self::getFilePath($name), true);
+    }
+
+    private static function createProperties($val) {
+
+        if (Objects::isArray($val)) {
+            $result = [];
+            foreach ($val as $k => $v) {
+                $result[] = "'$k' => " . self::createProperties($v);
+            }
+            return '[' . StringUtils::join(', ', $result) . ']';
+        } else {
+            return "'$val'";
+        }
     }
 
 }

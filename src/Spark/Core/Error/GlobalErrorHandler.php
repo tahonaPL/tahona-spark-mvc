@@ -107,7 +107,7 @@ class GlobalErrorHandler {
     private function getHandler() {
         return function ($error) {
 
-            $exceptionResolvers = Collections::builder($this->exceptionResolvers)
+            $exceptionResolvers = Collections::stream($this->exceptionResolvers)
                 ->sort(function ($x, $y) {
                     /** @var ExceptionResolver $x */
                     return $x->getOrder() > $y->getOrder();

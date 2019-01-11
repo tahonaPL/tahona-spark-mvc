@@ -110,18 +110,11 @@ class RoutingUtils {
         $headers = RequestUtils::getHeaders();
 
         /** @var RoutingDefinition $item */
-
         foreach ($routes as $item) {
-            $requestMethods = $item->getRequestMethods();
+            $definedMethods = $item->getRequestMethods();
+            $definedHeaders = $item->getRequestHeaders();
 
-            if (Collections::contains($requestMethod, $requestMethods)) {
-                $hasHeaders = Collections::isEmpty($item->getRequestHeaders());
-                if ($hasHeaders || Collections::containsAll($item->getRequestHeaders(), Collections::getKeys($headers))) {
-                    return Optional::of($item);
-                }
-            }
-
-            if ($ignoreEmptyRequestMethod && Collections::isEmpty($requestMethods)) {
+            if (self::isDefinitionCorrect($definedMethods, $definedHeaders, $headers, $requestMethod, $ignoreEmptyRequestMethod)) {
                 return Optional::of($item);
             }
         }
@@ -176,5 +169,19 @@ class RoutingUtils {
 
     private static function hasUrlMoreElementsThanDefinition(array $urlPathParts, $definitionRouteElementsCount): bool {
         return $definitionRouteElementsCount <= \count($urlPathParts);
+    }
+
+    public static function isDefinitionCorrect($definedMethods, $definedHeaders, $headers, $requestMethod, $ignoreEmptyRequestMethod=true):bool {
+        if (Collections::contains($requestMethod, $definedMethods)) {
+            $hasHeaders = Collections::isEmpty($definedHeaders);
+            if ($hasHeaders || Collections::containsAll($definedHeaders, Collections::getKeys($headers))) {
+                return true;
+            }
+        }
+
+        if ($ignoreEmptyRequestMethod && Collections::isEmpty($definedMethods)) {
+            return true;
+        }
+        return false;
     }
 } 

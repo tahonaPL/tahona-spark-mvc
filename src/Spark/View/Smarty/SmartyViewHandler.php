@@ -56,14 +56,15 @@ class SmartyViewHandler extends ViewHandler {
     private $smartyConfig;
 
     /**
-     * @Inject
-     * @var BeanProvider
-     */
-    private $beanProvider;
-    /**
      * @var string cacheIdPrefix
      */
     private $cacheIdPrefix;
+
+    /**
+     * @Inject()
+     * @var LangKeyProvider
+     */
+    private $langKeyProvider;
 
     public function __construct($rootAppPath) {
         $this->rootAppPath = $rootAppPath;
@@ -146,8 +147,7 @@ class SmartyViewHandler extends ViewHandler {
 
     private function getLang(): string {
         /** @var LangKeyProvider $langKeyProvider */
-        $langKeyProvider = $this->beanProvider->getBean(LangKeyProvider::NAME);
-        return $langKeyProvider->getLang();
+        return $this->langKeyProvider->getLang();
     }
 
     private function getViewPath(ViewModel $viewModel, RequestData $request): string {

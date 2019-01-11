@@ -17,9 +17,9 @@ use Spark\Utils\StringFunctions;
 
 class RoutingDefinition {
 
-    const D_CONTROLLER_CLASS_NAME = "controllerClassName";
-    const D_ACTION_METHOD         = "actionMethod";
-    const D_PATH                  = "path";
+    public const D_CONTROLLER_CLASS_NAME = 'controllerClassName';
+    public const D_ACTION_METHOD         = 'actionMethod';
+    public const D_PATH                  = 'path';
 
     private $id;
 

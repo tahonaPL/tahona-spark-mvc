@@ -14,7 +14,7 @@ use Spark\Http\Request;
 
 class RequestProvider {
 
-    const NAME = "requestProvider";
+    const NAME = 'requestProvider';
 
     /**
      * @var RequestData

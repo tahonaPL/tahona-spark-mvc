@@ -34,10 +34,10 @@ class Routing {
     private $definitions;
     private $sessionProvider;
 
-    public function __construct(array $routing) {
-        $this->definitions = $routing;
-        $this->routing = $routing;
-        $this->addAll($this->routing);
+    public function __construct(array $definitions) {
+        $this->definitions = [];
+        $this->routing = [];
+        $this->addAll($definitions);
     }
 
     /**
@@ -193,8 +193,8 @@ class Routing {
     public function addAll($routing = array()) {
         /** @var RoutingDefinition $def */
         foreach ($routing as $def) {
-            Asserts::checkArgument(false === Collections::hasKey($this->routing, $def->getPath()), "Can't use same path in routing: " . $def->getPath());
-            Asserts::checkArgument(false === Collections::hasKey($this->parametrizedRouting, $def->getPath()), "Can't use same path in routing: " . $def->getPath());
+//            Asserts::checkArgument(false === Collections::hasKey($this->routing, $def->getPath()), "Can't use same path in routing: " . $def->getPath());
+//            Asserts::checkArgument(false === Collections::hasKey($this->parametrizedRouting, $def->getPath()), "Can't use same path in routing: " . $def->getPath());
 
             $this->addDefinition($def);
         }
@@ -224,10 +224,7 @@ class Routing {
      * @return array
      */
     private function getPath() {
-        $urlPath = UrlUtils::getPathInfo();
-        $urlPath = explode('?', $urlPath); //for params
-        $urlPath = $urlPath[0];
-        return $urlPath;
+        return UrlUtils::getSimplePath();
     }
 
     /**

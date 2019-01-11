@@ -15,9 +15,9 @@ class SessionProviderProxy implements SessionProvider {
 
     /**
      * @Inject
-     * @var BeanProvider
+     * @var SessionProvider
      */
-    private $beanProvider;
+    private $defaultSessionProvider;
 
 
     public function getOrCreateSession(): Session {
@@ -36,6 +36,6 @@ class SessionProviderProxy implements SessionProvider {
      * @return mixed
      */
     private function getSessionProvider(): SessionProvider {
-        return $this->beanProvider->getBean('defaultSessionProvider');
+        return $this->defaultSessionProvider;
     }
 }

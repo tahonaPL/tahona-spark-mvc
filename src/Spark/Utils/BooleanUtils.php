@@ -15,11 +15,11 @@ class BooleanUtils {
 
 
     public static function isTrue($value) {
-        return $value === "true" || $value === true;
+        return $value === 'true' || $value === true;
     }
 
     public static function isFalse($value) {
-        return $value === "false" || $value === false;
+        return $value === 'false' || $value === false;
     }
 
 
@@ -37,7 +37,7 @@ class BooleanUtils {
             return 0;
         }
 
-        throw new IllegalArgumentException("Cannot cast value to zero or one");
+        throw new IllegalArgumentException('Cannot cast value to zero or one');
     }
 
 }

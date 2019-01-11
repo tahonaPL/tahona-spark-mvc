@@ -16,26 +16,11 @@ use Spark\Routing\RoutingInfo;
 
 abstract class Handler {
 
-    /**
-     * @Inject()
-     * @var Container
-     */
     private $container;
-    /**
-     * @Inject()
-     * @var Routing
-     */
     private $routing;
-    /**
-     * @Inject()
-     * @var Config
-     */
     private $config;
 
-    /**
-     * @param $class
-     * @return bool
-     */
+
     abstract protected function supports(ReflectionClass $class): bool;
 
     protected function getContainer(): Container {

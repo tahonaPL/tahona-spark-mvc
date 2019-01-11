@@ -79,7 +79,7 @@ class RoutingDefinitionFactory {
             $parameters = $methodReflection->getParameters();
             $methodParameters = Collections::builder()
                 ->addAll($parameters)
-                ->convertToMap(Functions::field("name"))
+                ->convertToMap(Functions::field('name'))
                 ->map(function ($param) {
                     return $param->getClass();
                 })

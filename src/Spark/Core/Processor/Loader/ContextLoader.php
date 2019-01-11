@@ -6,18 +6,16 @@
 
 namespace Spark\Core\Processor\Loader;
 
+use Spark\Config;
+use Spark\Container;
+use Spark\Routing;
+
 interface ContextLoader {
     public function hasData(): bool;
 
-    public function getContainer();
-
-    public function getRoute();
-
-    public function getConfig();
-
-    public function getExceptionResolvers();
+    public function getContext(): Context;
 
     public function clear();
 
-    public function save($config, $container, $route, $exceptionResolvers);
+    public function save(Config $config, Container $container, Routing $route, array $exceptionResolvers);
 }

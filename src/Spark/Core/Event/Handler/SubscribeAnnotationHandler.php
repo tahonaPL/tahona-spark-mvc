@@ -1,7 +1,7 @@
 <?php
 /**
  *
- * 
+ *
  * Date: 10.06.17
  * Time: 03:03
  */
@@ -13,8 +13,10 @@ use ReflectionParameter;
 use Spark\Common\Collection\FluentIterables;
 use Spark\Common\Optional;
 use Spark\Core\Annotation\Handler\AnnotationHandler;
+use Spark\Core\Annotation\Inject;
 use Spark\Core\Event\EventBus;
 use Spark\Core\Event\Handler\Event\ObjectEventHandler;
+use Spark\Core\Provider\BeanProvider;
 use Spark\Utils\Asserts;
 use Spark\Utils\Collections;
 use Spark\Utils\Functions;
@@ -28,6 +30,12 @@ class SubscribeAnnotationHandler extends AnnotationHandler {
      * @var EventBus
      */
     private $eventBus;
+
+    /**
+     * @Inject()
+     * @var  BeanProvider
+     */
+    private $beanProvider;
 
     public function __construct() {
         $this->annotationName = "Spark\\Core\\Event\\Annotation\\Subscribe";
@@ -60,8 +68,7 @@ class SubscribeAnnotationHandler extends AnnotationHandler {
         }
     }
 
-    private
-    function getClassName() {
+    private function getClassName() {
         return Functions::getClassName();
     }
 
@@ -70,11 +77,10 @@ class SubscribeAnnotationHandler extends AnnotationHandler {
      * @return EventBus
      * @throws \Exception
      */
-    private
-    function getEventBus() {
+    private function getEventBus() {
         /** @var EventBus eventBus */
         if (Objects::isNull($this->eventBus)) {
-            $this->eventBus = $this->getContainer()->get(EventBus::NAME);
+            $this->eventBus = $this->beanProvider->getBean(EventBus::NAME);
         }
         return $this->eventBus;
     }
@@ -84,18 +90,15 @@ class SubscribeAnnotationHandler extends AnnotationHandler {
      * @param $annotations
      * @return array
      */
-    private
-    function getAnnotations($annotations) {
-        $authorizeAnnotations = FluentIterables::of($annotations)
+    private function getAnnotations($annotations) {
+        return FluentIterables::of($annotations)
             ->filter(Predicates::compute($this->getClassName(),
                 Predicates::equals($this->annotationName)))
             ->get();
-        return $authorizeAnnotations;
     }
 
-    private
-    function getByClass($class) {
-        return $this->getContainer()->getByType($class);
+    private function getByClass($class) {
+        return $this->beanProvider->getByType($class);
     }
 
     private function getParamTypeClass(ReflectionParameter $param) {

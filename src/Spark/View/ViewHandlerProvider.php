@@ -11,6 +11,7 @@ namespace Spark\View;
 
 use Spark\Config;
 use Spark\Core\Annotation\Inject;
+use Spark\Core\Annotation\PostConstruct;
 use Spark\Core\Provider\BeanProvider;
 use Spark\Http\Response;
 use Spark\Utils\Asserts;
@@ -18,7 +19,7 @@ use Spark\Utils\Objects;
 
 class ViewHandlerProvider {
 
-    const NAME = "viewHandlerProvider";
+    const NAME = 'viewHandlerProvider';
 
     /**
      * @Inject()
@@ -27,30 +28,40 @@ class ViewHandlerProvider {
     private $beanProvider;
 
     /**
-     * @Inject()
-     * @var Config
+     * @Inject
+     * @var ViewHandler
      */
-    private $config;
+    private $defaultViewHandler;
 
+    /**
+     * @var array
+     */
+    private $handlers;
+
+    /**
+     * @PostConstruct()
+     */
+    public function init() {
+        $this->handlers = $this->beanProvider->getByType(ViewHandler::class);
+    }
 
     public function handleView(Response $response, $request) {
         /** @var $viewHandler ViewHandler */
         if ($response instanceof ViewModel) {
-            $viewHandler = $this->beanProvider->getBean("defaultViewHandler");
+            $viewHandler = $this->defaultViewHandler;
             $viewHandler->handleView($response, $request);
         } else {
             $viewHandler = $this->getProvider($response, $request);
-            Asserts::notNull($viewHandler, "ViewHandler not found for response type: ".Objects::getClassName($response));
+            Asserts::notNull($viewHandler, 'ViewHandler not found for response type: ' . Objects::getClassName($response));
 
             $viewHandler->handleView($response, $request);
         }
     }
 
     private function getProvider(Response $viewModel, $request) {
-        $handlers = $this->beanProvider->getByType(ViewHandler::class);
 
         /** @var $handler ViewHandler */
-        foreach ($handlers as $handler) {
+        foreach ($this->handlers as $handler) {
             if ($handler->isView($viewModel)) {
                 return $handler;
             }

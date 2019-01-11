@@ -34,6 +34,7 @@ use Spark\Core\Lang\LangResourcePath;
 use Spark\Core\Library\Annotations;
 use Spark\Core\Library\BeanLoader;
 use Spark\Core\Processor\InitAnnotationProcessors;
+use Spark\Core\Processor\Loader\Context;
 use Spark\Core\Processor\Loader\StaticClassContextLoader;
 use Spark\Core\Provider\BeanProvider;
 use Spark\Core\Routing\Factory\RequestDataFactory;
@@ -45,6 +46,7 @@ use Spark\Http\Request;
 use Spark\Http\RequestProvider;
 use Spark\Http\Response;
 use Spark\Http\Session\BaseSessionProvider;
+use Spark\Http\Session\SessionProvider;
 use Spark\Http\Session\SessionProviderProxy;
 use Spark\Http\Utils\RequestUtils;
 use Spark\Routing\RoutingInfo;
@@ -54,6 +56,7 @@ use Spark\Utils\Collections;
 use Spark\Utils\Functions;
 use Spark\Utils\Objects;
 use Spark\Utils\Predicates;
+use Spark\Utils\Reflection\AnnotationReaderProvider;
 use Spark\Utils\ReflectionUtils;
 use Spark\Utils\StringUtils;
 use Spark\Utils\UrlUtils;
@@ -77,22 +80,6 @@ class Engine {
     private $appPath;
 
     /**
-     * @var Routing
-     */
-    private $route;
-
-    /**
-     * App configuration
-     * @var Config
-     */
-    private $config;
-
-    /**
-     * @var Container
-     */
-    private $container;
-
-    /**
      * @var BeanCache
      */
     private $beanCache;
@@ -101,7 +88,10 @@ class Engine {
 
     private $profile;
     private $contextLoader;
-
+    /**
+     * @var Context
+     */
+    private $context;
 
     public function __construct(string $appName, $profile, array $rootAppPath) {
         Asserts::checkState(\extension_loaded('apcu'), 'Apcu Cache enable is mandatory!');
@@ -114,17 +104,14 @@ class Engine {
         $this->appPath = $appPaths[0];
 
         $this->beanCache = new ApcuBeanCache();
-//        $this->contextLoader = new CacheContextLoader($this->appName, $this->beanCache);
         $this->contextLoader = new StaticClassContextLoader();
 
 
         if ($this->contextLoader->hasData()) {
-            $this->container = $this->contextLoader->getContainer();
-            $this->route = $this->contextLoader->getRoute();
-            $this->config = $this->contextLoader->getConfig();
-            $this->exceptionResolvers = $this->contextLoader->getExceptionResolvers();
+            $this->context = $this->contextLoader->getContext();
+            $this->exceptionResolvers = $this->context->getExceptionResolvers();
 
-            $resetParam = $this->config->getProperty(EnableApcuAnnotationHandler::APCU_CACHE_RESET);
+            $resetParam = $this->context->getConfig()->getProperty(EnableApcuAnnotationHandler::APCU_CACHE_RESET);
 
             if (isset($_GET[$resetParam])) {
                 $this->contextLoader->clear();
@@ -135,18 +122,18 @@ class Engine {
         if (!$this->contextLoader->hasData()) {
             $this->contextLoader->clear();
 
-            $this->container = new Container();
-            $this->route = new Routing(array());
-            $this->config = new Config();
+            $container = new Container();
+            $route = new Routing(array());
+            $config = new Config();
 
-            $this->config->set('app.profile', $this->getProfile());
-            $this->config->set('app.path', $this->appPath);
-            $this->config->set('app.paths', $appPaths);
-            $this->config->set('src.path', $this->getSourcePath());
+            $config->set('app.profile', $this->getProfile());
+            $config->set('app.path', $this->appPath);
+            $config->set('app.paths', $appPaths);
+            $config->set('src.path', $this->getSourcePath());
 
-            $initAnnotationProcessors = new InitAnnotationProcessors($this->route, $this->config, $this->container);
+            $initAnnotationProcessors = new InitAnnotationProcessors($route, $config, $container);
 
-            $beanLoader = new BeanLoader($initAnnotationProcessors, $this->config, $this->container);
+            $beanLoader = new BeanLoader($initAnnotationProcessors, $config, $container);
             foreach ($appPaths as $path) {
                 $beanLoader->addFromPath($path . '/src', array('proxy'));
             }
@@ -154,30 +141,34 @@ class Engine {
             $beanLoader->addClass(CoreConfig::class);
             $beanLoader->process();
 
-            $this->addBaseServices();
-            $this->container->setConfig($this->config);
-            $this->container->initServices();
+            $this->addBaseServices($container, $route, $config);
+            $container->setConfig($config);
+            $container->initServices();
 
             $beanLoader->postProcess();
 
-            $this->afterAllBean();
+            $this->afterAllBean($container, $route);
 
-            $this->exceptionResolvers = $this->container->getByType(ExceptionResolver::class);
+            /** @var BeanProvider $bp */
+            $bp = $container->get(BeanProvider::NAME);
+            $bp->clear();
 
             $this->contextLoader->save(
-                $this->config,
-                $this->container,
-                $this->route,
-                $this->exceptionResolvers
+                $config,
+                $container,
+                $route,
+                $container->getByType(ExceptionResolver::class)
             );
+            $this->context = $this->contextLoader->getContext();
         }
 
         /** @var GlobalErrorHandler $globalErrorHandler */
-        $globalErrorHandler = $this->container->get(GlobalErrorHandler::NAME);
-        $globalErrorHandler->setup($this->exceptionResolvers);
+        $globalErrorHandler = $this->context->getGlobalErrorHandler();
+        $globalErrorHandler->setup($this->context->getExceptionResolvers());
     }
 
     public function run(): void {
+
         if (SystemUtils::isCommandLineInterface()) {
             $this->runCommand();
         } else {
@@ -186,15 +177,17 @@ class Engine {
     }
 
     private function runController(): void {
-        $this->handleRequest();
+        $this->handleRequest([]);
     }
 
     private function handleRequest(array $responseParams = array()): void {
         $this->devToolsInit();
 
         $registeredHostPath = UrlUtils::getHost();
-        $requestData = $this->route->createRequest($registeredHostPath);
+        $requestData = $this->context->getRoute()
+            ->createRequest($registeredHostPath);
 
+        //TODO!!!!!!!!!!!!!!!!!!!!
         $this->updateRequestProvider($requestData);
 
         //Interceptor
@@ -202,14 +195,12 @@ class Engine {
         $this->preHandleInterceptor($requestData);
 
         //Controller
-        $controllerName = $requestData->getControllerClassName();
 
         /** @var $controller Controller */
-        $controller = $this->container->get($controllerName);
+        $controller = $this->context->getController();
 
         if ($controller instanceof Controller) {
             $controller->init($requestData, $responseParams);
-            $controller->setContainer($this->container);
         }
 
         //ACTION->VIEW
@@ -217,76 +208,76 @@ class Engine {
     }
 
     private function devToolsInit(): void {
-        $enabled = $this->config->getProperty(Config::DEV_ENABLED);
+        $enabled = $this->context->getConfig()->getProperty(Config::DEV_ENABLED);
         if ($enabled) {
             RequestUtils::setCookie('XDEBUG_SESSION', true);
         }
     }
 
-    private function addBaseServices(): void {
-        $this->register('cache', $this->beanCache);
-        $this->container->registerObj(new CacheProvider());
-        $this->container->registerObj(new CacheService());
+    private function addBaseServices(Container $container, Routing $route, Config $config): void {
+        $container->register('cache', $this->beanCache);
+        $container->registerObj(new CacheProvider());
+        $container->registerObj(new CacheService());
 
         //EventBus
-        $this->container->registerObj(new EventBus());
-        $this->container->registerObj(new SubscribeAnnotationHandler());
+        $container->registerObj(new EventBus());
+        $container->registerObj(new SubscribeAnnotationHandler());
 
         $langResource = new LangMessageResource(array());
-        $this->register(LangMessageResource::NAME, $langResource);
-        $this->register(LangKeyProvider::NAME, new CookieLangKeyProvider('lang'));
+        $container->register(LangMessageResource::NAME, $langResource);
+        $container->register(LangKeyProvider::NAME, new CookieLangKeyProvider('lang'));
 
-        $this->register(SmartyPlugins::NAME, new SmartyPlugins());
-        $this->register(RequestProvider::NAME, new RequestProvider());
-        $this->register(RoutingInfo::NAME, new RoutingInfo($this->route));
-        $this->register('sessionProvider', new SessionProviderProxy());
-        $this->register('defaultSessionProvider', new BaseSessionProvider());
+        $container->register(SmartyPlugins::NAME, new SmartyPlugins());
+        $container->register(RequestProvider::NAME, new RequestProvider());
+        $container->register(RoutingInfo::NAME, new RoutingInfo($route));
+        $container->register('sessionProvider', new SessionProviderProxy());
+        $container->register('defaultSessionProvider', new BaseSessionProvider());
 
-        $this->container->registerObj(new RequestDataFactory());
-        $this->container->registerObj(new BeanProvider($this->container));
+        $container->registerObj(new RequestDataFactory());
+        $container->registerObj(new BeanProvider($container));
 
-        $validator = new AnnotationValidator($langResource, ReflectionUtils::getReaderInstance());
+        $validator = new AnnotationValidator($langResource, new AnnotationReaderProvider());
         $validator->addDefaultValidators();
-        $this->container->addBean('annotationValidator', $validator);
+        $container->addBean('annotationValidator', $validator);
 
-        $this->container->registerObj($this->config);
-        $this->container->registerObj($this->route);
-        $this->container->registerObj(new GlobalErrorHandler($this));
+        $container->registerObj($config);
+        $container->registerObj($route);
+        $container->registerObj(new GlobalErrorHandler($this));
 
-        $this->container->registerObj(new SimpleMultiFiller());
-        $this->container->registerObj(new RequestFiller());
-        $this->container->registerObj(new SessionFiller());
-        $this->container->registerObj(new FileObjectFiller());
-        $this->container->registerObj(new CookieFiller());
-        $this->container->registerObj(new BeanFiller());
+        $container->registerObj(new SimpleMultiFiller());
+        $container->registerObj(new RequestFiller());
+        $container->registerObj(new SessionFiller());
+        $container->registerObj(new FileObjectFiller());
+        $container->registerObj(new CookieFiller());
+        $container->registerObj(new BeanFiller());
 
-        $this->addViewHandlersToService();
+        $this->addViewHandlersToService($container);
     }
 
-    private function afterAllBean(): void {
-        $resourcePaths = $this->container->getByType(LangResourcePath::class);
+    private function afterAllBean(Container $container , Routing $route): void {
+        $resourcePaths = $container->getByType(LangResourcePath::class);
 
         /** @var LangMessageResource $resource */
-        $resource = $this->container->get(LangMessageResource::NAME);
+        $resource = $container->get(LangMessageResource::NAME);
         $resource->addResources($resourcePaths);
 
-        $sessionProvider = $this->container->get('sessionProvider');
-        $this->route->setSessionProvider($sessionProvider);
+        $sessionProvider = $container->get('sessionProvider');
+        $route->setSessionProvider($sessionProvider);
     }
 
-    private function addViewHandlersToService(): void {
+    private function addViewHandlersToService(Container $container): void {
         $smartyViewHandler = new SmartyViewHandler($this->appPath);
         $plainViewHandler = new PlainViewHandler();
         $jsonViewHandler = new JsonViewHandler();
         $redirectViewHandler = new RedirectViewHandler();
 
         $provider = new ViewHandlerProvider();
-        $this->register(ViewHandlerProvider::NAME, $provider);
-        $this->register('defaultViewHandler', $smartyViewHandler);
-        $this->register(SmartyViewHandler::NAME, $smartyViewHandler);
-        $this->register(PlainViewHandler::NAME, $plainViewHandler);
-        $this->register(JsonViewHandler::NAME, $jsonViewHandler);
-        $this->register(RedirectViewHandler::NAME, $redirectViewHandler);
+        $container->register(ViewHandlerProvider::NAME, $provider);
+        $container->register('defaultViewHandler', $smartyViewHandler);
+        $container->register(SmartyViewHandler::NAME, $smartyViewHandler);
+        $container->register(PlainViewHandler::NAME, $plainViewHandler);
+        $container->register(JsonViewHandler::NAME, $jsonViewHandler);
+        $container->register(RedirectViewHandler::NAME, $redirectViewHandler);
     }
 
     /**
@@ -315,7 +306,7 @@ class Engine {
      * @param Request $request
      */
     private function handleView($viewModel, $request): void {
-        $handler = $this->container->get(ViewHandlerProvider::NAME);
+        $handler = $this->context->getViewHandlers();
 
         Asserts::notNull($handler, 'No handler found for response object' . Objects::getClassName($viewModel));
 
@@ -324,8 +315,8 @@ class Engine {
     }
 
 
-    private function executeFilter(Request $request): void {
-        $filters = $this->container->getByType(HttpFilter::class);
+    private function executeFilter( Request $request): void {
+        $filters = $this->context->getHttpFilters();
 
         if (Collections::isNotEmpty($filters)) {
             $filtersIterator = new \ArrayIterator($filters);
@@ -334,13 +325,8 @@ class Engine {
         }
     }
 
-
-    private function isApcuCacheEnabled(): bool {
-        return $this->config->getProperty(EnableApcuAnnotationHandler::APCU_CACHE_ENABLED, false);
-    }
-
     private function preHandleInterceptor(Request $request): void {
-        $interceptors = $this->container->getByType(HandlerInterceptor::class);
+        $interceptors = $this->context->getInterceptors();
 
         /** @var HandlerInterceptor $interceptor */
         foreach ($interceptors as $interceptor) {
@@ -351,7 +337,7 @@ class Engine {
     }
 
     private function postHandleIntercetors(Request $request, Response $response): void {
-        $interceptors = $this->container->getByType(HandlerInterceptor::class);
+        $interceptors = $this->context->getInterceptors();
 
         /** @var HandlerInterceptor $interceptor */
         foreach ($interceptors as $interceptor) {
@@ -386,7 +372,7 @@ class Engine {
      */
     public function updateRequestProvider(Request $request): void {
         /** @var RequestProvider $requestProvider */
-        $requestProvider = $this->container->get(RequestProvider::NAME);
+        $requestProvider = $this->context->getRequestProvider();
         $requestProvider->setRequest($request);
     }
 
@@ -394,7 +380,7 @@ class Engine {
         $input = new InputInterface();
         $out = new OutputInterface();
 
-        $commands = $this->container->getByType(Command::class);
+        $commands = $this->context->getCommands();
         Collections::builder($commands)
             ->filter(Predicates::compute(Functions::get('name'), function ($n) use ($input) {
                 return StringUtils::startsWith($n, $input->get('command'));
@@ -415,7 +401,7 @@ class Engine {
 
     private function executeFillers(RoutingDefinition $rf): array {
         $parameters = $rf->getActionMethodParameters();
-        $simpleFiller = $this->container->getByType(MultiFiller::class);
+        $simpleFiller = $this->context->getFillers();
 
 
         $tmpParameters = $parameters;
@@ -425,20 +411,20 @@ class Engine {
         foreach ($simpleFiller as $filler) {
             $filedParams = $filler->filter($tmpParameters);
 
-            $newParams  = [];
+            $newParams = [];
             foreach ($filedParams as $k => $filedParam) {
 
                 if (Objects::isNotNull($filedParam) && !Collections::hasKey($results, $k)) {
                     $results[$k] = $filedParam;
                 } else {
-                    $newParams[$k]=$parameters[$k];
+                    $newParams[$k] = $parameters[$k];
                 }
             }
             $tmpParameters = $newParams;
         }
 
         return FluentIterables::of(Collections::getKeys($parameters))
-            ->map(function($key) use ($results) {
+            ->map(function ($key) use ($results) {
                 return Collections::getValue($results, $key);
             })->getList();
     }
@@ -462,9 +448,6 @@ class Engine {
         return $this->appPath . '/src';
     }
 
-    private function register($beanName, $class) {
-        $this->container->addBean($beanName, $class, false, true);
-    }
 
 
 }

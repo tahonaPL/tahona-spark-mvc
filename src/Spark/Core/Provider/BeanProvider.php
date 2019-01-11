@@ -12,6 +12,7 @@ namespace Spark\Core\Provider;
 use Spark\Container;
 
 class BeanProvider {
+    public const NAME = 'beanProvider';
 
     /**
      * @var Container
@@ -35,6 +36,10 @@ class BeanProvider {
 
     public function getByType($className) {
         return $this->container->getByType($className);
+    }
+
+    public function clear() {
+        $this->container = null;
     }
 
 

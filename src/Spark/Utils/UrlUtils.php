@@ -96,6 +96,12 @@ class UrlUtils {
         return self::wrapRequestSchemeIfNeeded($link, $scheme);
     }
 
+    public static function getSimplePath() {
+        $urlPath = UrlUtils::getPathInfo();
+        $urlPath = explode('?', $urlPath); //for params
+        return $urlPath[0];
+    }
+
     /**
      * @param $host
      * @return mixed
