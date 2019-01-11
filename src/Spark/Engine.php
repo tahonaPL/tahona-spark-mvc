@@ -109,7 +109,6 @@ class Engine {
 
         if ($this->contextLoader->hasData()) {
             $this->context = $this->contextLoader->getContext();
-            $this->exceptionResolvers = $this->context->getExceptionResolvers();
 
             $resetParam = $this->context->getConfig()->getProperty(EnableApcuAnnotationHandler::APCU_CACHE_RESET);
 
@@ -177,7 +176,7 @@ class Engine {
     }
 
     private function runController(): void {
-        $this->handleRequest([]);
+        $this->handleRequest();
     }
 
     private function handleRequest(array $responseParams = array()): void {

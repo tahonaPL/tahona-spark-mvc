@@ -20,6 +20,7 @@ use Spark\Core\Filter\HttpFilter;
 use Spark\Core\Interceptor\HandlerInterceptor;
 use Spark\Core\Lang\LangMessageResource;
 use Spark\Core\Lang\LangResourcePath;
+use Spark\Core\Routing\Exception\RouteNotFoundException;
 use Spark\Core\Routing\RoutingDefinition;
 use Spark\Http\RequestProvider;
 use Spark\Http\Session\SessionProvider;
@@ -41,6 +42,8 @@ class StaticClassContextLoader implements ContextLoader {
 
     private const CLS = 'DataLoader';
 
+    private const ERROR_CONTEXT = 'ErrorContext';
+
     public function __construct() {
     }
 
@@ -58,32 +61,31 @@ class StaticClassContextLoader implements ContextLoader {
                 $headers = RequestUtils::getHeaders();
                 $method = RequestUtils::getMethod();
 
-                $def = FluentIterables::of($this->contexts)
+                $definition = FluentIterables::of($this->contexts)
                     ->flatMap(Functions::getSameObject())
                     ->findFirst(function ($def) use ($path, $headers, $method) {
                         return RoutingUtils::hasExpressionParams($def['path'], $path, $def['params'])
                             && RoutingUtils::isDefinitionCorrect($def['methods'], $def['headers'], $headers, $method);
-                    })->orElse(null);
+                    })->orElse(['context' => self::ERROR_CONTEXT]);
 
-                $name = $def['context'];
+                $name = $definition['context'];
 
                 return StaticClassFactory::getObject($name);
             }
         }
+
+        throw new IllegalStateException('No application context found !');
     }
 
-    public
-    function hasData(): bool {
+    public function hasData(): bool {
         return StaticClassFactory::isExist(self::CLS);
     }
 
-    public
-    function clear() {
+    public function clear() {
         StaticClassFactory::removeClass(self::CLS);
     }
 
-    public
-    function save(Config $config, Container $container, Routing $route, $exceptionResolvers) {
+    public function save(Config $config, Container $container, Routing $route, $exceptionResolvers) {
 
         $allDefinitions = $route->getDefinitions();
 
@@ -102,27 +104,54 @@ class StaticClassContextLoader implements ContextLoader {
 //                StaticClassFactory::createClass($bd->getName(), $bd->getBean());
 //            });
 
+        $httpFilters = $container->getByType(HttpFilter::class);
+        $interceptors = $container->getByType(HandlerInterceptor::class);
+        $globalErrorHandler = $container->get(GlobalErrorHandler::NAME);
+        $commands = $container->getByType(Command::class);
+        $langResources = $container->get(LangMessageResource::NAME);
+        $langResourcePaths = $container->getByType(LangResourcePath::class);
+        $viewHandlers = $container->get(ViewHandlerProvider::NAME);
+        $fillers = $container->getByType(MultiFiller::class);
+        $requestProvider = $container->get(RequestProvider::NAME);
+
+
+        $context = new Context(
+            $config,
+            $route,
+            $httpFilters,
+            $interceptors,
+            null,
+            $exceptionResolvers,
+            $globalErrorHandler,
+            $commands,
+            $langResources,
+            $langResourcePaths,
+            null,
+            $viewHandlers,
+            $fillers,
+            $requestProvider
+        );
+        StaticClassFactory::createClass(self::ERROR_CONTEXT, $context);
 
         foreach ($controllers as $controllerName => $controllerDefinitions) {
             $route = new Routing($controllerDefinitions);
             $route->setSessionProvider($container->get('sessionProvider'));
 
-
             $context = new Context(
                 $config,
                 $route,
-                $container->getByType(HttpFilter::class),
-                $container->getByType(HandlerInterceptor::class),
+                $httpFilters,
+                $interceptors,
                 $container->get($controllerName),
                 $exceptionResolvers,
-                $container->get(GlobalErrorHandler::NAME),
-                $container->getByType(Command::class),
-                $container->get(LangMessageResource::NAME),
-                $container->getByType(LangResourcePath::class),
+                $globalErrorHandler,
+                $commands,
+                $langResources,
+                $langResourcePaths,
                 null,
-                $container->get(ViewHandlerProvider::NAME),
-                $container->getByType(MultiFiller::class),
-                $container->get(RequestProvider::NAME)
+                $viewHandlers,
+                $fillers,
+                $requestProvider
             );
 
             $contextClassName = StringUtils::replace($controllerName, '\\', '') . 'Context';

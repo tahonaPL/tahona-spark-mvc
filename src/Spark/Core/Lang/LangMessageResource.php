@@ -78,7 +78,7 @@ class LangMessageResource {
             ->map(Functions::getArrayValue($this->getLang()))
             ->map(Functions::getArrayValue($code))
             ->getOrNull();
-        
+
         if (Objects::isNull($message)) {
             $optionalLang = Collections::stream($this->languages)
                 ->findFirst(function ($lang) use ($code) {
