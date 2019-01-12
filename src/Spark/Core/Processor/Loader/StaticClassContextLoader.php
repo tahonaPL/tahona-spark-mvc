@@ -114,7 +114,6 @@ class StaticClassContextLoader implements ContextLoader {
         $fillers = $container->getByType(MultiFiller::class);
         $requestProvider = $container->get(RequestProvider::NAME);
 
-        var_dump($requestProvider);
         $context = new Context();
         $context->add(ContextType::COMMANDS, $commands)
             ->add(ContextType::ROUTE, $route)
