@@ -42,14 +42,8 @@ class GlobalErrorHandler {
      */
     private $requestDataFactory;
 
-    /**
-     * GlobalErrorHandler constructor.
-     */
-    public function __construct(Engine $engine) {
+    public function setup(Engine $engine, $resolvers = array()) {
         $this->engine = $engine;
-    }
-
-    public function setup($resolvers = array()) {
         $this->exceptionResolvers = $resolvers;
         set_exception_handler(array($this, self::EXCEPTION_HANDLER));
         set_error_handler(array($this, self::ERROR_HANDLER));

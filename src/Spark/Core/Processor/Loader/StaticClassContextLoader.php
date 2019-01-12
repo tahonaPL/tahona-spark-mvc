@@ -114,45 +114,44 @@ class StaticClassContextLoader implements ContextLoader {
         $fillers = $container->getByType(MultiFiller::class);
         $requestProvider = $container->get(RequestProvider::NAME);
 
+        var_dump($requestProvider);
+        $context = new Context();
+        $context->add(ContextType::COMMANDS, $commands)
+            ->add(ContextType::ROUTE, $route)
+            ->add(ContextType::CONFIG, $config)
+            ->add(ContextType::EXCEPTION_RESOLVERS, $exceptionResolvers)
+            ->add(ContextType::FILLERS, $fillers)
+            ->add(ContextType::GLOBAL_ERROR_HANDLER, $globalErrorHandler)
+            ->add(ContextType::HTTP_FILTERS, $httpFilters)
+            ->add(ContextType::INTERCEPTORS, $interceptors)
+            ->add(ContextType::REQUEST_PROVIDER, $requestProvider)
+            ->add(ContextType::VIEW_HANDLERS, $viewHandlers)
+            ->add(ContextType::COMMANDS, $commands);
 
-        $context = new Context(
-            $config,
-            $route,
-            $httpFilters,
-            $interceptors,
-            null,
-            $exceptionResolvers,
-            $globalErrorHandler,
-            $commands,
-            $langResources,
-            $langResourcePaths,
-            null,
-            $viewHandlers,
-            $fillers,
-            $requestProvider
-        );
         StaticClassFactory::createClass(self::ERROR_CONTEXT, $context);
+
 
         foreach ($controllers as $controllerName => $controllerDefinitions) {
             $route = new Routing($controllerDefinitions);
             $route->setSessionProvider($container->get('sessionProvider'));
 
-            $context = new Context(
-                $config,
-                $route,
-                $httpFilters,
-                $interceptors,
-                $container->get($controllerName),
-                $exceptionResolvers,
-                $globalErrorHandler,
-                $commands,
-                $langResources,
-                $langResourcePaths,
-                null,
-                $viewHandlers,
-                $fillers,
-                $requestProvider
-            );
+            $context = new Context();
+
+            $context->add(ContextType::COMMANDS, $commands)
+                ->add(ContextType::CONTROLLER, $container->get($controllerName))
+                ->add(ContextType::CONFIG, $config)
+                ->add(ContextType::ROUTE, $route)
+                ->add(ContextType::EXCEPTION_RESOLVERS, $exceptionResolvers)
+                ->add(ContextType::FILLERS, $fillers)
+                ->add(ContextType::GLOBAL_ERROR_HANDLER, $globalErrorHandler)
+                ->add(ContextType::HTTP_FILTERS, $httpFilters)
+                ->add(ContextType::INTERCEPTORS, $interceptors)
+                ->add(ContextType::LANG_RESOURCE_PATHS, $langResourcePaths)
+                ->add(ContextType::LANG_RESOURCES, $langResources)
+                ->add(ContextType::REQUEST_PROVIDER, $requestProvider)
+                ->add(ContextType::VIEW_HANDLERS, $viewHandlers)
+                ->add(ContextType::COMMANDS, $commands)//
+            ;
 
             $contextClassName = StringUtils::replace($controllerName, '\\', '') . 'Context';
             StaticClassFactory::createClass($contextClassName, $context);

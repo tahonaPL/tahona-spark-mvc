@@ -35,6 +35,7 @@ use Spark\Core\Library\Annotations;
 use Spark\Core\Library\BeanLoader;
 use Spark\Core\Processor\InitAnnotationProcessors;
 use Spark\Core\Processor\Loader\Context;
+use Spark\Core\Processor\Loader\ContextType;
 use Spark\Core\Processor\Loader\StaticClassContextLoader;
 use Spark\Core\Provider\BeanProvider;
 use Spark\Core\Routing\Factory\RequestDataFactory;
@@ -110,7 +111,8 @@ class Engine {
         if ($this->contextLoader->hasData()) {
             $this->context = $this->contextLoader->getContext();
 
-            $resetParam = $this->context->getConfig()->getProperty(EnableApcuAnnotationHandler::APCU_CACHE_RESET);
+            $resetParam = $this->context->get(ContextType::CONFIG)
+                ->getProperty(EnableApcuAnnotationHandler::APCU_CACHE_RESET);
 
             if (isset($_GET[$resetParam])) {
                 $this->contextLoader->clear();
@@ -162,8 +164,8 @@ class Engine {
         }
 
         /** @var GlobalErrorHandler $globalErrorHandler */
-        $globalErrorHandler = $this->context->getGlobalErrorHandler();
-        $globalErrorHandler->setup($this->context->getExceptionResolvers());
+        $globalErrorHandler = $this->context->get(ContextType::GLOBAL_ERROR_HANDLER);
+        $globalErrorHandler->setup($this, $this->context->get(ContextType::EXCEPTION_RESOLVERS));
     }
 
     public function run(): void {
@@ -183,7 +185,7 @@ class Engine {
         $this->devToolsInit();
 
         $registeredHostPath = UrlUtils::getHost();
-        $requestData = $this->context->getRoute()
+        $requestData = $this->context->get(ContextType::ROUTE)
             ->createRequest($registeredHostPath);
 
         //TODO!!!!!!!!!!!!!!!!!!!!
@@ -196,7 +198,7 @@ class Engine {
         //Controller
 
         /** @var $controller Controller */
-        $controller = $this->context->getController();
+        $controller = $this->context->get(ContextType::CONTROLLER);
 
         if ($controller instanceof Controller) {
             $controller->init($requestData, $responseParams);
@@ -207,7 +209,7 @@ class Engine {
     }
 
     private function devToolsInit(): void {
-        $enabled = $this->context->getConfig()->getProperty(Config::DEV_ENABLED);
+        $enabled = $this->context->get(ContextType::CONFIG)->getProperty(Config::DEV_ENABLED);
         if ($enabled) {
             RequestUtils::setCookie('XDEBUG_SESSION', true);
         }
@@ -241,7 +243,7 @@ class Engine {
 
         $container->registerObj($config);
         $container->registerObj($route);
-        $container->registerObj(new GlobalErrorHandler($this));
+        $container->registerObj(new GlobalErrorHandler());
 
         $container->registerObj(new SimpleMultiFiller());
         $container->registerObj(new RequestFiller());
@@ -305,7 +307,7 @@ class Engine {
      * @param Request $request
      */
     private function handleView($viewModel, $request): void {
-        $handler = $this->context->getViewHandlers();
+        $handler = $this->context->get(ContextType::VIEW_HANDLERS);
 
         Asserts::notNull($handler, 'No handler found for response object' . Objects::getClassName($viewModel));
 
@@ -315,7 +317,7 @@ class Engine {
 
 
     private function executeFilter( Request $request): void {
-        $filters = $this->context->getHttpFilters();
+        $filters = $this->context->get(ContextType::HTTP_FILTERS);
 
         if (Collections::isNotEmpty($filters)) {
             $filtersIterator = new \ArrayIterator($filters);
@@ -325,7 +327,7 @@ class Engine {
     }
 
     private function preHandleInterceptor(Request $request): void {
-        $interceptors = $this->context->getInterceptors();
+        $interceptors = $this->context->get(ContextType::INTERCEPTORS);
 
         /** @var HandlerInterceptor $interceptor */
         foreach ($interceptors as $interceptor) {
@@ -336,7 +338,7 @@ class Engine {
     }
 
     private function postHandleIntercetors(Request $request, Response $response): void {
-        $interceptors = $this->context->getInterceptors();
+        $interceptors = $this->context->get(ContextType::INTERCEPTORS);
 
         /** @var HandlerInterceptor $interceptor */
         foreach ($interceptors as $interceptor) {
@@ -371,7 +373,7 @@ class Engine {
      */
     public function updateRequestProvider(Request $request): void {
         /** @var RequestProvider $requestProvider */
-        $requestProvider = $this->context->getRequestProvider();
+        $requestProvider = $this->context->get(ContextType::REQUEST_PROVIDER);
         $requestProvider->setRequest($request);
     }
 
@@ -379,7 +381,7 @@ class Engine {
         $input = new InputInterface();
         $out = new OutputInterface();
 
-        $commands = $this->context->getCommands();
+        $commands = $this->context->get(ContextType::COMMANDS);
         Collections::builder($commands)
             ->filter(Predicates::compute(Functions::get('name'), function ($n) use ($input) {
                 return StringUtils::startsWith($n, $input->get('command'));
@@ -400,7 +402,7 @@ class Engine {
 
     private function executeFillers(RoutingDefinition $rf): array {
         $parameters = $rf->getActionMethodParameters();
-        $simpleFiller = $this->context->getFillers();
+        $simpleFiller = $this->context->get(ContextType::FILLERS);
 
 
         $tmpParameters = $parameters;
