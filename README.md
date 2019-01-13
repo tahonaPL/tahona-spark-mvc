@@ -3,8 +3,7 @@
 
 ### What is this repository for? ###
 
-PHP framework with autoloading and annotations. All configuration is handled by annotations and beans.
-Framework is designed to work with APCu cache.
+Very fast PHP framework with autoloading and annotations. All configuration is handled by annotations and beans.
 
 
 
@@ -16,7 +15,6 @@ Bean injection can be achieved with **@Inject** annotation.
 Initialization is done on the first request. The second request execute Controllers  action, that has  already injected beans in it.
 
 Request execution time is very small because it's time of user code execution only.
-
 
 Thanks to this,  for real production code we got **20ms-40ms** per request for dynamic data.
 
@@ -681,15 +679,15 @@ composer dump-autoload -a
 
 **Tested Case**: Real project with small database. AB(Apache benchmark) requests 10000 and 1000 parallel connections.
 
-* **Apcu**: only apcu installed, but with Smarty template rendering for each request (Development mode).
-* **Apcu and Smarty**: apcu installed, and smarty with production setup.
-* **Apcu, Smarty, @Cache**: request to database are cached with @Cache annotation. It can give big improvement to performance when there is more calls to DB.
+* **Smarty compile**:  Smarty template rendering for each request (Development mode).
+* **Smarty**: smarty with production setup.
+* **Smarty + @Cache (Redis)**: request to database are cached with @Cache annotation (we use Redis for caching). It can give big improvement to performance when there is more calls to DB.
 
 |Mode| Request time (per request)|
 |----| ------------- |
-|Apcu| ~630ms|
-|Smarty and Apcu | ~40ms  |
-|Apcu, Smarty, @Cache | **~25ms** |
+|Smarty compile| ~130ms|
+|Smarty | ~45ms  |
+|Smarty + @Cache (Redis) | **~25ms** |
 
 ### Installation - Composer ###
 
