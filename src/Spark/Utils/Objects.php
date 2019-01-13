@@ -56,7 +56,12 @@ class Objects {
 
     public static function getSimpleClassName($obj) {
         Asserts::notNull($obj);
-        return StringUtils::join('', \array_slice(StringUtils::split(\get_class($obj), '\\'), -1));
+        return self::simplifyName(\get_class($obj));
+    }
+
+    public static function simplifyName($className): string {
+        Asserts::notNull($className);
+        return StringUtils::join('', \array_slice(StringUtils::split($className, '\\'), -1));
     }
 
     public static function getClassName($obj) {

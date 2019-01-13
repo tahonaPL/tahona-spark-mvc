@@ -125,7 +125,7 @@ class FluentIterables{
 
     public function findFirst(\Closure $func = null): Optional {
         if (Objects::isNull($func)) {
-            return Collections::findFirst($this->collection, function ($obj) {
+            return Collections::findFirst($this->collection, function ($obj, $k) {
                 return Objects::isNotNull($obj);
             });
         }

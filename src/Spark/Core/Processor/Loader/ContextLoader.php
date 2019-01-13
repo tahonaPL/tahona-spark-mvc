@@ -13,7 +13,7 @@ use Spark\Routing;
 interface ContextLoader {
     public function hasData(): bool;
 
-    public function getContext(): Context;
+    public function getContext($contextLoaderType): Context;
 
     public function clear();
 

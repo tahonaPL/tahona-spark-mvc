@@ -35,6 +35,7 @@ use Spark\Core\Library\Annotations;
 use Spark\Core\Library\BeanLoader;
 use Spark\Core\Processor\InitAnnotationProcessors;
 use Spark\Core\Processor\Loader\Context;
+use Spark\Core\Processor\Loader\ContextLoaderType;
 use Spark\Core\Processor\Loader\ContextType;
 use Spark\Core\Processor\Loader\StaticClassContextLoader;
 use Spark\Core\Provider\BeanProvider;
@@ -93,6 +94,7 @@ class Engine {
      * @var Context
      */
     private $context;
+    private $contextLoaderType;
 
     public function __construct(string $appName, $profile, array $rootAppPath) {
         Asserts::checkState(\extension_loaded('apcu'), 'Apcu Cache enable is mandatory!');
@@ -104,12 +106,13 @@ class Engine {
         $appPaths = $rootAppPath;
         $this->appPath = $appPaths[0];
 
+        $this->contextLoaderType = $this->getContextLoaderType();
+
         $this->beanCache = new ApcuBeanCache();
         $this->contextLoader = new StaticClassContextLoader();
 
-
         if ($this->contextLoader->hasData()) {
-            $this->context = $this->contextLoader->getContext();
+            $this->context = $this->contextLoader->getContext($this->contextLoaderType);
 
             $resetParam = $this->context->get(ContextType::CONFIG)
                 ->getProperty(EnableApcuAnnotationHandler::APCU_CACHE_RESET);
@@ -160,7 +163,7 @@ class Engine {
                 $route,
                 $container->getByType(ExceptionResolver::class)
             );
-            $this->context = $this->contextLoader->getContext();
+            $this->context = $this->contextLoader->getContext($this->contextLoaderType);
         }
 
         /** @var GlobalErrorHandler $globalErrorHandler */
@@ -169,16 +172,11 @@ class Engine {
     }
 
     public function run(): void {
-
-        if (SystemUtils::isCommandLineInterface()) {
+        if ($this->contextLoaderType === ContextLoaderType::COMMANDS) {
             $this->runCommand();
         } else {
-            $this->runController();
+            $this->handleRequest();
         }
-    }
-
-    private function runController(): void {
-        $this->handleRequest();
     }
 
     private function handleRequest(array $responseParams = array()): void {
@@ -255,7 +253,7 @@ class Engine {
         $this->addViewHandlersToService($container);
     }
 
-    private function afterAllBean(Container $container , Routing $route): void {
+    private function afterAllBean(Container $container, Routing $route): void {
         $resourcePaths = $container->getByType(LangResourcePath::class);
 
         /** @var LangMessageResource $resource */
@@ -316,7 +314,7 @@ class Engine {
     }
 
 
-    private function executeFilter( Request $request): void {
+    private function executeFilter(Request $request): void {
         $filters = $this->context->get(ContextType::HTTP_FILTERS);
 
         if (Collections::isNotEmpty($filters)) {
@@ -449,6 +447,9 @@ class Engine {
         return $this->appPath . '/src';
     }
 
+    private function getContextLoaderType(): string {
+        return SystemUtils::isCommandLineInterface() ? ContextLoaderType::COMMANDS : ContextLoaderType::CONTROLLER;
+    }
 
 
 }

@@ -14,6 +14,7 @@ use Spark\Config;
 use Spark\Container;
 use Spark\Core\Command\Command;
 use Spark\Core\Definition\BeanDefinition;
+use Spark\Core\Error\ExceptionResolver;
 use Spark\Core\Error\GlobalErrorHandler;
 use Spark\Core\Filler\MultiFiller;
 use Spark\Core\Filter\HttpFilter;
@@ -31,6 +32,7 @@ use Spark\Utils\Asserts;
 use Spark\Utils\Collections;
 use Spark\Utils\FileUtils;
 use Spark\Utils\Functions;
+use Spark\Utils\Objects;
 use Spark\Utils\StringFunctions;
 use Spark\Utils\StringUtils;
 use Spark\Utils\UrlUtils;
@@ -40,17 +42,18 @@ class StaticClassContextLoader implements ContextLoader {
 
     private $contexts;
 
-    private const CLS = 'DataLoader';
-
     private const ERROR_CONTEXT = 'ErrorContext';
 
     public function __construct() {
     }
 
+    public function getContext($contextLoaderType): Context {
+        if ($contextLoaderType === ContextLoaderType::COMMANDS) {
+            return StaticClassFactory::getObject(ContextLoaderType::COMMANDS);
+        }
 
-    public function getContext(): Context {
         if ($this->hasData()) {
-            $this->contexts = StaticClassFactory::getObject(self::CLS);
+            $this->contexts = StaticClassFactory::getObject(ContextLoaderType::CONTROLLER);
 
             $path = UrlUtils::getSimplePath();
 
@@ -69,7 +72,6 @@ class StaticClassContextLoader implements ContextLoader {
                     })->orElse(['context' => self::ERROR_CONTEXT]);
 
                 $name = $definition['context'];
-
                 return StaticClassFactory::getObject($name);
             }
         }
@@ -78,15 +80,39 @@ class StaticClassContextLoader implements ContextLoader {
     }
 
     public function hasData(): bool {
-        return StaticClassFactory::isExist(self::CLS);
+        return StaticClassFactory::isExist(ContextLoaderType::CONTROLLER);
     }
 
     public function clear() {
-        StaticClassFactory::removeClass(self::CLS);
+        StaticClassFactory::removeClass(ContextLoaderType::CONTROLLER);
     }
 
     public function save(Config $config, Container $container, Routing $route, $exceptionResolvers) {
 
+        $this->storeCommandData($container);
+        $this->storeControllerData($config, $container, $route, $exceptionResolvers);
+    }
+
+    private function storeCommandData(Container $container) {
+        $globalErrorHandler = $container->get(GlobalErrorHandler::NAME);
+        $commands = $container->getByType(Command::class);
+
+        $context = new Context();
+        $context->add(ContextType::COMMANDS, $commands)
+            ->add(ContextType::EXCEPTION_RESOLVERS, $container->getByType(ExceptionResolver::class))
+            ->add(ContextType::CONFIG, $container->get(Config::class))
+            ->add(ContextType::GLOBAL_ERROR_HANDLER, $globalErrorHandler);
+
+        StaticClassFactory::createClass(ContextLoaderType::COMMANDS, $context);
+    }
+
+    /**
+     * @param Config $config
+     * @param Container $container
+     * @param Routing $route
+     * @param $exceptionResolvers
+     */
+    private function storeControllerData(Config $config, Container $container, Routing $route, $exceptionResolvers): void {
         $allDefinitions = $route->getDefinitions();
 
         $controllers = $allDefinitions
@@ -124,15 +150,14 @@ class StaticClassContextLoader implements ContextLoader {
             ->add(ContextType::HTTP_FILTERS, $httpFilters)
             ->add(ContextType::INTERCEPTORS, $interceptors)
             ->add(ContextType::REQUEST_PROVIDER, $requestProvider)
-            ->add(ContextType::VIEW_HANDLERS, $viewHandlers)
-            ->add(ContextType::COMMANDS, $commands);
+            ->add(ContextType::VIEW_HANDLERS, $viewHandlers);
 
         StaticClassFactory::createClass(self::ERROR_CONTEXT, $context);
 
 
         foreach ($controllers as $controllerName => $controllerDefinitions) {
             $route = new Routing($controllerDefinitions);
-            $route->setSessionProvider($container->get('sessionProvider'));
+            $route->setSessionProvider($container->get(SessionProvider::class));
 
             $context = new Context();
 
@@ -149,7 +174,6 @@ class StaticClassContextLoader implements ContextLoader {
                 ->add(ContextType::LANG_RESOURCES, $langResources)
                 ->add(ContextType::REQUEST_PROVIDER, $requestProvider)
                 ->add(ContextType::VIEW_HANDLERS, $viewHandlers)
-                ->add(ContextType::COMMANDS, $commands)//
             ;
 
             $contextClassName = StringUtils::replace($controllerName, '\\', '') . 'Context';
@@ -168,7 +192,8 @@ class StaticClassContextLoader implements ContextLoader {
                 ];
             }
         }
-        StaticClassFactory::createArrayClass(self::CLS, $dataLoader);
+        StaticClassFactory::createArrayClass(ContextLoaderType::CONTROLLER, $dataLoader);
     }
+
 
 }

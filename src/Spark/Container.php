@@ -4,6 +4,7 @@ namespace Spark;
 
 use Spark\Common\Collection\FluentIterables;
 use Spark\Common\IllegalStateException;
+use Spark\Common\Optional;
 use Spark\Common\Type\Orderable;
 use Spark\Core\Definition\BeanConstructorFactory;
 use Spark\Core\Definition\BeanDefinition;
@@ -413,6 +414,11 @@ class Container {
      * @return BeanDefinition
      */
     private function getBeanDefinition($name) {
+        $name = Optional::of($name)
+            ->filter(function ($name) {
+                return $this->hasBean($name);
+            })->orElse(lcfirst(Objects::simplifyName($name)));
+
         Asserts::checkState($this->hasBean($name), 'No bean with name: ' . $name);
         return $this->beanContainer[$name];
     }

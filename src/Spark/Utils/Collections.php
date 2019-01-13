@@ -111,7 +111,7 @@ final class Collections {
         return $resultArray;
     }
 
-    public static function hasKey($collection = array(), $key) : bool {
+    public static function hasKey($collection = array(), $key): bool {
         return true === array_key_exists($key, (array)$collection);
     }
 
@@ -299,8 +299,8 @@ final class Collections {
      * @return Optional
      */
     public static function findFirst($collection = array(), \Closure $func) {
-        foreach ($collection as $v) {
-            if ($func($v)) {
+        foreach ($collection as $k => $v) {
+            if ($func($v, $k)) {
                 return Optional::of($v);
             }
         }
