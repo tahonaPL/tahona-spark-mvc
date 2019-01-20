@@ -111,6 +111,7 @@ class SmartyViewHandler extends ViewHandler {
             $smarty->setErrorReporting($smartyConfig->get(self::ERROR_REPORTING, E_ALL & ~E_NOTICE));
 
             $this->smarty = $smarty;
+            $this->config = null;
         }
     }
 

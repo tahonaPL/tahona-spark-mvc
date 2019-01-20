@@ -23,7 +23,7 @@ class RedirectViewHandler extends ViewHandler {
     public const NAME = 'redirectViewHandler';
 
     /**
-     * @Inject
+     * Inject
      * @var Routing
      */
     private $routing;
@@ -43,7 +43,8 @@ class RedirectViewHandler extends ViewHandler {
             $redirect = $viewModel->getUrl();
             if (StringUtils::isNotBlank($redirect)) {
 
-                $resolved = $this->routing->resolveRoute($redirect, $viewModel->getParams());
+                $resolved = Routing::get()->resolveRoute($redirect, $viewModel->getParams());
+
                 if ($resolved !== $redirect) {
                     $request->instantRedirect($resolved);
                 } else {

@@ -8,10 +8,10 @@
 
 namespace Spark\Core\Provider;
 
-
 use Spark\Container;
+use Spark\Core\Processor\Cycle\BeanPostProcess;
 
-class BeanProvider {
+class BeanProvider implements BeanPostProcess {
     public const NAME = 'beanProvider';
 
     /**
@@ -30,6 +30,7 @@ class BeanProvider {
     public function getBean($string) {
         return $this->container->get($string);
     }
+
     public function hasBean($string) {
         return $this->container->hasBean($string);
     }
@@ -38,9 +39,7 @@ class BeanProvider {
         return $this->container->getByType($className);
     }
 
-    public function clear() {
+    public function afterInit(): void {
         $this->container = null;
     }
-
-
 }

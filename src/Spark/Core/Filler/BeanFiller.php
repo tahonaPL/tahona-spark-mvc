@@ -17,7 +17,6 @@ class BeanFiller implements Filler {
      */
     private $beanProvider;
 
-
     public function getValue($name, $type) {
         if ($this->beanProvider->hasBean($name)) {
             $bean = $this->beanProvider->getBean($name);

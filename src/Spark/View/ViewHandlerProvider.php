@@ -19,7 +19,7 @@ use Spark\Utils\Objects;
 
 class ViewHandlerProvider {
 
-    const NAME = 'viewHandlerProvider';
+    public const NAME = 'viewHandlerProvider';
 
     /**
      * @Inject()
