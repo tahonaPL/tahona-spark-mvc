@@ -6,10 +6,8 @@
 
 namespace Spark\Core\Processor\Loader;
 
-
 use Spark\Common\Collection\FluentIterables;
 use Spark\Common\IllegalStateException;
-use Spark\Common\Optional;
 use Spark\Config;
 use Spark\Container;
 use Spark\Core\Command\Command;
@@ -21,20 +19,16 @@ use Spark\Core\Filter\HttpFilter;
 use Spark\Core\Interceptor\HandlerInterceptor;
 use Spark\Core\Lang\LangMessageResource;
 use Spark\Core\Lang\LangResourcePath;
-use Spark\Core\Routing\Exception\RouteNotFoundException;
+use Spark\Core\Processor\Cycle\BeanPostProcess;
 use Spark\Core\Routing\RoutingDefinition;
 use Spark\Http\RequestProvider;
 use Spark\Http\Session\SessionProvider;
 use Spark\Http\Utils\RequestUtils;
 use Spark\Routing;
 use Spark\Routing\RoutingUtils;
-use Spark\Utils\Asserts;
 use Spark\Utils\Collections;
-use Spark\Utils\FileUtils;
 use Spark\Utils\Functions;
 use Spark\Utils\Objects;
-use Spark\Utils\StringFunctions;
-use Spark\Utils\StringUtils;
 use Spark\Utils\UrlUtils;
 use Spark\View\ViewHandlerProvider;
 
@@ -88,7 +82,6 @@ class StaticClassContextLoader implements ContextLoader {
     }
 
     public function save(Config $config, Container $container, Routing $route, $exceptionResolvers) {
-
         $this->storeCommandData($container);
         $this->storeControllerData($config, $container, $route, $exceptionResolvers);
     }
@@ -115,20 +108,27 @@ class StaticClassContextLoader implements ContextLoader {
     private function storeControllerData(Config $config, Container $container, Routing $route, $exceptionResolvers): void {
         $allDefinitions = $route->getDefinitions();
 
-        $controllers = $allDefinitions
+        $allDefinitions = $allDefinitions
             ->flatMap(Functions::getSameObject())
-            ->groupBy(function ($def) {
-                /** @var RoutingDefinition $def */
-                return $def->getControllerClassName();
-            })->get();
+            ->get();
 
         $dataLoader = [];
+
+        $beanPostProcesses = $container->getByType(BeanPostProcess::class);
+
+        Collections::stream($beanPostProcesses)
+            ->each(function ($bpp) {
+                /** @var BeanPostProcess $bpp */
+                $bpp->afterInit();
+            });
 
 //        FluentIterables::of($container->getAll())
 //            ->each(function ($bd) {
 //                /** @var BeanDefinition $bd */
 //                StaticClassFactory::createClass($bd->getName(), $bd->getBean());
 //            });
+//
+//        exit;
 
         $httpFilters = $container->getByType(HttpFilter::class);
         $interceptors = $container->getByType(HandlerInterceptor::class);
@@ -141,13 +141,14 @@ class StaticClassContextLoader implements ContextLoader {
         $requestProvider = $container->get(RequestProvider::NAME);
 
         $context = new Context();
-        $context->add(ContextType::COMMANDS, $commands)
+        $context
+            ->add(ContextType::COMMANDS, $commands)
             ->add(ContextType::ROUTE, $route)
             ->add(ContextType::CONFIG, $config)
             ->add(ContextType::EXCEPTION_RESOLVERS, $exceptionResolvers)
             ->add(ContextType::FILLERS, $fillers)
             ->add(ContextType::GLOBAL_ERROR_HANDLER, $globalErrorHandler)
-            ->add(ContextType::HTTP_FILTERS, $httpFilters)
+            ->add(ContextType::HTTP_FILTERS, $fillers)
             ->add(ContextType::INTERCEPTORS, $interceptors)
             ->add(ContextType::REQUEST_PROVIDER, $requestProvider)
             ->add(ContextType::VIEW_HANDLERS, $viewHandlers);
@@ -155,13 +156,16 @@ class StaticClassContextLoader implements ContextLoader {
         StaticClassFactory::createClass(self::ERROR_CONTEXT, $context);
 
 
-        foreach ($controllers as $controllerName => $controllerDefinitions) {
-            $route = new Routing($controllerDefinitions);
+        foreach ($allDefinitions as $definition) {
+
+            /** @var RoutingDefinition $definition */
+            $route = new Routing([$definition]);
             $route->setSessionProvider($container->get(SessionProvider::class));
 
             $context = new Context();
 
-            $context->add(ContextType::COMMANDS, $commands)
+            $controllerName = $definition->getControllerClassName();
+            $context
                 ->add(ContextType::CONTROLLER, $container->get($controllerName))
                 ->add(ContextType::CONFIG, $config)
                 ->add(ContextType::ROUTE, $route)
@@ -173,27 +177,24 @@ class StaticClassContextLoader implements ContextLoader {
                 ->add(ContextType::LANG_RESOURCE_PATHS, $langResourcePaths)
                 ->add(ContextType::LANG_RESOURCES, $langResources)
                 ->add(ContextType::REQUEST_PROVIDER, $requestProvider)
-                ->add(ContextType::VIEW_HANDLERS, $viewHandlers)
+                ->add(ContextType::VIEW_HANDLERS, $viewHandlers);
             ;
 
-            $contextClassName = StringUtils::replace($controllerName, '\\', '') . 'Context';
+            $contextClassName = Objects::simplifyName($controllerName) . 'Context_' . $definition->getId();
             StaticClassFactory::createClass($contextClassName, $context);
 
-            foreach ($controllerDefinitions as $def) {
-                /** @var RoutingDefinition $def */
-                $path = $def->getPath();
+            /** @var RoutingDefinition $def */
+            $path = $definition->getPath();
 
-                $dataLoader[$path][] = [
-                    'context' => $contextClassName,
-                    'path' => $path,
-                    'params' => $def->getParams(),
-                    'methods' => $def->getRequestMethods(),
-                    'headers' => $def->getRequestHeaders()
-                ];
-            }
+            $dataLoader[$path][] = [
+                'context' => $contextClassName,
+                'path' => $path,
+                'params' => $definition->getParams(),
+                'methods' => $definition->getRequestMethods(),
+                'headers' => $definition->getRequestHeaders()
+            ];
         }
         StaticClassFactory::createArrayClass(ContextLoaderType::CONTROLLER, $dataLoader);
     }
-
 
 }

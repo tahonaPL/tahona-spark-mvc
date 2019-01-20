@@ -5,6 +5,7 @@ namespace Spark;
 use foo\bar;
 use Spark\Common\Collection\FluentIterables;
 use Spark\Common\IllegalStateException;
+use Spark\Core\Processor\Cycle\BeanPostProcess;
 use Spark\Core\Routing\Exception\RouteNotFoundException;
 use Spark\Core\Routing\RequestData;
 use Spark\Core\Routing\RoutingDefinition;
@@ -18,7 +19,7 @@ use Spark\Utils\Functions;
 use Spark\Utils\StringUtils;
 use Spark\Utils\UrlUtils;
 
-class Routing {
+class Routing implements BeanPostProcess {
 
     public const CONTROLLER_NAME = 'controller';
     public const METHOD_NAME = 'method';
@@ -28,16 +29,24 @@ class Routing {
     public const ROLES = 'roles';
     public const PARAMS = 'params';
 
+    private static $INSTANCE;
+
     private $routing;
     private $parametrizedRouting = array();
 
     private $definitions;
     private $sessionProvider;
 
-    public function __construct(array $definitions) {
+    public function __construct(array $routingDefinitions) {
         $this->definitions = [];
         $this->routing = [];
-        $this->addAll($definitions);
+        $this->addAll($routingDefinitions);
+
+        self::$INSTANCE = $this;
+    }
+
+    public static function get(): Routing {
+        return self::$INSTANCE;
     }
 
     /**
@@ -71,58 +80,20 @@ class Routing {
      */
     private function getDefinition($urlPath) {
 
-        if (isset($this->routing[$urlPath])) {
-            $routesDefinitions = $this->routing[$urlPath];
+        $path = $this->definitions[0];
 
-            $routeDefinition = RoutingUtils::findRouteDefinition($routesDefinitions, false);
-            if (!$routeDefinition->isPresent()) {
-                $routeDefinition = RoutingUtils::findRouteDefinition($routesDefinitions);
-            }
-
-            return $routeDefinition->orElseThrow(new RouteNotFoundException(RequestUtils::getMethod(), $urlPath));
-
-        } else {
-
-            $ctx = $this;
-
-            $routeDefinition = Collections::stream($this->parametrizedRouting)
-                ->flatMap(function ($def) {
-                    return $def;
-                })
-                ->findFirst(function ($definition) use ($urlPath, $ctx) {
-                    if (RoutingUtils::hasExpressionParams($definition->getPath(), $urlPath, $definition->getParams())) {
-                        $optional = RoutingUtils::findRouteDefinition(array($definition));
-                        return $optional->orElse(null);
-                    }
-                    return null;
-                });
-
-            /** @var RoutingDefinition $definition */
-            $definition = $routeDefinition->orElseThrow(new RouteNotFoundException(RequestUtils::getMethod(), $urlPath));
-
-            $definitionsWithSamePath = $this->parametrizedRouting[$definition->getPath()];
-            $size = Collections::size($definitionsWithSamePath);
-            if ($size > 1) {
-                $definition = RoutingUtils::findRouteDefinition($definitionsWithSamePath, false)->orElse($definition);
-            }
-
-            return $definition;
+        if (Collections::hasKey($this->routing, $path)) {
+            return $this->routing[$path][0];
         }
+
+        return $this->parametrizedRouting[$path][0];
+
     }
 
     public function setSessionProvider(SessionProvider $sessionProvider) {
         $this->sessionProvider = $sessionProvider;
     }
 
-    /**
-     * @param $route
-     * @param $urlPath
-     * @return bool
-     */
-    private function checkAllPathElements($route, $urlPath) {
-        $keys = RoutingUtils::getParametrizedUrlKeys($route);
-        return RoutingUtils::hasExpressionParams($route, $urlPath, $keys);
-    }
 
     private function extractUrlParameters($urlPath, RoutingDefinition $routeDefinition) {
         if ($this->isStaticRoute($urlPath)) {
@@ -173,7 +144,7 @@ class Routing {
         return null;
     }
 
-    public function getDefinitions() : FluentIterables{
+    public function getDefinitions(): FluentIterables {
         return Collections::stream()
             ->addAll($this->parametrizedRouting)
             ->addAll($this->routing);
@@ -213,7 +184,6 @@ class Routing {
         $routing[$routingDefinition->getPath()][] = $routingDefinition;
     }
 
-
     public function getCurrentDefinition() {
         return $this->getDefinition($this->getPath());
     }
@@ -252,12 +222,14 @@ class Routing {
             if (StringUtils::isBlank($controllerName)) {
                 $controllerName = $this->getCurrentDefinition()->getControllerClassName();
             }
+
             $paramsKeys = Collections::getKeys($params);
 
             return $this->getDefinitions()
                 ->flatMap(Functions::getSameObject())
                 ->findFirst(function ($d) use ($controllerName, $methodName, $paramsKeys) {
                     /* @var RoutingDefinition $d */
+
                     return StringUtils::contains($d->getControllerClassName(), $controllerName)
                         && StringUtils::contains($d->getActionMethod(), $methodName)
                         && Collections::size($paramsKeys) === Collections::size($d->getParams())
@@ -278,5 +250,16 @@ class Routing {
      */
     private function isStaticRoute($urlPath): bool {
         return isset($this->routing[$urlPath]);
+    }
+
+    public function refresh() {
+        self::$INSTANCE = $this;
+    }
+
+    public function afterInit(): void {
+        $this->routing = [];
+        $this->parametrizedRouting = array();
+        $this->definitions = [];
+        $this->sessionProvider = null;
     }
 }

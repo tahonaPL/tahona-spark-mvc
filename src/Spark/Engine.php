@@ -33,6 +33,7 @@ use Spark\Core\Lang\LangMessageResource;
 use Spark\Core\Lang\LangResourcePath;
 use Spark\Core\Library\Annotations;
 use Spark\Core\Library\BeanLoader;
+use Spark\Core\Processor\Cycle\BeanPostProcess;
 use Spark\Core\Processor\InitAnnotationProcessors;
 use Spark\Core\Processor\Loader\Context;
 use Spark\Core\Processor\Loader\ContextLoaderType;
@@ -72,7 +73,6 @@ use Spark\View\ViewHandlerProvider;
 use Spark\View\ViewModel;
 
 class Engine {
-
 
     /**
      * @var string Application Name used in apcu Cache as a prefix
@@ -121,6 +121,13 @@ class Engine {
                 $this->contextLoader->clear();
                 $this->beanCache->clearAll();
             }
+
+            $this->context->get(ContextType::ROUTE)->refresh();
+
+//            $newPath = Routing::get()->resolveRoute("@editAction@id:3",
+//                Collections::getValueOrDefault([], 'params', array()));
+//            exit;
+
         }
 
         if (!$this->contextLoader->hasData()) {
@@ -153,10 +160,6 @@ class Engine {
 
             $this->afterAllBean($container, $route);
 
-            /** @var BeanProvider $bp */
-            $bp = $container->get(BeanProvider::NAME);
-            $bp->clear();
-
             $this->contextLoader->save(
                 $config,
                 $container,
@@ -186,7 +189,6 @@ class Engine {
         $requestData = $this->context->get(ContextType::ROUTE)
             ->createRequest($registeredHostPath);
 
-        //TODO!!!!!!!!!!!!!!!!!!!!
         $this->updateRequestProvider($requestData);
 
         //Interceptor
@@ -248,7 +250,7 @@ class Engine {
         $container->registerObj(new SessionFiller());
         $container->registerObj(new FileObjectFiller());
         $container->registerObj(new CookieFiller());
-        $container->registerObj(new BeanFiller());
+//        $container->registerObj(new BeanFiller());
 
         $this->addViewHandlersToService($container);
     }
@@ -312,7 +314,6 @@ class Engine {
         /** @var $handler ViewHandlerProvider */
         $handler->handleView($viewModel, $request);
     }
-
 
     private function executeFilter(Request $request): void {
         $filters = $this->context->get(ContextType::HTTP_FILTERS);
@@ -390,7 +391,6 @@ class Engine {
             });
     }
 
-
     private function getProfile(): ?string {
         if (SystemUtils::isCommandLineInterface()) {
             return SystemUtils::getProfile();
@@ -401,7 +401,6 @@ class Engine {
     private function executeFillers(RoutingDefinition $rf): array {
         $parameters = $rf->getActionMethodParameters();
         $simpleFiller = $this->context->get(ContextType::FILLERS);
-
 
         $tmpParameters = $parameters;
 
@@ -450,6 +449,5 @@ class Engine {
     private function getContextLoaderType(): string {
         return SystemUtils::isCommandLineInterface() ? ContextLoaderType::COMMANDS : ContextLoaderType::CONTROLLER;
     }
-
 
 }

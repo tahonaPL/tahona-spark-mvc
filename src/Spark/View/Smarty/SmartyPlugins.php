@@ -8,7 +8,6 @@
 
 namespace Spark\View\Smarty;
 
-
 use Spark\Core\Annotation\Inject;
 use Spark\Core\Annotation\PostConstruct;
 use Spark\Core\Lang\LangMessageResource;
@@ -42,7 +41,7 @@ class SmartyPlugins {
     private $beanProvider;
 
     /**
-     * @Inject
+     * Inject
      * @var Routing
      */
     private $routing;
@@ -55,7 +54,6 @@ class SmartyPlugins {
 
         $this->beanProvider = null; //dangerous to have this
     }
-
 
     public function path($params, $smarty) {
         $path = $this->getPath($params);
@@ -72,7 +70,6 @@ class SmartyPlugins {
         $val = $params['value'];
         return $method($val);
     }
-
 
     public function getMessage($params, $smarty) {
         $code = $params['code'];
@@ -113,12 +110,12 @@ class SmartyPlugins {
         $path = $params['path'];
         Asserts::notNull($path);
 
-        $newPath = $this->routing->resolveRoute($path, Collections::getValueOrDefault($params, 'params', array()));
+        $newPath = Routing::get()->resolveRoute($path, Collections::getValueOrDefault($params, 'params', array()));
 
         if (StringUtils::isNotBlank($newPath)) {
             return UrlUtils::getPath($newPath);
         }
-        return UrlUtils::getPath($path) ;
+        return UrlUtils::getPath($path);
     }
 
-} 
+}
